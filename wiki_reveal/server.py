@@ -1,9 +1,11 @@
-from flask import Flask, Response
+from flask import Flask, Response, jsonify
+
+from wiki_reveal.wiki import get_page
 
 app = Flask('Wiki-Reveal')
 
 
-@app.get('/')
+@app.get('/test.txt')
 def root():
     return Response("""
 
@@ -47,3 +49,12 @@ def root():
                                         ████                                                                                                  ▒▒██
                                         ██▒▒                                                                                                  ██░░
     \n""")
+
+
+@app.get('/api/page')
+@app.get('/api/page/<language>')
+def page(language: str = 'en'):
+  return jsonify({
+    'language': language,
+    'page': get_page(language=language).to_json(),
+  })
