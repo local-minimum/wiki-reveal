@@ -1,14 +1,15 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as React from 'react';
 
-import './App.css';
+import WikiPage from './components/WikiPage';
+
+const queryClient = new QueryClient();
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <p>This will be the page</p>
-      </header>
-    </div>
+    <QueryClientProvider client={queryClient}>
+      <WikiPage />
+    </QueryClientProvider>
   );
 }
 

@@ -26,7 +26,6 @@ class Section:
 
 @dataclass
 class Page:
-    language: str
     title: Paragraph
     summary: Paragraph
     sections: tuple[Section, ...]
@@ -84,7 +83,6 @@ def get_page(*, language: str ='en') -> Page:
         raise NoSuchPageError
 
     return Page(
-        language=language,
         title=tuple(tokenize(page.title)),
         summary=tuple(tokenize(page.summary)),
         sections=unwrap_sections(page)
