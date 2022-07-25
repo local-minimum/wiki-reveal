@@ -1,0 +1,7 @@
+---
+version: '3.3'
+
+services:
+  wiki_reveal:
+    build: .
+    ports: ["8088:8080"]
