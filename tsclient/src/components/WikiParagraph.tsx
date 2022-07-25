@@ -1,10 +1,10 @@
 import { styled } from '@mui/system';
 import * as React from 'react';
 
-import { Token } from '../types/wiki';
+import { LexicalizedToken } from '../types/wiki';
 
 interface WikiParagraphProps {
-  text: Token[] | undefined;
+  text: LexicalizedToken[] | undefined;
 }
 
 interface WordBlockProps {

@@ -1,6 +1,7 @@
 import { allowedWords } from '../data/allowedWords';
-import { Page, Section } from '../types/wiki';
-import { splitParagraphs, unmaskPage } from '../utils/wiki';
+import { LexicalizedToken, Page, Section } from '../types/wiki';
+import { createLexicon } from '../utils/lexicon';
+import { splitParagraphs, unmaskPage, wordAsLexicalEntry } from '../utils/wiki';
 
 type Token = [token: string, isHidden: boolean];
 
@@ -22,21 +23,25 @@ interface ResponseJSON {
   page: ResponsePage;
 }
 
+function lexicalizeToken([word, isHidden]: Token): LexicalizedToken {
+  return [word, isHidden, isHidden ? wordAsLexicalEntry(word) : word];
+}
+
 function transformSection({
   title, paragraphs, depth, sections,
 }: ResponseSection): Section {
   return {
-    title,
+    title: title.map((token) => lexicalizeToken(token)),
     depth,
-    paragraphs: splitParagraphs(paragraphs),
+    paragraphs: splitParagraphs(paragraphs.map((token) => lexicalizeToken(token))),
     sections: sections.map((section) => transformSection(section)),
   };
 }
 
 function transformPage({ title, summary, sections }: ResponsePage): Page {
   return {
-    title,
-    summary: splitParagraphs(summary),
+    title: title.map((token) => lexicalizeToken(token)),
+    summary: splitParagraphs(summary.map((token) => lexicalizeToken(token))),
     sections: sections.map((section) => transformSection(section)),
   };
 }
@@ -47,5 +52,12 @@ export function getPage() {
       if (result.ok) return result.json();
       throw new Error('Failed to download page');
     }))
-    .then((data) => unmaskPage(transformPage(data.page), allowedWords[data.language] ?? []));
+    .then((data) => {
+      const page = transformPage(data.page);
+      const lexicon = createLexicon(page);
+      return {
+        page: unmaskPage(page, allowedWords[data.language] ?? []),
+        lexicon,
+      };
+    });
 }

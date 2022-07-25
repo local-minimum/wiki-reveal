@@ -21,7 +21,8 @@ function WikiPage(): JSX.Element {
     ['page'],
     getPage,
   );
-  const { title, summary, sections } = data ?? { summary: [], sections: [] };
+  const { title, summary, sections } = data?.page ?? { summary: [], sections: [] };
+  console.log(data?.lexicon);
   const commonSX: Partial<SxProps> = {
     backgroundColor: '#EFD9CE',
     color: '#25283D',

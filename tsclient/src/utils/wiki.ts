@@ -1,8 +1,25 @@
-import { Page, Section, Token } from '../types/wiki';
+import {
+  LexicalizedToken, Page, Section,
+} from '../types/wiki';
 
-function unmaskTokens(tokens: Token[], words: string[]): Token[] {
-  return tokens.map(([token, isHidden]) => (
-    isHidden && words.some((word) => word === token) ? [token, false] : [token, isHidden]
+export function wordAsLexicalEntry(word: string): string {
+  return word.toLowerCase()
+    .replace(/[àáâäæãåā]/g, 'a')
+    .replace(/[çćč]/g, 'c')
+    .replace(/[èéêëēėę]/g, 'e')
+    .replace(/[ł]/g, 'l')
+    .replace(/[îïíīįì]/g, 'i')
+    .replace(/[ñń]/g, 'n')
+    .replace(/[ôöòóœøōõ]/g, 'o')
+    .replace(/[ßśš]/g, 's')
+    .replace(/[ûüùúū]/g, 'u')
+    .replace(/[ýÿ]/g, 'y')
+    .replace(/[žźż]/g, 'z');
+}
+
+function unmaskTokens(tokens: LexicalizedToken[], words: string[]): LexicalizedToken[] {
+  return tokens.map(([token, isHidden, lex]) => (
+    isHidden && words.some((word) => word === token) ? [token, false, lex] : [token, isHidden, lex]
   ));
 }
 
@@ -25,12 +42,12 @@ export function unmaskPage({ title, summary, sections }: Page, words: string[]):
   };
 }
 
-export function splitParagraphs(text: Token[]): Array<Token[]> {
-  const out: Array<Token[]> = [];
+export function splitParagraphs(text: LexicalizedToken[]): Array<LexicalizedToken[]> {
+  const out: Array<LexicalizedToken[]> = [];
   let start = 0;
-  text.forEach(([value, isHidden], idx) => {
+  text.forEach(([value, isHidden, lex], idx) => {
     if (!isHidden && value.includes('\n')) {
-      out.push([...text.slice(start, idx), [value.slice(0, value.indexOf('\n')), isHidden]]);
+      out.push([...text.slice(start, idx), [value.slice(0, value.indexOf('\n')), isHidden, lex]]);
       start = idx + 1;
     }
   });

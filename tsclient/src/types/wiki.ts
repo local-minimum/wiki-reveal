@@ -1,14 +1,14 @@
-export type Token = [token: string, isHidden: boolean];
+export type LexicalizedToken = [token: string, isHidden: boolean, lexicalEntry: string];
 
 export interface Section {
-  title: Token[];
+  title: LexicalizedToken[];
   depth: number;
-  paragraphs: Array<Token[]>;
+  paragraphs: Array<LexicalizedToken[]>;
   sections: Section[];
 }
 
 export interface Page {
-  title: Token[];
-  summary: Array<Token[]>;
+  title: LexicalizedToken[];
+  summary: Array<LexicalizedToken[]>;
   sections: Section[];
 }
