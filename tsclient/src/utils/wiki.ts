@@ -19,7 +19,7 @@ export function wordAsLexicalEntry(word: string): string {
 
 function unmaskTokens(tokens: LexicalizedToken[], words: string[]): LexicalizedToken[] {
   return tokens.map(([token, isHidden, lex]) => (
-    isHidden && words.some((word) => word === token) ? [token, false, lex] : [token, isHidden, lex]
+    isHidden && words.some((word) => word === lex) ? [token, false, lex] : [token, isHidden, lex]
   ));
 }
 
@@ -55,4 +55,18 @@ export function splitParagraphs(text: LexicalizedToken[]): Array<LexicalizedToke
     out.push(text.slice(start));
   }
   return out;
+}
+
+export function trimSections(sections: Section[]): Section[] {
+  let include = true;
+  const trimAt = ['references', 'see also', 'notes', 'external links'];
+
+  return sections.filter(({ title }) => {
+    if (!include) return false;
+    const t = title.filter(([, isHidden]) => isHidden).map(([_, __, lex]) => lex).join(' ');
+    if (trimAt.includes(t)) {
+      include = false;
+    }
+    return include;
+  });
 }

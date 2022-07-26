@@ -1,7 +1,9 @@
 import { allowedWords } from '../data/allowedWords';
 import { LexicalizedToken, Page, Section } from '../types/wiki';
 import { createLexicon } from '../utils/lexicon';
-import { splitParagraphs, unmaskPage, wordAsLexicalEntry } from '../utils/wiki';
+import {
+  splitParagraphs, trimSections, unmaskPage, wordAsLexicalEntry,
+} from '../utils/wiki';
 
 type Token = [token: string, isHidden: boolean];
 
@@ -54,10 +56,13 @@ export function getPage() {
     }))
     .then((data) => {
       const page = transformPage(data.page);
+      page.sections = trimSections(page.sections);
       const lexicon = createLexicon(page);
+      const freeWords = allowedWords[data.language] ?? [];
       return {
-        page: unmaskPage(page, allowedWords[data.language] ?? []),
+        page: unmaskPage(page, freeWords),
         lexicon,
+        freeWords,
       };
     });
 }
