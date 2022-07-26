@@ -1,5 +1,5 @@
 import {
-  Alert, Box, LinearProgress, Stack, SxProps, TextField, Typography,
+  Alert, Grid, LinearProgress, SxProps, TextField, Typography,
 } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import * as React from 'react';
@@ -7,6 +7,7 @@ import { useMemo } from 'react';
 
 import { getPage } from '../api/page';
 import { unmaskPage, wordAsLexicalEntry } from '../utils/wiki';
+import GuessTable from './GuessTable';
 import WikiParagraph from './WikiParagraph';
 import WikiSection from './WikiSection';
 
@@ -23,7 +24,7 @@ function WikiPage(): JSX.Element {
     ['page'],
     getPage,
   );
-  const { page, freeWords, lexicon } = data ?? {};
+  const { page, freeWords, lexicon } = data ?? { lexicon: {} as Record<string, number> };
 
   const [guesses, setGuesses] = React.useState<string[]>([]);
   const [currentGuess, setCurrentGuess] = React.useState('');
@@ -44,9 +45,9 @@ function WikiPage(): JSX.Element {
   );
 
   const progress = useMemo(() => {
-    const total = Object.values(lexicon ?? {}).reduce((acc, count) => acc + count, 0);
+    const total = Object.values(lexicon).reduce((acc, count) => acc + count, 0);
     const found = [...(freeWords ?? []), ...guesses]
-      .reduce((acc, guess) => acc + (lexicon?.[guess] ?? 0), 0);
+      .reduce((acc, guess) => acc + (lexicon[guess] ?? 0), 0);
     return 100 * found / total;
   }, [freeWords, guesses, lexicon]);
 
@@ -58,16 +59,43 @@ function WikiPage(): JSX.Element {
   };
 
   return (
-    <Stack
-      component="div"
+    <Grid
+      container
+      spacing={0}
       sx={{
         w: '100%',
         h: '100%',
       }}
     >
-      {isError && <Alert severity="error">Could not load the article, perhaps try again later or wait for tomorrow</Alert>}
-      <LinearProgress variant={isLoading ? undefined : 'determinate'} value={isLoading ? undefined : progress} />
-      <Box>
+      <Grid item xs={8}>
+        {isError && <Alert severity="error">Could not load the article, perhaps try again later or wait for tomorrow</Alert>}
+        <LinearProgress variant={isLoading ? undefined : 'determinate'} value={isLoading ? undefined : progress} />
+        <Typography variant="h1" sx={{ fontSize: '3rem', ...commonSX }}>
+          <WikiParagraph text={title} />
+        </Typography>
+        {
+          summary.map((paragraph, idx) => (
+            <Typography
+              // eslint-disable-next-line react/no-array-index-key
+              key={idx}
+              variant="body1"
+              sx={{ fontSize: '1.1rem', ...commonSX, marginTop: 1 }}
+            >
+              <WikiParagraph text={paragraph} />
+            </Typography>
+          ))
+        }
+        {
+          // eslint-disable-next-line react/no-array-index-key
+          sections.map((section, idx) => <WikiSection section={section} key={idx} />)
+        }
+      </Grid>
+      <Grid item xs={4} sx={{ p: 2 }}>
+        <Typography variant="h6">
+          {`${guesses.length} `}
+          Guesses
+          <GuessTable guesses={guesses} lexicon={lexicon} />
+        </Typography>
         <TextField
           sx={{ minWidth: '30em' }}
           disabled={isLoading || isError}
@@ -79,31 +107,8 @@ function WikiPage(): JSX.Element {
             if (key === 'Enter') addGuess();
           }}
         />
-      </Box>
-      <Stack direction="row">
-        <Box sx={{ w: '70%', p: 1 }} component="div">
-          <Typography variant="h1" sx={{ fontSize: '3rem', ...commonSX }}>
-            <WikiParagraph text={title} />
-          </Typography>
-          {
-            summary.map((paragraph, idx) => (
-              <Typography
-                // eslint-disable-next-line react/no-array-index-key
-                key={idx}
-                variant="body1"
-                sx={{ fontSize: '1.1rem', ...commonSX, marginTop: 1 }}
-              >
-                <WikiParagraph text={paragraph} />
-              </Typography>
-            ))
-          }
-          {
-            // eslint-disable-next-line react/no-array-index-key
-            sections.map((section, idx) => <WikiSection section={section} key={idx} />)
-          }
-        </Box>
-      </Stack>
-    </Stack>
+      </Grid>
+    </Grid>
   );
 }
 
