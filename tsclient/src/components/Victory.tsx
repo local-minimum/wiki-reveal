@@ -27,7 +27,7 @@ function Victory({ hints, guesses, onRevealAll }: VictoryProps): JSX.Element | n
             onClick={onRevealAll}
             startIcon={<FontAwesomeIcon icon={faEye} />}
           >
-            Reveal article
+            Reveal
           </Button>
           <Button
             variant="outlined"

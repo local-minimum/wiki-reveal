@@ -1,7 +1,7 @@
 import { faPuzzlePiece } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  Box, Table, TableBody, TableCell, TableHead, TableRow, Tooltip,
+  Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip,
 } from '@mui/material';
 import * as React from 'react';
 import SortIcon from './SortIcon';
@@ -59,54 +59,56 @@ function GuessTable({
   }, [indexedGuesses, lexicon, sortType, sortVariant]);
 
   return (
-    <Table size="small" stickyHeader>
-      <TableHead>
-        <TableRow sx={{ cursor: 'pointer' }}>
-          <TableCell onClick={() => changeSort('order')}>
-            #
-            <Box component="span" sx={{ float: 'right' }}>
-              <SortIcon filter="order" sortType={sortType} sortVariant={sortVariant} />
-            </Box>
-          </TableCell>
-          <TableCell onClick={() => changeSort('alphabetical')}>
-            Guess
-            <Box component="span" sx={{ float: 'right' }}>
-              <SortIcon filter="alphabetical" sortType={sortType} sortVariant={sortVariant} />
-            </Box>
-          </TableCell>
-          <TableCell onClick={() => changeSort('count')}>
-            Count
-            <Box component="span" sx={{ float: 'right' }}>
-              <SortIcon filter="count" sortType={sortType} sortVariant={sortVariant} />
-            </Box>
-          </TableCell>
-        </TableRow>
-      </TableHead>
-      <TableBody>
-        {sortedGuesses.map(([word, ordinal, isHint]) => {
-          const focused = word === focusWord;
-          return (
-            <TableRow key={word} sx={{ backgroundColor: focused ? '#CEA2AC' : undefined }}>
-              <TableCell>{ordinal}</TableCell>
-              <TableCell
-                onClick={() => onSetFocusWord(word)}
-                sx={{ cursor: 'pointer' }}
-              >
-                {word}
-                <Box sx={{ float: 'right' }}>
-                  {isHint && (
-                    <Tooltip title="Word is a hint">
-                      <FontAwesomeIcon icon={faPuzzlePiece} />
-                    </Tooltip>
-                  )}
-                </Box>
-              </TableCell>
-              <TableCell>{lexicon[word] ?? 0}</TableCell>
-            </TableRow>
-          );
-        })}
-      </TableBody>
-    </Table>
+    <TableContainer sx={{ height: '100%' }}>
+      <Table size="small" stickyHeader>
+        <TableHead>
+          <TableRow sx={{ cursor: 'pointer' }}>
+            <TableCell onClick={() => changeSort('order')}>
+              #
+              <Box component="span" sx={{ float: 'right' }}>
+                <SortIcon filter="order" sortType={sortType} sortVariant={sortVariant} />
+              </Box>
+            </TableCell>
+            <TableCell onClick={() => changeSort('alphabetical')}>
+              Guess
+              <Box component="span" sx={{ float: 'right' }}>
+                <SortIcon filter="alphabetical" sortType={sortType} sortVariant={sortVariant} />
+              </Box>
+            </TableCell>
+            <TableCell onClick={() => changeSort('count')}>
+              Count
+              <Box component="span" sx={{ float: 'right' }}>
+                <SortIcon filter="count" sortType={sortType} sortVariant={sortVariant} />
+              </Box>
+            </TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {sortedGuesses.map(([word, ordinal, isHint]) => {
+            const focused = word === focusWord;
+            return (
+              <TableRow key={word} sx={{ backgroundColor: focused ? '#CEA2AC' : undefined }}>
+                <TableCell>{ordinal}</TableCell>
+                <TableCell
+                  onClick={() => onSetFocusWord(word)}
+                  sx={{ cursor: 'pointer' }}
+                >
+                  {word}
+                  <Box sx={{ float: 'right' }}>
+                    {isHint && (
+                      <Tooltip title="Word gotten as a hint">
+                        <FontAwesomeIcon icon={faPuzzlePiece} />
+                      </Tooltip>
+                    )}
+                  </Box>
+                </TableCell>
+                <TableCell>{lexicon[word] ?? 0}</TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </TableContainer>
   );
 }
 

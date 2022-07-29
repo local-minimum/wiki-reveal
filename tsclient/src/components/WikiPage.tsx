@@ -1,7 +1,5 @@
-import { faPlay, faPuzzlePiece } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  Alert, Box, Button, Grid, LinearProgress, Stack, SxProps, TextField, Tooltip, Typography,
+  Alert, Box, Grid, LinearProgress, SxProps, TableContainer, Typography,
 } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import * as React from 'react';
@@ -9,6 +7,7 @@ import { useMemo } from 'react';
 
 import { getPage } from '../api/page';
 import { unmaskPage, wordAsLexicalEntry } from '../utils/wiki';
+import GuessInput from './GuessInput';
 import GuessTable from './GuessTable';
 import Victory from './Victory';
 import WikiParagraph from './WikiParagraph';
@@ -40,7 +39,6 @@ function WikiPage(): JSX.Element {
   const [guesses, setGuesses] = React.useState<Array<[word: string, hinted: boolean]>>([]);
   const [victory, setVictory] = React.useState<VictoryType | null>(null);
   const [unmasked, setUnmasked] = React.useState(false);
-  const [currentGuess, setCurrentGuess] = React.useState('');
   const [focusWord, setFocusWord] = React.useState<string | null>(null);
 
   const revealAll = React.useCallback((): void => {
@@ -61,20 +59,17 @@ function WikiPage(): JSX.Element {
     [guesses],
   );
 
-  const addGuess = React.useCallback((): void => {
-    if (currentGuess !== '') {
-      const entry = wordAsLexicalEntry(currentGuess);
-      if (!freeWords?.includes(entry) && !guesses.some(([word]) => word === entry)) {
-        setGuesses([...guesses, [entry, false]]);
-        if (
-          title.every(([_, isHidden, lex]) => lex === entry || !isHidden)
-        ) {
-          setVictory({ guesses: guesses.length - hints + 1, hints });
-        }
+  const addGuess = React.useCallback((currentGuess: string): void => {
+    const entry = wordAsLexicalEntry(currentGuess);
+    if (!freeWords?.includes(entry) && !guesses.some(([word]) => word === entry)) {
+      setGuesses([...guesses, [entry, false]]);
+      if (
+        title.every(([_, isHidden, lex]) => lex === entry || !isHidden)
+      ) {
+        setVictory({ guesses: guesses.length - hints + 1, hints });
       }
     }
-    setCurrentGuess('');
-  }, [currentGuess, freeWords, guesses, hints, title]);
+  }, [freeWords, guesses, hints, title]);
 
   const addHint = React.useCallback((): void => {
     const maxCount = guesses
@@ -113,49 +108,66 @@ function WikiPage(): JSX.Element {
   };
 
   return (
-    <Grid
-      container
-      spacing={0}
+    <Box
       sx={{
-        w: '1vw',
-        h: '1vh',
+        width: '100vw',
+        height: '100vh',
+        overflow: 'hidden',
       }}
     >
-      <Grid item xs={8} sx={{ overflow: 'hidden' }}>
-        {isError && <Alert severity="error">Could not load the article, perhaps try again later or wait for tomorrow</Alert>}
-        <LinearProgress variant={isLoading ? undefined : 'determinate'} value={isLoading ? undefined : progress} />
-        {victory !== null && (
-          <Victory guesses={victory.guesses} hints={victory.hints} onRevealAll={revealAll} />
-        )}
-        <Typography variant="h1" sx={{ fontSize: '3rem', ...commonSX, pt: 1 }}>
-          <WikiParagraph text={title} focusWord={focusWord} />
-        </Typography>
-        {
-          summary.map((paragraph, idx) => (
-            <Typography
-              // eslint-disable-next-line react/no-array-index-key
-              key={idx}
-              variant="body1"
-              sx={{ fontSize: '1.1rem', ...commonSX, marginTop: 1 }}
-            >
-              <WikiParagraph text={paragraph} focusWord={focusWord} />
+      <Grid
+        container
+        spacing={0}
+        sx={{ height: '100%' }}
+      >
+        <Grid item xs={8} sx={{ height: '100vh', overflow: 'hidden' }}>
+          <TableContainer sx={{ height: '100%' }}>
+            {isError && <Alert severity="error">Could not load the article, perhaps try again later or wait for tomorrow</Alert>}
+            <LinearProgress
+              variant={isLoading ? undefined : 'determinate'}
+              value={isLoading ? undefined : progress}
+              sx={{ position: 'sticky', top: 0, zIndex: 100 }}
+            />
+            {victory !== null && (
+              <Victory guesses={victory.guesses} hints={victory.hints} onRevealAll={revealAll} />
+            )}
+            <Typography variant="h1" sx={{ fontSize: '3rem', ...commonSX, pt: 1 }}>
+              <WikiParagraph text={title} focusWord={focusWord} />
             </Typography>
-          ))
-        }
-        {
-          sections.map((section, idx) => (
-            // eslint-disable-next-line react/no-array-index-key
-            <WikiSection section={section} focusWord={focusWord} key={idx} />
-          ))
-        }
-      </Grid>
-      <Grid item xs={4} sx={{ p: 2 }}>
-        <Stack gap={1}>
+            {
+              summary.map((paragraph, idx) => (
+                <Typography
+                  // eslint-disable-next-line react/no-array-index-key
+                  key={idx}
+                  variant="body1"
+                  sx={{ fontSize: '1.1rem', ...commonSX, marginTop: 1 }}
+                >
+                  <WikiParagraph text={paragraph} focusWord={focusWord} />
+                </Typography>
+              ))
+            }
+            {
+              sections.map((section, idx) => (
+                // eslint-disable-next-line react/no-array-index-key
+                <WikiSection section={section} focusWord={focusWord} key={idx} />
+              ))
+            }
+          </TableContainer>
+        </Grid>
+        <Grid
+          item
+          xs={4}
+          flexDirection="column"
+          gap={1}
+          sx={{
+            p: 2, overflow: 'hidden', display: 'flex', height: '100vh',
+          }}
+        >
           <Typography variant="h6">
             {`${guesses.length} `}
             Guesses
           </Typography>
-          <Box sx={{ flex: 1 }}>
+          <Box sx={{ height: '87vh' }}>
             <GuessTable
               focusWord={focusWord}
               guesses={guesses}
@@ -163,44 +175,18 @@ function WikiPage(): JSX.Element {
               onSetFocusWord={setFocusWord}
             />
           </Box>
-          <Stack direction="row" gap={1}>
-            <Tooltip title="Enter guess">
-              <TextField
-                sx={{ flex: 1 }}
-                disabled={isLoading || isError || progress === 100 || unmasked}
-                variant="outlined"
-                focused
-                value={currentGuess}
-                onChange={({ target: { value } }) => setCurrentGuess(value)}
-                onKeyDown={({ key }) => {
-                  if (key === 'Enter') addGuess();
-                }}
-              />
-            </Tooltip>
-            <Tooltip title="Submit guess">
-              <Button
-                variant="contained"
-                onClick={addGuess}
-                startIcon={<FontAwesomeIcon icon={faPlay} />}
-                disabled={currentGuess.length === 0 || progress === 100 || unmasked}
-              >
-                Submit
-              </Button>
-            </Tooltip>
-            <Tooltip title="Get a word for free that is not in the main header">
-              <Button
-                variant="contained"
-                onClick={addHint}
-                startIcon={<FontAwesomeIcon icon={faPuzzlePiece} />}
-                disabled={progress === 100 || unmasked}
-              >
-                {`${hints} Hint${hints === 1 ? '' : 's'}`}
-              </Button>
-            </Tooltip>
-          </Stack>
-        </Stack>
+          <GuessInput
+            isLoading={isLoading}
+            isError={isError}
+            isDone={progress === 100}
+            unmasked={unmasked}
+            hints={hints}
+            onAddGuess={addGuess}
+            onAddHint={addHint}
+          />
+        </Grid>
       </Grid>
-    </Grid>
+    </Box>
   );
 }
 
