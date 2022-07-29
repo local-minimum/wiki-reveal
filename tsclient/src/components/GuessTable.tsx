@@ -1,10 +1,13 @@
+import { faPuzzlePiece } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  Table, TableBody, TableCell, TableHead, TableRow,
+  Box, Table, TableBody, TableCell, TableHead, TableRow, Tooltip,
 } from '@mui/material';
 import * as React from 'react';
+import SortIcon from './SortIcon';
 
 interface GuessTableProps {
-  guesses: string[];
+  guesses: Array<[name: string, isHint: boolean]>;
   lexicon: Record<string, number>;
 }
 
@@ -20,7 +23,8 @@ function GuessTable({ guesses, lexicon }: GuessTableProps): JSX.Element {
     else setSort([sortType, 'asc']);
   }, [sortType, sortVariant]);
 
-  const indexedGuesses = guesses.map((word, idx) => [word, idx + 1]);
+  const indexedGuesses: Array<[word: string, ordinal: number, isHint: boolean]> = guesses
+    .map(([word, isHint], idx) => [word, idx + 1, isHint]);
   const sortedGuesses = React.useMemo(() => {
     if (sortType === 'order') {
       if (sortVariant === 'desc') {
@@ -37,9 +41,13 @@ function GuessTable({ guesses, lexicon }: GuessTableProps): JSX.Element {
     }
     if (sortType === 'count') {
       if (sortVariant === 'asc') {
-        return indexedGuesses.sort(([a], [b]) => ((lexicon[a] ?? 0) < (lexicon[b] ?? 0) ? -1 : 1));
+        return indexedGuesses.sort(
+          ([a], [b]) => ((lexicon[a] ?? 0) < (lexicon[b] ?? 0) ? -1 : 1),
+        );
       }
-      return indexedGuesses.sort(([a], [b]) => ((lexicon[a] ?? 0) < (lexicon[b] ?? 0) ? 1 : -1));
+      return indexedGuesses.sort(
+        ([a], [b]) => ((lexicon[a] ?? 0) < (lexicon[b] ?? 0) ? 1 : -1),
+      );
     }
     return indexedGuesses;
   }, [indexedGuesses, lexicon, sortType, sortVariant]);
@@ -47,17 +55,41 @@ function GuessTable({ guesses, lexicon }: GuessTableProps): JSX.Element {
   return (
     <Table size="small" stickyHeader>
       <TableHead>
-        <TableRow>
-          <TableCell onClick={() => changeSort('order')}>#</TableCell>
-          <TableCell onClick={() => changeSort('alphabetical')}>Guess</TableCell>
-          <TableCell onClick={() => changeSort('count')}>Count</TableCell>
+        <TableRow sx={{ cursor: 'pointer' }}>
+          <TableCell onClick={() => changeSort('order')}>
+            #
+            <Box component="span" sx={{ float: 'right' }}>
+              <SortIcon filter="order" sortType={sortType} sortVariant={sortVariant} />
+            </Box>
+          </TableCell>
+          <TableCell onClick={() => changeSort('alphabetical')}>
+            Guess
+            <Box component="span" sx={{ float: 'right' }}>
+              <SortIcon filter="alphabetical" sortType={sortType} sortVariant={sortVariant} />
+            </Box>
+          </TableCell>
+          <TableCell onClick={() => changeSort('count')}>
+            Count
+            <Box component="span" sx={{ float: 'right' }}>
+              <SortIcon filter="count" sortType={sortType} sortVariant={sortVariant} />
+            </Box>
+          </TableCell>
         </TableRow>
       </TableHead>
       <TableBody>
-        {sortedGuesses.map(([word, idx]) => (
+        {sortedGuesses.map(([word, ordinal, isHint]) => (
           <TableRow key={word}>
-            <TableCell>{idx}</TableCell>
-            <TableCell>{word}</TableCell>
+            <TableCell>{ordinal}</TableCell>
+            <TableCell>
+              {word}
+              <Box sx={{ float: 'right' }}>
+                {isHint && (
+                  <Tooltip title="Word is a hint">
+                    <FontAwesomeIcon icon={faPuzzlePiece} />
+                  </Tooltip>
+                )}
+              </Box>
+            </TableCell>
             <TableCell>{lexicon[word] ?? 0}</TableCell>
           </TableRow>
         ))}

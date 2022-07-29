@@ -1,5 +1,7 @@
+import { faPlay, faPuzzlePiece } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  Alert, Grid, LinearProgress, SxProps, TextField, Typography,
+  Alert, Button, Grid, LinearProgress, Stack, SxProps, TextField, Tooltip, Typography,
 } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import * as React from 'react';
@@ -19,34 +21,62 @@ import WikiSection from './WikiSection';
 #EFD9CE
 */
 
+function randomEntry<T>(arr: T[]): T {
+  return arr[Math.min(Math.floor(Math.random() * arr.length), arr.length - 1)];
+}
+
 function WikiPage(): JSX.Element {
   const { isLoading, isError, data } = useQuery(
     ['page'],
     getPage,
   );
   const { page, freeWords, lexicon } = data ?? { lexicon: {} as Record<string, number> };
-
-  const [guesses, setGuesses] = React.useState<string[]>([]);
+  const [guesses, setGuesses] = React.useState<Array<[word: string, hinted: boolean]>>([]);
   const [currentGuess, setCurrentGuess] = React.useState('');
+
+  const { title, summary, sections } = React.useMemo(
+    () => unmaskPage(
+      page ?? { title: [], summary: [], sections: [] },
+      guesses.map(([word]) => word),
+    ),
+    [guesses, page],
+  );
 
   const addGuess = React.useCallback((): void => {
     if (currentGuess !== '') {
       const entry = wordAsLexicalEntry(currentGuess);
-      if (!freeWords?.some((w) => w === entry) && !guesses.some((w) => w === entry)) {
-        setGuesses([...guesses, entry]);
+      if (!freeWords?.includes(entry) && !guesses.some(([word]) => word === entry)) {
+        setGuesses([...guesses, [entry, false]]);
       }
     }
     setCurrentGuess('');
   }, [currentGuess, freeWords, guesses]);
 
-  const { title, summary, sections } = React.useMemo(
-    () => unmaskPage(page ?? { title: [], summary: [], sections: [] }, guesses),
-    [guesses, page],
-  );
+  const addHint = React.useCallback((): void => {
+    const maxCount = guesses
+      .reduce((count, [word]) => Math.max(count, lexicon[word] ?? 0), 0);
+    const options = [...Object.keys(lexicon)]
+      .filter((word) => !guesses.some(([w]) => w === word)
+        && !freeWords?.includes(word)
+        && !title.some(([_, isHidden, lex]) => isHidden && lex === word));
+
+    if (options.length === 0) return;
+
+    const worthy = options.filter((word) => lexicon[word] >= maxCount * 0.9);
+    if (worthy.length > 0) {
+      setGuesses([...guesses, [randomEntry(worthy), true]]);
+      return;
+    }
+
+    const remaining = options.sort((a, b) => (lexicon[a] > lexicon[b] ? -1 : 1));
+    setGuesses(
+      [...guesses, [randomEntry(remaining.slice(0, Math.ceil(remaining.length * 0.2))), true]],
+    );
+  }, [freeWords, guesses, lexicon, title]);
 
   const progress = useMemo(() => {
     const total = Object.values(lexicon).reduce((acc, count) => acc + count, 0);
-    const found = [...(freeWords ?? []), ...guesses]
+    const found = [...(freeWords ?? []), ...guesses.map(([w]) => w)]
       .reduce((acc, guess) => acc + (lexicon[guess] ?? 0), 0);
     return 100 * found / total;
   }, [freeWords, guesses, lexicon]);
@@ -57,6 +87,8 @@ function WikiPage(): JSX.Element {
     paddingLeft: 2,
     paddingRight: 2,
   };
+
+  const hints = guesses.reduce((acc, [_, isHint]) => (isHint ? acc + 1 : acc), 0);
 
   return (
     <Grid
@@ -96,17 +128,40 @@ function WikiPage(): JSX.Element {
           Guesses
           <GuessTable guesses={guesses} lexicon={lexicon} />
         </Typography>
-        <TextField
-          sx={{ minWidth: '30em' }}
-          disabled={isLoading || isError}
-          variant="outlined"
-          focused
-          value={currentGuess}
-          onChange={({ target: { value } }) => setCurrentGuess(value)}
-          onKeyDown={({ key }) => {
-            if (key === 'Enter') addGuess();
-          }}
-        />
+        <Stack direction="row" gap={1}>
+          <Tooltip title="Enter guess">
+            <TextField
+              sx={{ minWidth: '20em' }}
+              disabled={isLoading || isError}
+              variant="outlined"
+              focused
+              value={currentGuess}
+              onChange={({ target: { value } }) => setCurrentGuess(value)}
+              onKeyDown={({ key }) => {
+                if (key === 'Enter') addGuess();
+              }}
+            />
+          </Tooltip>
+          <Tooltip title="Submit guess">
+            <Button
+              variant="contained"
+              onClick={addGuess}
+              startIcon={<FontAwesomeIcon icon={faPlay} />}
+              disabled={currentGuess.length > 0}
+            >
+              Submit
+            </Button>
+          </Tooltip>
+          <Tooltip title="Get a word for free that is not in the main header">
+            <Button
+              variant="contained"
+              onClick={addHint}
+              startIcon={<FontAwesomeIcon icon={faPuzzlePiece} />}
+            >
+              {`${hints} Hint${hints === 1 ? '' : 's'}`}
+            </Button>
+          </Tooltip>
+        </Stack>
       </Grid>
     </Grid>
   );
