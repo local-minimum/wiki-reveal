@@ -17,6 +17,7 @@ import WikiParagraph from './WikiParagraph';
 interface WikiSectionProps {
   section: Section;
   focusWord: string | null;
+  scrollToCheck: () => boolean;
 }
 
 function getHeader(depth: number) {
@@ -54,6 +55,7 @@ function WikiSection({
     title, paragraphs, sections, depth,
   },
   focusWord,
+  scrollToCheck,
 }: WikiSectionProps): JSX.Element {
   const commonSX: Partial<SxProps> = {
     backgroundColor: '#EFD9CE',
@@ -61,12 +63,13 @@ function WikiSection({
     paddingLeft: 2,
     paddingRight: 2,
     marginTop: 1,
+    fontFamily: 'monospace',
   };
 
   return (
     <>
       <Typography variant={getHeader(depth)} sx={{ fontSize: getFontSize(depth), ...commonSX }}>
-        <WikiParagraph text={title} focusWord={focusWord} />
+        <WikiParagraph text={title} focusWord={focusWord} scrollToCheck={scrollToCheck} />
       </Typography>
       {paragraphs.map((paragraph, idx) => (
         <Typography
@@ -75,13 +78,18 @@ function WikiSection({
           variant="body1"
           sx={{ fontSize: '1.1rem', ...commonSX }}
         >
-          <WikiParagraph text={paragraph} focusWord={focusWord} />
+          <WikiParagraph text={paragraph} focusWord={focusWord} scrollToCheck={scrollToCheck} />
         </Typography>
       ))}
       {
         sections.map((section, idx) => (
-          // eslint-disable-next-line react/no-array-index-key
-          <WikiSection section={section} focusWord={focusWord} key={idx} />
+          <WikiSection
+            section={section}
+            focusWord={focusWord}
+            scrollToCheck={scrollToCheck}
+            // eslint-disable-next-line react/no-array-index-key
+            key={idx}
+          />
         ))
       }
     </>

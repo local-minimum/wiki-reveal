@@ -87,12 +87,13 @@ function GuessTable({
           {sortedGuesses.map(([word, ordinal, isHint]) => {
             const focused = word === focusWord;
             return (
-              <TableRow key={word} sx={{ backgroundColor: focused ? '#CEA2AC' : undefined }}>
+              <TableRow
+                key={word}
+                sx={{ backgroundColor: focused ? '#CEA2AC' : undefined, cursor: 'pointer' }}
+                onClick={() => onSetFocusWord(word)}
+              >
                 <TableCell>{ordinal}</TableCell>
-                <TableCell
-                  onClick={() => onSetFocusWord(word)}
-                  sx={{ cursor: 'pointer' }}
-                >
+                <TableCell>
                   {word}
                   <Box sx={{ float: 'right' }}>
                     {isHint && (

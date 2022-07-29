@@ -39,7 +39,29 @@ function WikiPage(): JSX.Element {
   const [guesses, setGuesses] = React.useState<Array<[word: string, hinted: boolean]>>([]);
   const [victory, setVictory] = React.useState<VictoryType | null>(null);
   const [unmasked, setUnmasked] = React.useState(false);
-  const [focusWord, setFocusWord] = React.useState<string | null>(null);
+  const [[focusWord, focusWordIndex], setFocusWord] = React
+    .useState<[word: string | null, index: number]>([null, 0]);
+
+  const focusedWordCounter = React.useRef(0);
+
+  const focusedWordScrollToCheck = React.useCallback((): boolean => {
+    const isMe = focusedWordCounter.current === 0;
+    focusedWordCounter.current -= 1;
+    return isMe;
+  }, []);
+
+  React.useEffect(() => {
+    focusedWordCounter.current = focusWordIndex;
+  }, [focusWordIndex, focusWord, guesses, victory, unmasked]);
+
+  const handleSetFocusWord = React.useCallback((word: string): void => {
+    if (word !== focusWord) {
+      focusedWordCounter.current = 0;
+      setFocusWord([word, 0]);
+    } else {
+      setFocusWord([word, (focusWordIndex + 1) % (lexicon[word] ?? 1)]);
+    }
+  }, [focusWord, focusWordIndex, lexicon]);
 
   const revealAll = React.useCallback((): void => {
     setUnmasked(true);
@@ -105,6 +127,7 @@ function WikiPage(): JSX.Element {
     color: '#25283D',
     paddingLeft: 2,
     paddingRight: 2,
+    fontFamily: 'monospace',
   };
 
   return (
@@ -120,7 +143,7 @@ function WikiPage(): JSX.Element {
         spacing={0}
         sx={{ height: '100%' }}
       >
-        <Grid item xs={8} sx={{ height: '100vh', overflow: 'hidden' }}>
+        <Grid item xs={8} sx={{ height: '100vh', overflow: 'hidden', backgroundColor: '#EFD9CE' }}>
           <TableContainer sx={{ height: '100%' }}>
             {isError && <Alert severity="error">Could not load the article, perhaps try again later or wait for tomorrow</Alert>}
             <LinearProgress
@@ -132,7 +155,11 @@ function WikiPage(): JSX.Element {
               <Victory guesses={victory.guesses} hints={victory.hints} onRevealAll={revealAll} />
             )}
             <Typography variant="h1" sx={{ fontSize: '3rem', ...commonSX, pt: 1 }}>
-              <WikiParagraph text={title} focusWord={focusWord} />
+              <WikiParagraph
+                text={title}
+                focusWord={focusWord}
+                scrollToCheck={focusedWordScrollToCheck}
+              />
             </Typography>
             {
               summary.map((paragraph, idx) => (
@@ -142,14 +169,23 @@ function WikiPage(): JSX.Element {
                   variant="body1"
                   sx={{ fontSize: '1.1rem', ...commonSX, marginTop: 1 }}
                 >
-                  <WikiParagraph text={paragraph} focusWord={focusWord} />
+                  <WikiParagraph
+                    text={paragraph}
+                    focusWord={focusWord}
+                    scrollToCheck={focusedWordScrollToCheck}
+                  />
                 </Typography>
               ))
             }
             {
               sections.map((section, idx) => (
-                // eslint-disable-next-line react/no-array-index-key
-                <WikiSection section={section} focusWord={focusWord} key={idx} />
+                <WikiSection
+                  section={section}
+                  focusWord={focusWord}
+                  scrollToCheck={focusedWordScrollToCheck}
+                  // eslint-disable-next-line react/no-array-index-key
+                  key={idx}
+                />
               ))
             }
           </TableContainer>
@@ -172,7 +208,7 @@ function WikiPage(): JSX.Element {
               focusWord={focusWord}
               guesses={guesses}
               lexicon={lexicon}
-              onSetFocusWord={setFocusWord}
+              onSetFocusWord={handleSetFocusWord}
             />
           </Box>
           <GuessInput
