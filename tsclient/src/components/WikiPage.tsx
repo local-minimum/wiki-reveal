@@ -6,6 +6,7 @@ import * as React from 'react';
 import { useMemo } from 'react';
 
 import { getPage } from '../api/page';
+import useStoredValue from '../hooks/useStoredValue';
 import { unmaskPage, wordAsLexicalEntry } from '../utils/wiki';
 import GuessInput from './GuessInput';
 import GuessTable from './GuessTable';
@@ -36,8 +37,8 @@ function WikiPage(): JSX.Element {
     getPage,
   );
   const { page, freeWords, lexicon } = data ?? { lexicon: {} as Record<string, number> };
-  const [guesses, setGuesses] = React.useState<Array<[word: string, hinted: boolean]>>([]);
-  const [victory, setVictory] = React.useState<VictoryType | null>(null);
+  const [guesses, setGuesses] = useStoredValue<Array<[word: string, hinted: boolean]>>('guesses', []);
+  const [victory, setVictory] = useStoredValue<VictoryType | null>('victory', null);
   const [unmasked, setUnmasked] = React.useState(false);
   const [[focusWord, focusWordIndex], setFocusWord] = React
     .useState<[word: string | null, index: number]>([null, 0]);
@@ -50,9 +51,7 @@ function WikiPage(): JSX.Element {
     return isMe;
   }, []);
 
-  React.useEffect(() => {
-    focusedWordCounter.current = focusWordIndex;
-  }, [focusWordIndex, focusWord, guesses, victory, unmasked]);
+  focusedWordCounter.current = focusWordIndex;
 
   const handleSetFocusWord = React.useCallback((word: string): void => {
     if (word !== focusWord) {
@@ -91,7 +90,7 @@ function WikiPage(): JSX.Element {
         setVictory({ guesses: guesses.length - hints + 1, hints });
       }
     }
-  }, [freeWords, guesses, hints, title]);
+  }, [freeWords, guesses, hints, setGuesses, setVictory, title]);
 
   const addHint = React.useCallback((): void => {
     const maxCount = guesses
@@ -113,7 +112,7 @@ function WikiPage(): JSX.Element {
     setGuesses(
       [...guesses, [randomEntry(remaining.slice(0, Math.ceil(remaining.length * 0.2))), true]],
     );
-  }, [freeWords, guesses, lexicon, title]);
+  }, [freeWords, guesses, lexicon, setGuesses, title]);
 
   const progress = useMemo(() => {
     const total = Object.values(lexicon).reduce((acc, count) => acc + count, 0);
