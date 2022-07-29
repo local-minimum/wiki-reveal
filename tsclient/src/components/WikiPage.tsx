@@ -10,6 +10,7 @@ import { useMemo } from 'react';
 import { getPage } from '../api/page';
 import { unmaskPage, wordAsLexicalEntry } from '../utils/wiki';
 import GuessTable from './GuessTable';
+import Victory from './Victory';
 import WikiParagraph from './WikiParagraph';
 import WikiSection from './WikiSection';
 
@@ -20,6 +21,11 @@ import WikiSection from './WikiSection';
 #CEA2AC
 #EFD9CE
 */
+
+interface VictoryType {
+  guesses: number;
+  hints: number;
+}
 
 function randomEntry<T>(arr: T[]): T {
   return arr[Math.min(Math.floor(Math.random() * arr.length), arr.length - 1)];
@@ -32,14 +38,26 @@ function WikiPage(): JSX.Element {
   );
   const { page, freeWords, lexicon } = data ?? { lexicon: {} as Record<string, number> };
   const [guesses, setGuesses] = React.useState<Array<[word: string, hinted: boolean]>>([]);
+  const [victory, setVictory] = React.useState<VictoryType | null>(null);
+  const [unmasked, setUnmasked] = React.useState(false);
   const [currentGuess, setCurrentGuess] = React.useState('');
+
+  const revealAll = React.useCallback((): void => {
+    setUnmasked(true);
+  }, []);
 
   const { title, summary, sections } = React.useMemo(
     () => unmaskPage(
       page ?? { title: [], summary: [], sections: [] },
       guesses.map(([word]) => word),
+      unmasked,
     ),
-    [guesses, page],
+    [guesses, page, unmasked],
+  );
+
+  const hints = React.useMemo(
+    () => guesses.reduce((acc, [_, isHint]) => (isHint ? acc + 1 : acc), 0),
+    [guesses],
   );
 
   const addGuess = React.useCallback((): void => {
@@ -47,10 +65,15 @@ function WikiPage(): JSX.Element {
       const entry = wordAsLexicalEntry(currentGuess);
       if (!freeWords?.includes(entry) && !guesses.some(([word]) => word === entry)) {
         setGuesses([...guesses, [entry, false]]);
+        if (
+          title.every(([_, isHidden, lex]) => lex === entry || !isHidden)
+        ) {
+          setVictory({ guesses: guesses.length - hints + 1, hints });
+        }
       }
     }
     setCurrentGuess('');
-  }, [currentGuess, freeWords, guesses]);
+  }, [currentGuess, freeWords, guesses, hints, title]);
 
   const addHint = React.useCallback((): void => {
     const maxCount = guesses
@@ -78,7 +101,7 @@ function WikiPage(): JSX.Element {
     const total = Object.values(lexicon).reduce((acc, count) => acc + count, 0);
     const found = [...(freeWords ?? []), ...guesses.map(([w]) => w)]
       .reduce((acc, guess) => acc + (lexicon[guess] ?? 0), 0);
-    return 100 * found / total;
+    return Math.min(100, 100 * found / total);
   }, [freeWords, guesses, lexicon]);
 
   const commonSX: Partial<SxProps> = {
@@ -87,8 +110,6 @@ function WikiPage(): JSX.Element {
     paddingLeft: 2,
     paddingRight: 2,
   };
-
-  const hints = guesses.reduce((acc, [_, isHint]) => (isHint ? acc + 1 : acc), 0);
 
   return (
     <Grid
@@ -102,7 +123,10 @@ function WikiPage(): JSX.Element {
       <Grid item xs={8}>
         {isError && <Alert severity="error">Could not load the article, perhaps try again later or wait for tomorrow</Alert>}
         <LinearProgress variant={isLoading ? undefined : 'determinate'} value={isLoading ? undefined : progress} />
-        <Typography variant="h1" sx={{ fontSize: '3rem', ...commonSX }}>
+        {victory !== null && (
+          <Victory guesses={victory.guesses} hints={victory.hints} onRevealAll={revealAll} />
+        )}
+        <Typography variant="h1" sx={{ fontSize: '3rem', ...commonSX, pt: 1 }}>
           <WikiParagraph text={title} />
         </Typography>
         {
@@ -131,8 +155,8 @@ function WikiPage(): JSX.Element {
         <Stack direction="row" gap={1}>
           <Tooltip title="Enter guess">
             <TextField
-              sx={{ minWidth: '20em' }}
-              disabled={isLoading || isError}
+              sx={{ flex: 1 }}
+              disabled={isLoading || isError || progress === 100 || unmasked}
               variant="outlined"
               focused
               value={currentGuess}
@@ -147,7 +171,7 @@ function WikiPage(): JSX.Element {
               variant="contained"
               onClick={addGuess}
               startIcon={<FontAwesomeIcon icon={faPlay} />}
-              disabled={currentGuess.length > 0}
+              disabled={currentGuess.length === 0 || progress === 100 || unmasked}
             >
               Submit
             </Button>
@@ -157,6 +181,7 @@ function WikiPage(): JSX.Element {
               variant="contained"
               onClick={addHint}
               startIcon={<FontAwesomeIcon icon={faPuzzlePiece} />}
+              disabled={progress === 100 || unmasked}
             >
               {`${hints} Hint${hints === 1 ? '' : 's'}`}
             </Button>

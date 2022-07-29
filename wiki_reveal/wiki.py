@@ -8,7 +8,7 @@ from wikipediaapi import Wikipedia, WikipediaPage, WikipediaPageSection  # type:
 
 from wiki_reveal.exceptions import NoSuchPageError, ParsingFailedError
 
-tokenizer = re.compile(r'[             \t\n\r\v\f:;,.<>/\\~`\'"!?@#$%^&*()[\]{}|=+-\-–—− _→?\‑]+')
+tokenizer = re.compile(r'[             \t\n\r\v\f:;,.⋯…<>/\\~`\'"!?@#$%^&*()[\]{}|=+-\-–—− _→?\‑]+')
 Token = tuple[str, bool]
 Paragraph = tuple[Token, ...]
 
