@@ -1,7 +1,7 @@
 import { faPlay, faPuzzlePiece } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  Alert, Button, Grid, LinearProgress, Stack, SxProps, TextField, Tooltip, Typography,
+  Alert, Box, Button, Grid, LinearProgress, Stack, SxProps, TextField, Tooltip, Typography,
 } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import * as React from 'react';
@@ -41,6 +41,7 @@ function WikiPage(): JSX.Element {
   const [victory, setVictory] = React.useState<VictoryType | null>(null);
   const [unmasked, setUnmasked] = React.useState(false);
   const [currentGuess, setCurrentGuess] = React.useState('');
+  const [focusWord, setFocusWord] = React.useState<string | null>(null);
 
   const revealAll = React.useCallback((): void => {
     setUnmasked(true);
@@ -116,18 +117,18 @@ function WikiPage(): JSX.Element {
       container
       spacing={0}
       sx={{
-        w: '100%',
-        h: '100%',
+        w: '1vw',
+        h: '1vh',
       }}
     >
-      <Grid item xs={8}>
+      <Grid item xs={8} sx={{ overflow: 'hidden' }}>
         {isError && <Alert severity="error">Could not load the article, perhaps try again later or wait for tomorrow</Alert>}
         <LinearProgress variant={isLoading ? undefined : 'determinate'} value={isLoading ? undefined : progress} />
         {victory !== null && (
           <Victory guesses={victory.guesses} hints={victory.hints} onRevealAll={revealAll} />
         )}
         <Typography variant="h1" sx={{ fontSize: '3rem', ...commonSX, pt: 1 }}>
-          <WikiParagraph text={title} />
+          <WikiParagraph text={title} focusWord={focusWord} />
         </Typography>
         {
           summary.map((paragraph, idx) => (
@@ -137,55 +138,66 @@ function WikiPage(): JSX.Element {
               variant="body1"
               sx={{ fontSize: '1.1rem', ...commonSX, marginTop: 1 }}
             >
-              <WikiParagraph text={paragraph} />
+              <WikiParagraph text={paragraph} focusWord={focusWord} />
             </Typography>
           ))
         }
         {
-          // eslint-disable-next-line react/no-array-index-key
-          sections.map((section, idx) => <WikiSection section={section} key={idx} />)
+          sections.map((section, idx) => (
+            // eslint-disable-next-line react/no-array-index-key
+            <WikiSection section={section} focusWord={focusWord} key={idx} />
+          ))
         }
       </Grid>
       <Grid item xs={4} sx={{ p: 2 }}>
-        <Typography variant="h6">
-          {`${guesses.length} `}
-          Guesses
-          <GuessTable guesses={guesses} lexicon={lexicon} />
-        </Typography>
-        <Stack direction="row" gap={1}>
-          <Tooltip title="Enter guess">
-            <TextField
-              sx={{ flex: 1 }}
-              disabled={isLoading || isError || progress === 100 || unmasked}
-              variant="outlined"
-              focused
-              value={currentGuess}
-              onChange={({ target: { value } }) => setCurrentGuess(value)}
-              onKeyDown={({ key }) => {
-                if (key === 'Enter') addGuess();
-              }}
+        <Stack gap={1}>
+          <Typography variant="h6">
+            {`${guesses.length} `}
+            Guesses
+          </Typography>
+          <Box sx={{ flex: 1 }}>
+            <GuessTable
+              focusWord={focusWord}
+              guesses={guesses}
+              lexicon={lexicon}
+              onSetFocusWord={setFocusWord}
             />
-          </Tooltip>
-          <Tooltip title="Submit guess">
-            <Button
-              variant="contained"
-              onClick={addGuess}
-              startIcon={<FontAwesomeIcon icon={faPlay} />}
-              disabled={currentGuess.length === 0 || progress === 100 || unmasked}
-            >
-              Submit
-            </Button>
-          </Tooltip>
-          <Tooltip title="Get a word for free that is not in the main header">
-            <Button
-              variant="contained"
-              onClick={addHint}
-              startIcon={<FontAwesomeIcon icon={faPuzzlePiece} />}
-              disabled={progress === 100 || unmasked}
-            >
-              {`${hints} Hint${hints === 1 ? '' : 's'}`}
-            </Button>
-          </Tooltip>
+          </Box>
+          <Stack direction="row" gap={1}>
+            <Tooltip title="Enter guess">
+              <TextField
+                sx={{ flex: 1 }}
+                disabled={isLoading || isError || progress === 100 || unmasked}
+                variant="outlined"
+                focused
+                value={currentGuess}
+                onChange={({ target: { value } }) => setCurrentGuess(value)}
+                onKeyDown={({ key }) => {
+                  if (key === 'Enter') addGuess();
+                }}
+              />
+            </Tooltip>
+            <Tooltip title="Submit guess">
+              <Button
+                variant="contained"
+                onClick={addGuess}
+                startIcon={<FontAwesomeIcon icon={faPlay} />}
+                disabled={currentGuess.length === 0 || progress === 100 || unmasked}
+              >
+                Submit
+              </Button>
+            </Tooltip>
+            <Tooltip title="Get a word for free that is not in the main header">
+              <Button
+                variant="contained"
+                onClick={addHint}
+                startIcon={<FontAwesomeIcon icon={faPuzzlePiece} />}
+                disabled={progress === 100 || unmasked}
+              >
+                {`${hints} Hint${hints === 1 ? '' : 's'}`}
+              </Button>
+            </Tooltip>
+          </Stack>
         </Stack>
       </Grid>
     </Grid>

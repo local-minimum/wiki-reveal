@@ -9,12 +9,16 @@ import SortIcon from './SortIcon';
 interface GuessTableProps {
   guesses: Array<[name: string, isHint: boolean]>;
   lexicon: Record<string, number>;
+  onSetFocusWord: (word: string) => void;
+  focusWord: string | null;
 }
 
 type SortType = 'order' | 'alphabetical' | 'count';
 type SortVariant = 'asc' | 'desc';
 
-function GuessTable({ guesses, lexicon }: GuessTableProps): JSX.Element {
+function GuessTable({
+  guesses, lexicon, onSetFocusWord, focusWord,
+}: GuessTableProps): JSX.Element {
   const [[sortType, sortVariant], setSort] = React.useState<[SortType, SortVariant]>(['order', 'asc']);
 
   const changeSort = React.useCallback((newSortType: SortType): void => {
@@ -23,7 +27,9 @@ function GuessTable({ guesses, lexicon }: GuessTableProps): JSX.Element {
     else setSort([sortType, 'asc']);
   }, [sortType, sortVariant]);
 
-  const indexedGuesses: Array<[word: string, ordinal: number, isHint: boolean]> = guesses
+  const indexedGuesses: Array<[
+    word: string, ordinal: number, isHint: boolean
+  ]> = guesses
     .map(([word, isHint], idx) => [word, idx + 1, isHint]);
   const sortedGuesses = React.useMemo(() => {
     if (sortType === 'order') {
@@ -77,22 +83,28 @@ function GuessTable({ guesses, lexicon }: GuessTableProps): JSX.Element {
         </TableRow>
       </TableHead>
       <TableBody>
-        {sortedGuesses.map(([word, ordinal, isHint]) => (
-          <TableRow key={word}>
-            <TableCell>{ordinal}</TableCell>
-            <TableCell>
-              {word}
-              <Box sx={{ float: 'right' }}>
-                {isHint && (
-                  <Tooltip title="Word is a hint">
-                    <FontAwesomeIcon icon={faPuzzlePiece} />
-                  </Tooltip>
-                )}
-              </Box>
-            </TableCell>
-            <TableCell>{lexicon[word] ?? 0}</TableCell>
-          </TableRow>
-        ))}
+        {sortedGuesses.map(([word, ordinal, isHint]) => {
+          const focused = word === focusWord;
+          return (
+            <TableRow key={word} sx={{ backgroundColor: focused ? '#CEA2AC' : undefined }}>
+              <TableCell>{ordinal}</TableCell>
+              <TableCell
+                onClick={() => onSetFocusWord(word)}
+                sx={{ cursor: 'pointer' }}
+              >
+                {word}
+                <Box sx={{ float: 'right' }}>
+                  {isHint && (
+                    <Tooltip title="Word is a hint">
+                      <FontAwesomeIcon icon={faPuzzlePiece} />
+                    </Tooltip>
+                  )}
+                </Box>
+              </TableCell>
+              <TableCell>{lexicon[word] ?? 0}</TableCell>
+            </TableRow>
+          );
+        })}
       </TableBody>
     </Table>
   );
