@@ -9,7 +9,7 @@ from wiki_reveal.game_id import get_game_id
 from wiki_reveal.wiki import get_game_page_name, get_page
 
 logging.basicConfig(
-    level=int(os.environ.get("LOGLEVEL", logging.INFO)),
+    level=int(os.environ.get("WR_LOGLEVEL", logging.INFO)),
     format="%(asctime)s  %(levelname)s  %(message)s",
 )
 

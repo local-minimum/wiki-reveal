@@ -1,7 +1,8 @@
+import os
 from random import choice, random, seed, choices
 from typing import Optional
 
-SEED = 777
+SEED = int(os.environ.get('WR_SEED', 777))
 
 
 def reset_seed():
