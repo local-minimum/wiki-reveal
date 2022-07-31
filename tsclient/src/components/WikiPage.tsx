@@ -1,21 +1,17 @@
-import { faLink } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  Alert, Box, Grid, LinearProgress, Link, SxProps, TableContainer, Tooltip, Typography,
+  Alert, Box, Grid, LinearProgress, TableContainer, Tooltip, Typography,
 } from '@mui/material';
-import { useQuery } from '@tanstack/react-query';
 import * as React from 'react';
 import { useMemo } from 'react';
 
-import { getPage } from '../api/page';
 import useClearStoredValues from '../hooks/useClearStoredValues';
 import useStoredValue from '../hooks/useStoredValue';
+import { Page } from '../types/wiki';
 import { unmaskPage, wordAsLexicalEntry } from '../utils/wiki';
 import GuessInput from './GuessInput';
 import GuessTable from './GuessTable';
+import RedactedPage from './RedactedPage';
 import Victory from './Victory';
-import WikiParagraph from './WikiParagraph';
-import WikiSection from './WikiSection';
 
 /* Palette
 #25283D
@@ -36,15 +32,23 @@ function randomEntry<T>(arr: T[]): T {
 
 const CASH_KEYS = ['guesses', 'victory'];
 
-function WikiPage(): JSX.Element {
-  const { isLoading, isError, data } = useQuery(
-    ['page'],
-    getPage,
-  );
-  const {
-    page, freeWords, lexicon, gameId, language, pageName,
-  } = data ?? { lexicon: {} as Record<string, number> };
+interface WikiPageProps {
+  isLoading: boolean;
+  isError: boolean;
+  freeWords: string[] | undefined;
+  lexicon: Record<string, number>,
+  gameId: number | undefined;
+  language: string | undefined;
+  pageName: string | undefined;
+  page: Page | undefined;
+  titleLexes: string[];
+  headingLexes: string[];
+}
 
+function WikiPage({
+  isLoading, isError, freeWords, lexicon, gameId, language, pageName, page,
+  titleLexes, headingLexes,
+}: WikiPageProps): JSX.Element {
   const [guesses, setGuesses] = useStoredValue<Array<[word: string, hinted: boolean]>>(`guesses-${gameId}`, []);
   const [victory, setVictory] = useStoredValue<VictoryType | null>(`victory-${gameId}`, null);
   const [playerResults, setPlayerResults] = useStoredValue<Array<[number, VictoryType]>>('player-results', []);
@@ -57,12 +61,6 @@ function WikiPage(): JSX.Element {
 
   const focusedWordCounter = React.useRef(0);
 
-  const focusedWordScrollToCheck = React.useCallback((): boolean => {
-    const isMe = focusedWordCounter.current === 0;
-    focusedWordCounter.current -= 1;
-    return isMe;
-  }, []);
-
   focusedWordCounter.current = focusWordIndex;
 
   const handleSetFocusWord = React.useCallback((word: string): void => {
@@ -73,6 +71,12 @@ function WikiPage(): JSX.Element {
       setFocusWord([word, (focusWordIndex + 1) % (lexicon[word] ?? 1)]);
     }
   }, [focusWord, focusWordIndex, lexicon]);
+
+  const focusedWordScrollToCheck = React.useCallback((): boolean => {
+    const isMe = focusedWordCounter.current === 0;
+    focusedWordCounter.current -= 1;
+    return isMe;
+  }, []);
 
   const revealAll = React.useCallback((): void => {
     setUnmasked(true);
@@ -154,14 +158,6 @@ function WikiPage(): JSX.Element {
       / trueGuesses.length;
   }, [guesses, lexicon]);
 
-  const commonSX: Partial<SxProps> = {
-    backgroundColor: '#EFD9CE',
-    color: '#25283D',
-    paddingLeft: 2,
-    paddingRight: 2,
-    fontFamily: 'monospace',
-  };
-
   return (
     <Box
       sx={{
@@ -178,11 +174,13 @@ function WikiPage(): JSX.Element {
         <Grid item xs={8} sx={{ height: '100vh', overflow: 'hidden', backgroundColor: '#EFD9CE' }}>
           <TableContainer sx={{ height: '100%' }}>
             {isError && <Alert severity="error">Could not load the article, perhaps try again later or wait for tomorrow</Alert>}
-            <LinearProgress
-              variant={isLoading ? undefined : 'determinate'}
-              value={isLoading ? undefined : progress}
-              sx={{ position: 'sticky', top: 0, zIndex: 100 }}
-            />
+            <Tooltip title={`${progress.toFixed(1)}% of article revealed.`}>
+              <LinearProgress
+                variant={isLoading ? undefined : 'determinate'}
+                value={isLoading ? undefined : progress}
+                sx={{ position: 'sticky', top: 0, zIndex: 100 }}
+              />
+            </Tooltip>
             {victory !== null && (
               <Victory
                 guesses={victory.guesses}
@@ -191,48 +189,16 @@ function WikiPage(): JSX.Element {
                 gameId={gameId}
               />
             )}
-            <Typography variant="h1" sx={{ fontSize: '3rem', ...commonSX, pt: 1 }}>
-              <WikiParagraph
-                text={title}
-                focusWord={focusWord}
-                scrollToCheck={focusedWordScrollToCheck}
-              />
-              {victory !== null && language !== undefined && pageName !== undefined && (
-                <Link
-                  href={`https://${language}.wikipedia.org/wiki/${pageName}`}
-                  sx={{ color: '#25283D', marginLeft: 1 }}
-                >
-                  <FontAwesomeIcon icon={faLink} />
-                </Link>
-              )}
-            </Typography>
-            {
-              summary.map((paragraph, idx) => (
-                <Typography
-                  // eslint-disable-next-line react/no-array-index-key
-                  key={idx}
-                  variant="body1"
-                  sx={{ fontSize: '1.1rem', ...commonSX, marginTop: 1 }}
-                >
-                  <WikiParagraph
-                    text={paragraph}
-                    focusWord={focusWord}
-                    scrollToCheck={focusedWordScrollToCheck}
-                  />
-                </Typography>
-              ))
-            }
-            {
-              sections.map((section, idx) => (
-                <WikiSection
-                  section={section}
-                  focusWord={focusWord}
-                  scrollToCheck={focusedWordScrollToCheck}
-                  // eslint-disable-next-line react/no-array-index-key
-                  key={idx}
-                />
-              ))
-            }
+            <RedactedPage
+              isSolved={victory !== null && language !== undefined && pageName !== undefined}
+              title={title}
+              summary={summary}
+              sections={sections}
+              language={language}
+              pageName={pageName}
+              focusWord={focusWord}
+              scrollToFocusWordCheck={focusedWordScrollToCheck}
+            />
           </TableContainer>
         </Grid>
         <Grid
@@ -260,6 +226,8 @@ function WikiPage(): JSX.Element {
               lexicon={lexicon}
               freeWords={freeWords}
               onSetFocusWord={handleSetFocusWord}
+              titleLexes={titleLexes}
+              headingLexes={headingLexes}
             />
           </Box>
           <GuessInput

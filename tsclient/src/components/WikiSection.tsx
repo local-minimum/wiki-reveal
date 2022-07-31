@@ -1,6 +1,7 @@
 import {
   SxProps, Typography,
 } from '@mui/material';
+import { Theme } from '@mui/system';
 import * as React from 'react';
 
 import { Section } from '../types/wiki';
@@ -50,6 +51,20 @@ function getFontSize(depth: number) {
   }
 }
 
+const commonSX: SxProps<Theme> = {
+  backgroundColor: '#EFD9CE',
+  color: '#25283D',
+  paddingLeft: 2,
+  paddingRight: 2,
+  marginTop: 1,
+  fontFamily: 'monospace',
+};
+
+const bodySx: SxProps<Theme> = {
+  ...commonSX,
+  fontSize: '1.1rem',
+};
+
 function WikiSection({
   section: {
     title, paragraphs, sections, depth,
@@ -57,15 +72,6 @@ function WikiSection({
   focusWord,
   scrollToCheck,
 }: WikiSectionProps): JSX.Element {
-  const commonSX: Partial<SxProps> = {
-    backgroundColor: '#EFD9CE',
-    color: '#25283D',
-    paddingLeft: 2,
-    paddingRight: 2,
-    marginTop: 1,
-    fontFamily: 'monospace',
-  };
-
   return (
     <>
       <Typography variant={getHeader(depth)} sx={{ fontSize: getFontSize(depth), ...commonSX }}>
@@ -76,7 +82,7 @@ function WikiSection({
           // eslint-disable-next-line react/no-array-index-key
           key={idx}
           variant="body1"
-          sx={{ fontSize: '1.1rem', ...commonSX }}
+          sx={bodySx}
         >
           <WikiParagraph text={paragraph} focusWord={focusWord} scrollToCheck={scrollToCheck} />
         </Typography>

@@ -1,9 +1,10 @@
-import { faPuzzlePiece } from '@fortawesome/free-solid-svg-icons';
+import { faHeading, faPuzzlePiece, faStar } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip,
 } from '@mui/material';
 import * as React from 'react';
+import usePrevious from '../hooks/usePrevious';
 import SortIcon from './SortIcon';
 
 interface GuessTableProps {
@@ -12,14 +13,28 @@ interface GuessTableProps {
   freeWords: string[] | undefined;
   onSetFocusWord: (word: string) => void;
   focusWord: string | null;
+  titleLexes: string[];
+  headingLexes: string[];
 }
 
 type SortType = 'order' | 'alphabetical' | 'count' | 'rank';
 type SortVariant = 'asc' | 'desc';
 
 function GuessTable({
-  guesses, lexicon, onSetFocusWord, focusWord, freeWords,
+  guesses, lexicon, onSetFocusWord, focusWord, freeWords, titleLexes, headingLexes,
 }: GuessTableProps): JSX.Element {
+  const mostRecentGuess = guesses[guesses.length - 1]?.[0];
+  const previousGuess = usePrevious(mostRecentGuess);
+  const mostRecentGuessRef = React.useRef<HTMLTableRowElement | null>(null);
+  React.useEffect(() => {
+    if (mostRecentGuess !== previousGuess) {
+      mostRecentGuessRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    }
+  }, [mostRecentGuess, previousGuess]);
+
   const [[sortType, sortVariant], setSort] = React.useState<[SortType, SortVariant]>(['order', 'asc']);
 
   const changeSort = React.useCallback((newSortType: SortType): void => {
@@ -113,6 +128,8 @@ function GuessTable({
         <TableBody>
           {sortedGuesses.map(([word, ordinal, isHint]) => {
             const focused = word === focusWord;
+            const mostRecent = ordinal === sortedGuesses.length;
+
             return (
               <TableRow
                 key={word}
@@ -121,15 +138,28 @@ function GuessTable({
                   cursor: 'pointer',
                 }}
                 onClick={() => onSetFocusWord(word)}
+                ref={mostRecent ? mostRecentGuessRef : null}
               >
                 <TableCell>{ordinal}</TableCell>
                 <TableCell
-                  sx={{
-                    fontWeight: ordinal === sortedGuesses.length ? 600 : undefined,
-                  }}
+                  sx={{ fontWeight: mostRecent ? 600 : undefined }}
                 >
                   {word}
-                  <Box sx={{ float: 'right' }}>
+                  <Box
+                    sx={{
+                      float: 'right', display: 'flex', flexDirection: 'row', gap: 0.5,
+                    }}
+                  >
+                    {titleLexes.includes(word) && (
+                      <Tooltip title="Word part of page title">
+                        <FontAwesomeIcon icon={faStar} />
+                      </Tooltip>
+                    )}
+                    {headingLexes.includes(word) && (
+                      <Tooltip title="Word part of sub-heading">
+                        <FontAwesomeIcon icon={faHeading} />
+                      </Tooltip>
+                    )}
                     {isHint && (
                       <Tooltip title="Word gotten as a hint">
                         <FontAwesomeIcon icon={faPuzzlePiece} />
