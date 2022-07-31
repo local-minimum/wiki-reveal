@@ -12,14 +12,14 @@ function useStoredValue<T>(
   key: string,
   defaultValue: T | undefined = undefined,
 ):[T | undefined, (newValue: T) => void] {
-  const [value, setValue] = useState(loadStored(key, defaultValue));
-  const keyChange = usePrevious(key) === key;
+  const [value, setValue] = useState(() => loadStored(key, defaultValue));
+  const previousKey = usePrevious(key);
 
   useEffect(() => {
-    if (keyChange) {
+    if (key !== previousKey) {
       setValue(loadStored(key, defaultValue));
     }
-  }, [defaultValue, key, keyChange]);
+  }, [defaultValue, key, previousKey]);
 
   const handleNewValue = useCallback((newValue: T): void => {
     setValue(newValue);
