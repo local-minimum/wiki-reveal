@@ -4,6 +4,7 @@ import { Link, SxProps, Typography } from '@mui/material';
 import { Theme } from '@mui/system';
 import * as React from 'react';
 import { LexicalizedToken, Section } from '../types/wiki';
+import ScrollToTop from './ScrollToTop';
 
 import WikiParagraph from './WikiParagraph';
 import WikiSection from './WikiSection';
@@ -17,6 +18,7 @@ interface RedactedPageProps {
   pageName: string | undefined;
   scrollToFocusWordCheck: () => boolean;
   focusWord: string | null;
+  containerNode: Node | undefined;
 }
 
 const commonSX: SxProps<Theme> = {
@@ -41,10 +43,12 @@ const summarySX: SxProps<Theme> = {
 
 function RedactedPage({
   title, summary, sections, isSolved, language, pageName, scrollToFocusWordCheck, focusWord,
+  containerNode,
 }: RedactedPageProps): JSX.Element {
+  const titleId = 'redacted-article-title';
   return (
     <>
-      <Typography variant="h1" sx={titleSX}>
+      <Typography variant="h1" sx={titleSX} id={titleId}>
         <WikiParagraph
           text={title}
           focusWord={focusWord}
@@ -86,6 +90,7 @@ function RedactedPage({
           />
         ))
       }
+      <ScrollToTop topId={titleId} target={containerNode} />
     </>
   );
 }

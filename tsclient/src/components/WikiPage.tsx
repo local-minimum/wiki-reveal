@@ -184,6 +184,8 @@ function WikiPage({
     [guesses, lexicon],
   );
 
+  const articleRef = React.useRef<HTMLDivElement | null>(null);
+
   return (
     <Box
       sx={{
@@ -198,7 +200,7 @@ function WikiPage({
         sx={{ height: '100%' }}
       >
         <Grid item xs={8} sx={{ height: '100vh', overflow: 'hidden', backgroundColor: '#EFD9CE' }}>
-          <TableContainer sx={{ height: '100%' }}>
+          <TableContainer component="div" sx={{ height: '100%' }} ref={articleRef}>
             {isError && <Alert severity="error">Could not load the article, perhaps try again later or wait for tomorrow</Alert>}
             <Tooltip title={`${progress.toFixed(1)}% of article revealed.`}>
               <LinearProgress
@@ -225,6 +227,7 @@ function WikiPage({
               language={language}
               pageName={pageName}
               focusWord={focusWord}
+              containerNode={articleRef.current ?? undefined}
               scrollToFocusWordCheck={focusedWordScrollToCheck}
             />
           </TableContainer>

@@ -6,6 +6,7 @@ import {
 import * as React from 'react';
 import usePrevious from '../hooks/usePrevious';
 import useStoredValue from '../hooks/useStoredValue';
+import ScrollToTop from './ScrollToTop';
 import SortIcon from './SortIcon';
 
 interface GuessTableProps {
@@ -109,8 +110,11 @@ function GuessTable({
     return Object.fromEntries(sorted.map(([word], idx) => [word, idx + 1]));
   }, [freeWords, lexicon]);
 
+  const tableContainerRef = React.useRef<HTMLDivElement | null>(null);
+  const firstRowId = 'first-guess-row';
+
   return (
-    <TableContainer sx={{ height: '100%' }}>
+    <TableContainer sx={{ height: '100%' }} ref={tableContainerRef}>
       <Table size="small" stickyHeader>
         <TableHead>
           <TableRow sx={{ cursor: 'pointer' }}>
@@ -144,12 +148,13 @@ function GuessTable({
           </TableRow>
         </TableHead>
         <TableBody>
-          {sortedGuesses.map(([word, ordinal, isHint]) => {
+          {sortedGuesses.map(([word, ordinal, isHint], idx) => {
             const focused = word === focusWord;
             const mostRecent = ordinal === sortedGuesses.length;
 
             return (
               <TableRow
+                id={idx === 0 ? firstRowId : undefined}
                 key={word}
                 sx={{
                   backgroundColor: focused ? '#CEA2AC' : undefined,
@@ -192,6 +197,12 @@ function GuessTable({
           })}
         </TableBody>
       </Table>
+      <ScrollToTop
+        size={2}
+        margin={8}
+        target={tableContainerRef.current ?? undefined}
+        topId={firstRowId}
+      />
     </TableContainer>
   );
 }
