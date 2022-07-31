@@ -8,10 +8,13 @@ import * as React from 'react';
 interface VictoryProps {
   hints: number;
   guesses: number;
+  gameId: number | undefined;
   onRevealAll: () => void;
 }
 
-function Victory({ hints, guesses, onRevealAll }: VictoryProps): JSX.Element {
+function Victory({
+  hints, guesses, gameId, onRevealAll,
+}: VictoryProps): JSX.Element {
   const [hidden, setHidden] = React.useState(false);
 
   return (
@@ -55,7 +58,9 @@ function Victory({ hints, guesses, onRevealAll }: VictoryProps): JSX.Element {
         )}
       >
         <AlertTitle>Congratulations!</AlertTitle>
-        You solved today&apos;s challenge in
+        You solved today&apos;s challenge (#
+        {gameId ?? '??'}
+        ) in
         {` ${guesses + hints} guess${(guesses + hints) === 1 ? '' : 'es'}`}
         {` ${hints} of which were hint${hints === 1 ? '' : 's'}`}
         . You may continue guessing words to your heart&apos;s content.

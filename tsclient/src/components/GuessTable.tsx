@@ -9,15 +9,16 @@ import SortIcon from './SortIcon';
 interface GuessTableProps {
   guesses: Array<[name: string, isHint: boolean]>;
   lexicon: Record<string, number>;
+  freeWords: string[] | undefined;
   onSetFocusWord: (word: string) => void;
   focusWord: string | null;
 }
 
-type SortType = 'order' | 'alphabetical' | 'count';
+type SortType = 'order' | 'alphabetical' | 'count' | 'rank';
 type SortVariant = 'asc' | 'desc';
 
 function GuessTable({
-  guesses, lexicon, onSetFocusWord, focusWord,
+  guesses, lexicon, onSetFocusWord, focusWord, freeWords,
 }: GuessTableProps): JSX.Element {
   const [[sortType, sortVariant], setSort] = React.useState<[SortType, SortVariant]>(['order', 'asc']);
 
@@ -55,8 +56,25 @@ function GuessTable({
         ([a], [b]) => ((lexicon[a] ?? 0) < (lexicon[b] ?? 0) ? 1 : -1),
       );
     }
+    if (sortType === 'rank') {
+      if (sortVariant === 'desc') {
+        return indexedGuesses.sort(
+          ([a], [b]) => ((lexicon[a] ?? 0) < (lexicon[b] ?? 0) ? -1 : 1),
+        );
+      }
+      return indexedGuesses.sort(
+        ([a], [b]) => ((lexicon[a] ?? 0) < (lexicon[b] ?? 0) ? 1 : -1),
+      );
+    }
     return indexedGuesses;
   }, [indexedGuesses, lexicon, sortType, sortVariant]);
+
+  const rankings = React.useMemo(() => {
+    const sorted: Array<[string, number]> = [...Object.entries(lexicon)]
+      .filter(([word]) => !(freeWords?.includes(word) ?? false))
+      .sort(([, a], [, b]) => (a < b ? 1 : -1));
+    return Object.fromEntries(sorted.map(([word], idx) => [word, idx + 1]));
+  }, [freeWords, lexicon]);
 
   return (
     <TableContainer sx={{ height: '100%' }}>
@@ -81,6 +99,15 @@ function GuessTable({
                 <SortIcon filter="count" sortType={sortType} sortVariant={sortVariant} />
               </Box>
             </TableCell>
+            <TableCell
+              title="Most frequent word has rank 1, second most rank 2 and so on."
+              onClick={() => changeSort('rank')}
+            >
+              Rank
+              <Box component="span" sx={{ float: 'right' }}>
+                <SortIcon filter="rank" sortType={sortType} sortVariant={sortVariant} />
+              </Box>
+            </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -89,11 +116,18 @@ function GuessTable({
             return (
               <TableRow
                 key={word}
-                sx={{ backgroundColor: focused ? '#CEA2AC' : undefined, cursor: 'pointer' }}
+                sx={{
+                  backgroundColor: focused ? '#CEA2AC' : undefined,
+                  cursor: 'pointer',
+                }}
                 onClick={() => onSetFocusWord(word)}
               >
                 <TableCell>{ordinal}</TableCell>
-                <TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: ordinal === sortedGuesses.length ? 600 : undefined,
+                  }}
+                >
                   {word}
                   <Box sx={{ float: 'right' }}>
                     {isHint && (
@@ -104,6 +138,7 @@ function GuessTable({
                   </Box>
                 </TableCell>
                 <TableCell>{lexicon[word] ?? 0}</TableCell>
+                <TableCell>{rankings[word] ?? <small><i>N/A</i></small>}</TableCell>
               </TableRow>
             );
           })}

@@ -4,6 +4,7 @@ import {
   Button, Stack, TextField, Tooltip,
 } from '@mui/material';
 import * as React from 'react';
+import { wordAsLexicalEntry } from '../utils/wiki';
 
 interface GuessInputProps {
   isLoading: boolean;
@@ -11,12 +12,13 @@ interface GuessInputProps {
   isDone: boolean;
   unmasked: boolean;
   hints: number;
+  freeWords: string[] | undefined;
   onAddGuess: (word: string) => void;
   onAddHint: () => void;
 }
 
 function GuessInput({
-  isLoading, isError, isDone, unmasked, hints, onAddGuess, onAddHint,
+  isLoading, isError, isDone, unmasked, hints, onAddGuess, onAddHint, freeWords,
 }: GuessInputProps): JSX.Element {
   const [currentGuess, setCurrentGuess] = React.useState('');
 
@@ -36,6 +38,11 @@ function GuessInput({
               onAddGuess(currentGuess);
             }
           }}
+          label={
+            currentGuess !== '' && freeWords?.includes(wordAsLexicalEntry(currentGuess))
+              ? 'Free word given from start'
+              : 'Guess'
+          }
         />
       </Tooltip>
       <Tooltip title="Submit guess">

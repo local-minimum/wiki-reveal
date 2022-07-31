@@ -1,5 +1,7 @@
+import { faLink } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  Alert, Box, Grid, LinearProgress, SxProps, TableContainer, Tooltip, Typography,
+  Alert, Box, Grid, LinearProgress, Link, SxProps, TableContainer, Tooltip, Typography,
 } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import * as React from 'react';
@@ -40,7 +42,7 @@ function WikiPage(): JSX.Element {
     getPage,
   );
   const {
-    page, freeWords, lexicon, gameId,
+    page, freeWords, lexicon, gameId, language, pageName,
   } = data ?? { lexicon: {} as Record<string, number> };
 
   const [guesses, setGuesses] = useStoredValue<Array<[word: string, hinted: boolean]>>(`guesses-${gameId}`, []);
@@ -92,7 +94,10 @@ function WikiPage(): JSX.Element {
 
   const addGuess = React.useCallback((currentGuess: string): void => {
     const entry = wordAsLexicalEntry(currentGuess);
-    if (!freeWords?.includes(entry) && !guesses.some(([word]) => word === entry)) {
+    if (freeWords?.includes(entry)) {
+      return;
+    }
+    if (!guesses.some(([word]) => word === entry)) {
       setGuesses([...guesses, [entry, false]]);
       if (
         title.every(([_, isHidden, lex]) => lex === entry || !isHidden)
@@ -103,9 +108,11 @@ function WikiPage(): JSX.Element {
           setPlayerResults([...playerResults, [gameId, newVictory]]);
         }
       }
+    } else {
+      handleSetFocusWord(entry);
     }
   }, [
-    freeWords, gameId, guesses, hints, playerResults,
+    freeWords, gameId, guesses, handleSetFocusWord, hints, playerResults,
     setGuesses, setPlayerResults, setVictory, title,
   ]);
 
@@ -177,7 +184,12 @@ function WikiPage(): JSX.Element {
               sx={{ position: 'sticky', top: 0, zIndex: 100 }}
             />
             {victory !== null && (
-              <Victory guesses={victory.guesses} hints={victory.hints} onRevealAll={revealAll} />
+              <Victory
+                guesses={victory.guesses}
+                hints={victory.hints}
+                onRevealAll={revealAll}
+                gameId={gameId}
+              />
             )}
             <Typography variant="h1" sx={{ fontSize: '3rem', ...commonSX, pt: 1 }}>
               <WikiParagraph
@@ -185,6 +197,14 @@ function WikiPage(): JSX.Element {
                 focusWord={focusWord}
                 scrollToCheck={focusedWordScrollToCheck}
               />
+              {victory !== null && language !== undefined && pageName !== undefined && (
+                <Link
+                  href={`https://${language}.wikipedia.org/wiki/${pageName}`}
+                  sx={{ color: '#25283D', marginLeft: 1 }}
+                >
+                  <FontAwesomeIcon icon={faLink} />
+                </Link>
+              )}
             </Typography>
             {
               summary.map((paragraph, idx) => (
@@ -238,6 +258,7 @@ function WikiPage(): JSX.Element {
               focusWord={focusWord}
               guesses={guesses}
               lexicon={lexicon}
+              freeWords={freeWords}
               onSetFocusWord={handleSetFocusWord}
             />
           </Box>
@@ -247,6 +268,7 @@ function WikiPage(): JSX.Element {
             isDone={progress === 100}
             unmasked={unmasked}
             hints={hints}
+            freeWords={freeWords}
             onAddGuess={addGuess}
             onAddHint={addHint}
           />

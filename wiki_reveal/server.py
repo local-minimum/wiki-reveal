@@ -41,6 +41,7 @@ def page(language: str = 'en', game_id: Optional[int] = None):
     return jsonify({
       'language': language,
       'gameId': active_id,
+      'pageName': page_name,
       'page': get_page(
         page_name,
         language=language,
