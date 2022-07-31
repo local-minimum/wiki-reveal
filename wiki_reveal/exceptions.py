@@ -8,3 +8,7 @@ class ParsingFailedError(WikiError):
 
 class NoSuchPageError(WikiError):
     pass
+
+
+class FailedToSelectPageError(WikiError):
+    pass

@@ -22,6 +22,7 @@ interface ResponsePage {
 
 interface ResponseJSON {
   language: string;
+  gameId: number;
   page: ResponsePage;
 }
 
@@ -63,6 +64,7 @@ export function getPage() {
         page: unmaskPage(page, freeWords),
         lexicon,
         freeWords,
+        gameId: data.gameId,
       };
     });
 }

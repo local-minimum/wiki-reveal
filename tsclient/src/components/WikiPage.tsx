@@ -1,11 +1,12 @@
 import {
-  Alert, Box, Grid, LinearProgress, SxProps, TableContainer, Typography,
+  Alert, Box, Grid, LinearProgress, SxProps, TableContainer, Tooltip, Typography,
 } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import * as React from 'react';
 import { useMemo } from 'react';
 
 import { getPage } from '../api/page';
+import useClearStoredValues from '../hooks/useClearStoredValues';
 import useStoredValue from '../hooks/useStoredValue';
 import { unmaskPage, wordAsLexicalEntry } from '../utils/wiki';
 import GuessInput from './GuessInput';
@@ -31,14 +32,23 @@ function randomEntry<T>(arr: T[]): T {
   return arr[Math.min(Math.floor(Math.random() * arr.length), arr.length - 1)];
 }
 
+const CASH_KEYS = ['guesses', 'victory'];
+
 function WikiPage(): JSX.Element {
   const { isLoading, isError, data } = useQuery(
     ['page'],
     getPage,
   );
-  const { page, freeWords, lexicon } = data ?? { lexicon: {} as Record<string, number> };
-  const [guesses, setGuesses] = useStoredValue<Array<[word: string, hinted: boolean]>>('guesses', []);
-  const [victory, setVictory] = useStoredValue<VictoryType | null>('victory', null);
+  const {
+    page, freeWords, lexicon, gameId,
+  } = data ?? { lexicon: {} as Record<string, number> };
+
+  const [guesses, setGuesses] = useStoredValue<Array<[word: string, hinted: boolean]>>(`guesses-${gameId}`, []);
+  const [victory, setVictory] = useStoredValue<VictoryType | null>(`victory-${gameId}`, null);
+  const [playerResults, setPlayerResults] = useStoredValue<Array<[number, VictoryType]>>('player-results', []);
+
+  useClearStoredValues(gameId, CASH_KEYS);
+
   const [unmasked, setUnmasked] = React.useState(false);
   const [[focusWord, focusWordIndex], setFocusWord] = React
     .useState<[word: string | null, index: number]>([null, 0]);
@@ -87,10 +97,17 @@ function WikiPage(): JSX.Element {
       if (
         title.every(([_, isHidden, lex]) => lex === entry || !isHidden)
       ) {
-        setVictory({ guesses: guesses.length - hints + 1, hints });
+        const newVictory = { guesses: guesses.length - hints + 1, hints };
+        setVictory(newVictory);
+        if (gameId !== undefined) {
+          setPlayerResults([...playerResults, [gameId, newVictory]]);
+        }
       }
     }
-  }, [freeWords, guesses, hints, setGuesses, setVictory, title]);
+  }, [
+    freeWords, gameId, guesses, hints, playerResults,
+    setGuesses, setPlayerResults, setVictory, title,
+  ]);
 
   const addHint = React.useCallback((): void => {
     const maxCount = guesses
@@ -120,6 +137,15 @@ function WikiPage(): JSX.Element {
       .reduce((acc, guess) => acc + (lexicon[guess] ?? 0), 0);
     return Math.min(100, 100 * found / total);
   }, [freeWords, guesses, lexicon]);
+
+  const accuracy = useMemo(() => {
+    const trueGuesses = guesses.filter(([, hinted]) => !hinted);
+    if (trueGuesses.length === 0) return 0;
+
+    return 100
+      * trueGuesses.filter(([word]) => (lexicon[word] ?? 0) > 0).length
+      / trueGuesses.length;
+  }, [guesses, lexicon]);
 
   const commonSX: Partial<SxProps> = {
     backgroundColor: '#EFD9CE',
@@ -201,6 +227,11 @@ function WikiPage(): JSX.Element {
           <Typography variant="h6">
             {`${guesses.length} `}
             Guesses
+            <Tooltip title="Percent guesses included in the article, disregarding hints">
+              <span>
+                {` (${accuracy.toFixed(1)}% accuracy)`}
+              </span>
+            </Tooltip>
           </Typography>
           <Box sx={{ height: '87vh' }}>
             <GuessTable
