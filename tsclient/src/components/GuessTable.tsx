@@ -5,6 +5,7 @@ import {
 } from '@mui/material';
 import * as React from 'react';
 import usePrevious from '../hooks/usePrevious';
+import useStoredValue from '../hooks/useStoredValue';
 import SortIcon from './SortIcon';
 
 interface GuessTableProps {
@@ -26,22 +27,39 @@ function GuessTable({
   const mostRecentGuess = guesses[guesses.length - 1]?.[0];
   const previousGuess = usePrevious(mostRecentGuess);
   const mostRecentGuessRef = React.useRef<HTMLTableRowElement | null>(null);
+  const focusGuessRef = React.useRef<HTMLTableRowElement | null>(null);
+  const previousFocusWord = usePrevious(focusWord);
+
   React.useEffect(() => {
     if (mostRecentGuess !== previousGuess) {
       mostRecentGuessRef.current?.scrollIntoView({
         behavior: 'smooth',
         block: 'center',
       });
+    } else if (focusWord !== previousFocusWord) {
+      focusGuessRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
     }
-  }, [mostRecentGuess, previousGuess]);
+  }, [focusWord, mostRecentGuess, previousFocusWord, previousGuess]);
 
-  const [[sortType, sortVariant], setSort] = React.useState<[SortType, SortVariant]>(['order', 'asc']);
+  const refOrNull = (
+    isMostRecent: boolean,
+    isFocus: boolean,
+  ): React.Ref<HTMLTableRowElement> | null => {
+    if (isMostRecent) return mostRecentGuessRef;
+    if (isFocus) return focusGuessRef;
+    return null;
+  };
+
+  const [[sortType, sortVariant], setSort] = useStoredValue<[SortType, SortVariant]>('sort-order', ['order', 'asc']);
 
   const changeSort = React.useCallback((newSortType: SortType): void => {
     if (sortType !== newSortType) setSort([newSortType, 'asc']);
     else if (sortVariant === 'asc') setSort([sortType, 'desc']);
     else setSort([sortType, 'asc']);
-  }, [sortType, sortVariant]);
+  }, [setSort, sortType, sortVariant]);
 
   const indexedGuesses: Array<[
     word: string, ordinal: number, isHint: boolean
@@ -138,7 +156,7 @@ function GuessTable({
                   cursor: 'pointer',
                 }}
                 onClick={() => onSetFocusWord(word)}
-                ref={mostRecent ? mostRecentGuessRef : null}
+                ref={refOrNull(mostRecent, focused)}
               >
                 <TableCell>{ordinal}</TableCell>
                 <TableCell

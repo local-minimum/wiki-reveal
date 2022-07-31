@@ -24,6 +24,8 @@ import Victory from './Victory';
 interface VictoryType {
   guesses: number;
   hints: number;
+  revealed: number;
+  accuracy: number;
 }
 
 function randomEntry<T>(arr: T[]): T {
@@ -43,6 +45,29 @@ interface WikiPageProps {
   page: Page | undefined;
   titleLexes: string[];
   headingLexes: string[];
+}
+
+function calculateProgress(
+  lexicon: Record<string, number>,
+  freeWords: string[] | undefined,
+  guesses: Array<[string, boolean]>,
+): number {
+  const total = Object.values(lexicon).reduce((acc, count) => acc + count, 0);
+  const found = [...(freeWords ?? []), ...guesses.map(([w]) => w)]
+    .reduce((acc, guess) => acc + (lexicon[guess] ?? 0), 0);
+  return Math.min(100, 100 * found / total);
+}
+
+function calculateAccuracy(
+  lexicon: Record<string, number>,
+  guesses: Array<[string, boolean]>,
+): number {
+  const trueGuesses = guesses.filter(([, hinted]) => !hinted);
+  if (trueGuesses.length === 0) return 0;
+
+  return 100
+    * trueGuesses.filter(([word]) => (lexicon[word] ?? 0) > 0).length
+    / trueGuesses.length;
 }
 
 function WikiPage({
@@ -102,11 +127,18 @@ function WikiPage({
       return;
     }
     if (!guesses.some(([word]) => word === entry)) {
-      setGuesses([...guesses, [entry, false]]);
+      const nextGuesses: Array<[string, boolean]> = [...guesses, [entry, false]];
+      setGuesses(nextGuesses);
       if (
-        title.every(([_, isHidden, lex]) => lex === entry || !isHidden)
+        title.some(([_, __, lex]) => lex === entry)
+        && title.every(([_, isHidden, lex]) => !isHidden || lex === entry)
       ) {
-        const newVictory = { guesses: guesses.length - hints + 1, hints };
+        const newVictory = {
+          guesses: guesses.length - hints + 1,
+          hints,
+          accuracy: calculateAccuracy(lexicon, nextGuesses),
+          revealed: calculateProgress(lexicon, freeWords, nextGuesses),
+        };
         setVictory(newVictory);
         if (gameId !== undefined) {
           setPlayerResults([...playerResults, [gameId, newVictory]]);
@@ -116,7 +148,7 @@ function WikiPage({
       handleSetFocusWord(entry);
     }
   }, [
-    freeWords, gameId, guesses, handleSetFocusWord, hints, playerResults,
+    freeWords, gameId, guesses, handleSetFocusWord, hints, lexicon, playerResults,
     setGuesses, setPlayerResults, setVictory, title,
   ]);
 
@@ -142,21 +174,15 @@ function WikiPage({
     );
   }, [freeWords, guesses, lexicon, setGuesses, title]);
 
-  const progress = useMemo(() => {
-    const total = Object.values(lexicon).reduce((acc, count) => acc + count, 0);
-    const found = [...(freeWords ?? []), ...guesses.map(([w]) => w)]
-      .reduce((acc, guess) => acc + (lexicon[guess] ?? 0), 0);
-    return Math.min(100, 100 * found / total);
-  }, [freeWords, guesses, lexicon]);
+  const progress = useMemo(
+    () => calculateProgress(lexicon, freeWords, guesses),
+    [freeWords, guesses, lexicon],
+  );
 
-  const accuracy = useMemo(() => {
-    const trueGuesses = guesses.filter(([, hinted]) => !hinted);
-    if (trueGuesses.length === 0) return 0;
-
-    return 100
-      * trueGuesses.filter(([word]) => (lexicon[word] ?? 0) > 0).length
-      / trueGuesses.length;
-  }, [guesses, lexicon]);
+  const accuracy = useMemo(
+    () => calculateAccuracy(lexicon, guesses),
+    [guesses, lexicon],
+  );
 
   return (
     <Box
@@ -185,6 +211,8 @@ function WikiPage({
               <Victory
                 guesses={victory.guesses}
                 hints={victory.hints}
+                accuracy={victory.accuracy}
+                revealed={victory.revealed}
                 onRevealAll={revealAll}
                 gameId={gameId}
               />
