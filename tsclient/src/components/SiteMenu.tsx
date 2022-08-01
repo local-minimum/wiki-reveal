@@ -50,7 +50,7 @@ function SiteMenu({
       </IconButton>
       <Menu open={open} onClose={handleClose} anchorEl={anchorEl}>
         {onShowVictory !== undefined && (
-          <MenuItem onClick={onShowVictory}>
+          <MenuItem onClick={() => { handleClose(); onShowVictory(); }}>
             <ListItemIcon>
               <FontAwesomeIcon icon={faMedal} />
             </ListItemIcon>
@@ -59,7 +59,7 @@ function SiteMenu({
             </ListItemText>
           </MenuItem>
         )}
-        <MenuItem onClick={() => setShowGameHistory(true)}>
+        <MenuItem onClick={() => { handleClose(); setShowGameHistory(true); }}>
           <ListItemIcon>
             <FontAwesomeIcon icon={faTrophy} />
           </ListItemIcon>
@@ -67,7 +67,7 @@ function SiteMenu({
             Game History
           </ListItemText>
         </MenuItem>
-        <MenuItem onClick={() => setShowAchievements(true)}>
+        <MenuItem onClick={() => { handleClose(); setShowAchievements(true); }}>
           <ListItemIcon>
             <FontAwesomeIcon icon={faStar} />
           </ListItemIcon>
@@ -75,7 +75,7 @@ function SiteMenu({
             Achievements
           </ListItemText>
         </MenuItem>
-        <MenuItem onClick={() => setShowYesterdays(true)}>
+        <MenuItem onClick={() => { handleClose(); setShowYesterdays(true); }}>
           <ListItemIcon>
             <FontAwesomeIcon icon={faUserSecret} />
           </ListItemIcon>
@@ -84,7 +84,7 @@ function SiteMenu({
           </ListItemText>
         </MenuItem>
         <Divider />
-        <MenuItem onClick={() => setShowAbout(true)}>
+        <MenuItem onClick={() => { handleClose(); setShowAbout(true); }}>
           <ListItemIcon>
             <FontAwesomeIcon icon={faInfo} />
           </ListItemIcon>
@@ -93,7 +93,7 @@ function SiteMenu({
           </ListItemText>
         </MenuItem>
         <Divider />
-        <MenuItem onClick={() => setShowWipe(true)}>
+        <MenuItem onClick={() => { handleClose(); setShowWipe(true); }}>
           <ListItemIcon>
             <FontAwesomeIcon icon={faBroom} />
           </ListItemIcon>

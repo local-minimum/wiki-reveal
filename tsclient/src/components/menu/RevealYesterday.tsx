@@ -22,27 +22,31 @@ function RevealYesterday({
   onClose, title, gameId, achievements, onSetAchievements,
 }: RevealYesterdayProps): JSX.Element {
   const [revealed, setRevealed] = React.useState<boolean[]>(
-    (title ?? []).map(() => false),
+    (title ?? []).map(([, isHidden]) => !isHidden),
   );
 
   React.useEffect(() => {
+  }, [achievements, gameId, onSetAchievements, revealed]);
+
+  const handleReveal = (idx: number) => {
+    const newRevealed = [
+      ...revealed.slice(0, idx),
+      true,
+      ...revealed.slice(idx + 1),
+    ];
+
     if (
       gameId !== undefined
-      && revealed.length > 0
+      && newRevealed.length > 0
       && achievements[Achievement.CheckYesterdaysSolution] === undefined
-      && revealed.every((v) => v)
+      && newRevealed.every((v) => v)
     ) {
       onSetAchievements(
         updateAchievements(achievements, [Achievement.CheckYesterdaysSolution], gameId),
       );
     }
-  }, [achievements, gameId, onSetAchievements, revealed]);
-
-  const handleReveal = (idx: number) => setRevealed([
-    ...revealed.slice(0, idx),
-    true,
-    ...revealed.slice(idx + 1),
-  ]);
+    return setRevealed(newRevealed);
+  };
 
   return (
     <Dialog open onClose={onClose}>

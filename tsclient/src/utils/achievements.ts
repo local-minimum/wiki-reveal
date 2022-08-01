@@ -1,5 +1,10 @@
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
-import { faCircleQuestion } from '@fortawesome/free-solid-svg-icons';
+import {
+  faAward,
+  faBrain, faCalendarCheck, faCalendarDays, faCat, faCow, faCrow, faCrown, faDna, faEye,
+  faFaceRollingEyes, faGlobe, faHandsHoldingChild, faMagnifyingGlass, faMedal,
+  faPerson, faPersonPraying, faTrophy, faUserGraduate,
+} from '@fortawesome/free-solid-svg-icons';
 import { VictoryType } from '../components/VictoryType';
 
 export enum Achievement {
@@ -66,7 +71,90 @@ type GameId = number;
 export type AchievementsType = Partial<Record<Achievement, GameId>>
 
 export function achievementToIcon(achievement: Achievement): IconProp {
-  return faCircleQuestion;
+  if ([
+    Achievement.RankTop10,
+    Achievement.RankTop20,
+    Achievement.RankTop50,
+    Achievement.RankTop100,
+  ].includes(achievement)) return faBrain;
+
+  if ([
+    Achievement.Achieve100,
+    Achievement.Accurate50,
+  ].includes(achievement)) return faGlobe;
+
+  if ([
+    Achievement.GuessMoreThan500,
+    Achievement.GuessMoreThan1000,
+  ].includes(achievement)) return faPersonPraying;
+
+  if (achievement === Achievement.LateYesterdays) return faCalendarDays;
+  if (achievement === Achievement.CheckYesterdaysSolution) return faCalendarCheck;
+
+  if ([
+    Achievement.Reveal40,
+    Achievement.Reveal50,
+    Achievement.Reveal60,
+    Achievement.Reveal70,
+    Achievement.Reveal80,
+    Achievement.Reveal90,
+    Achievement.Reveal100,
+  ].includes(achievement)) return faEye;
+
+  if (achievement === Achievement.HintMin100) return faFaceRollingEyes;
+  if ([
+    Achievement.HintMax3,
+    Achievement.HintMax10,
+  ].includes(achievement)) return faHandsHoldingChild;
+
+  if (achievement === Achievement.HintNone) return faPerson;
+
+  if ([
+    Achievement.Accurate100,
+    Achievement.Accurate90,
+    Achievement.Accurate50,
+  ].includes(achievement)) return faUserGraduate;
+
+  if (achievement === Achievement.AccurateLessThan10) return faMagnifyingGlass;
+  if (achievement === Achievement.FirstWin) return faMedal;
+
+  if ([
+    Achievement.GuessLessThan100,
+    Achievement.GuessLessThan50,
+    Achievement.GuessLessThan20,
+    Achievement.GuessSingleDigit,
+    Achievement.GuessOnlyHeaders,
+    Achievement.GuessOnlyTitle,
+  ].includes(achievement)) return faTrophy;
+
+  if (achievement === Achievement.Guess42) return faDna;
+
+  if ([
+    Achievement.Streak3,
+    Achievement.Streak10,
+    Achievement.Streak30,
+    Achievement.StreakPerfect3,
+    Achievement.StreakWise5,
+  ].includes(achievement)) return faCrown;
+
+  if ([
+    Achievement.EarlyTenMinutes,
+    Achievement.EarlyOneHour,
+  ].includes(achievement)) return faCrow;
+
+  if ([
+    Achievement.LateFiveMinutes,
+    Achievement.LateLastMinute,
+    Achievement.LateOverdue,
+  ].includes(achievement)) return faCow;
+
+  if ([
+    Achievement.SpeedOneMinute,
+    Achievement.SpeedTenMinutes,
+    Achievement.SpeedOneHour,
+  ].includes(achievement)) return faCat;
+
+  return faAward;
 }
 
 const SILVER: Achievement[] = [
@@ -110,13 +198,13 @@ export function achievementToColor(achievement: Achievement): string {
 export function achievementToTitle(achievement: Achievement): [string, string] {
   switch (achievement) {
     case Achievement.Accurate100:
-      return ['Perfect Game', 'Game with 100% accuracy'];
+      return ['Perfect', 'Game with 100% accuracy'];
     case Achievement.Accurate90:
-      return ['Next best thing', 'Game with above 90% accuracy'];
+      return ['Splendid', 'Game with above 90% accuracy'];
     case Achievement.Accurate50:
-      return ['Better than chance', 'Game with above 50% accuracy'];
+      return ['On it', 'Game with above 50% accuracy'];
     case Achievement.AccurateLessThan10:
-      return ['What are words', 'Game with less than 10% accuracy'];
+      return ['Wrods?', 'Game with less than 10% accuracy'];
     case Achievement.FirstWin:
       return ['First Win', 'Win a game'];
     case Achievement.GuessOnlyTitle:
@@ -134,7 +222,7 @@ export function achievementToTitle(achievement: Achievement): [string, string] {
     case Achievement.GuessLessThan100:
       return ['Good Game', 'Game with less than 100 guesses'];
     case Achievement.GuessMoreThan500:
-      return ['Never Give Up', 'Game with more than 500 guesses'];
+      return ['Sisyphus', 'Game with more than 500 guesses'];
     case Achievement.GuessMoreThan1000:
       return ['Don Quijote', 'Game with more than 1000 guesses'];
     case Achievement.HintNone:
@@ -144,9 +232,9 @@ export function achievementToTitle(achievement: Achievement): [string, string] {
     case Achievement.HintMax10:
       return ['Crutches', 'Game with max 10 hints'];
     case Achievement.HintMin100:
-      return ['A Little Help', 'Game with at least 100 hints'];
+      return ['Clueless', 'Game with at least 100 hints'];
     case Achievement.ContinueGuessing:
-      return ['Can\'t get enough', 'Continue guessing words after finding the solution'];
+      return ['Need More', 'Continue guessing words after finding the solution'];
     case Achievement.SpeedOneMinute:
       return ['Cheeta', 'Solve game in less than a minute'];
     case Achievement.SpeedTenMinutes:
@@ -172,17 +260,17 @@ export function achievementToTitle(achievement: Achievement): [string, string] {
     case Achievement.LateYesterdays:
       return ['Going Back', 'Solve yesterday\'s game'];
     case Achievement.Streak3:
-      return ['Triathlon', 'Solve 3 in a row'];
+      return ['Streak!', 'Solve 3 in a row'];
     case Achievement.Streak10:
-      return ['Decathlon', 'Solve 10 in a row'];
+      return ['Streakier!!', 'Solve 10 in a row'];
     case Achievement.Streak30:
-      return ['Triacontathlon', 'Solve 30 in a row'];
+      return ['Streakceiption', 'Solve 30 in a row'];
     case Achievement.StreakPerfect3:
       return ['Perfect 3', 'Solve 3 in a row with 100% accuracy'];
     case Achievement.StreakWise5:
       return ['5 Stars', 'Solve 5 in a row with less than 20 guesses'];
     case Achievement.Reveal40:
-      return ['Thourough', 'Reveal at lest 40% of the article'];
+      return ['Thorough', 'Reveal at lest 40% of the article'];
     case Achievement.Reveal50:
       return ['Meticulous', 'Reveal at lest 50% of the article'];
     case Achievement.Reveal60:
@@ -194,7 +282,7 @@ export function achievementToTitle(achievement: Achievement): [string, string] {
     case Achievement.Reveal90:
       return ['Manic', 'Reveal at lest 90% of the article'];
     case Achievement.Reveal100:
-      return ['Completionist', 'Reveal at lest 100% of the article'];
+      return ['Complete', 'Reveal at lest 100% of the article'];
     case Achievement.RankTop10:
       return ['Inspired', 'Guess the 10 most frequent words in the article'];
     case Achievement.RankTop20:
@@ -208,7 +296,7 @@ export function achievementToTitle(achievement: Achievement): [string, string] {
     case Achievement.Achieve100:
       return ['All-knowing', 'Unlock all achievements'];
     case Achievement.CheckYesterdaysSolution:
-      return ['Curious', 'Check what was yesterday\'s solution'];
+      return ['Curious', 'Check yesterday\'s solution'];
     default:
       return ['Unknown', 'This achievement doesn\'t exist'];
   }

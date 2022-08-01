@@ -3,7 +3,7 @@ import { faCircleQuestion, faClose } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   Button, Card, CardContent, Dialog, DialogActions, DialogContent, DialogContentText,
-  DialogTitle, Tooltip, Typography,
+  DialogTitle, Grid, Tooltip, Typography,
 } from '@mui/material';
 import * as React from 'react';
 import {
@@ -20,13 +20,19 @@ interface SingleAchievementProps {
 
 function HiddenAchievement(): JSX.Element {
   return (
-    <Card>
+    <Card sx={{ margin: 0.5 }}>
       <CardContent sx={{ color: 'disabled' }}>
-        <FontAwesomeIcon icon={faCircleQuestion} />
-        <Typography variant="caption">
-          Hidden achievement
+        <div>
+          <FontAwesomeIcon icon={faCircleQuestion} size="3x" />
+        </div>
+        <Typography variant="caption" sx={{ fontSize: '60%' }}>
+          Hidden
         </Typography>
-        <Typography variant="body2"><em>Locked</em></Typography>
+        <Typography variant="body2" sx={{ fontSize: '50%' }}>
+          <em>
+            Locked
+          </em>
+        </Typography>
       </CardContent>
     </Card>
   );
@@ -38,14 +44,16 @@ function SingleAchievement({
   if (gameId === undefined) return <HiddenAchievement />;
 
   return (
-    <Card>
+    <Card sx={{ margin: 0.5 }}>
       <Tooltip title={description}>
         <CardContent sx={{ color }}>
-          <FontAwesomeIcon icon={icon} />
-          <Typography variant="caption">
+          <div>
+            <FontAwesomeIcon icon={icon} size="3x" />
+          </div>
+          <Typography variant="caption" sx={{ fontSize: '70%' }}>
             {title}
           </Typography>
-          <Typography variant="body2">
+          <Typography variant="body2" sx={{ fontSize: '50%' }}>
             <em>
               Game #
               {gameId}
@@ -64,27 +72,29 @@ interface AchievementsProps {
 
 function Achievements({ onClose, achievements }: AchievementsProps): JSX.Element {
   return (
-    <Dialog open onClose={onClose}>
+    <Dialog open onClose={onClose} sx={{ maxWidth: '90vw' }}>
       <DialogTitle>Achievements</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          {Object
-            .keys(Achievement)
-            .sort((a, b) => (a < b ? -1 : 1))
-            .map((a) => {
-              const achievement = a as Achievement;
-              const [title, description] = achievementToTitle(achievement);
-              return (
-                <SingleAchievement
-                  key={a}
-                  gameId={achievements[achievement]}
-                  icon={achievementToIcon(achievement)}
-                  title={title}
-                  description={description}
-                  color={achievementToColor(achievement)}
-                />
-              );
-            })}
+          <Grid container alignItems="stretch">
+            {Object
+              .values(Achievement)
+              .sort((a, b) => (a < b ? -1 : 1))
+              .map((achievement) => {
+                const [title, description] = achievementToTitle(achievement);
+                return (
+                  <Grid key={achievement} item lg={2} md={3} sm={4} xs={6}>
+                    <SingleAchievement
+                      gameId={achievements[achievement]}
+                      icon={achievementToIcon(achievement)}
+                      title={title}
+                      description={description}
+                      color={achievementToColor(achievement)}
+                    />
+                  </Grid>
+                );
+              })}
+          </Grid>
         </DialogContentText>
       </DialogContent>
       <DialogActions>
