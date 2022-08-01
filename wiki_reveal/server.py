@@ -6,7 +6,7 @@ from flask import Flask, Response, abort, jsonify
 from wiki_reveal.exceptions import WikiError
 from wiki_reveal.game_id import get_game_id
 
-from wiki_reveal.wiki import get_game_page_name, get_page
+from wiki_reveal.wiki import get_game_page_name, get_page, tokenize
 
 logging.basicConfig(
     level=int(os.environ.get("WR_LOGLEVEL", logging.INFO)),
@@ -38,7 +38,7 @@ def page(language: str = 'en', game_id: Optional[int] = None):
       logging.exception('Unexpected error occured')
       abort(HTTPStatus.INTERNAL_SERVER_ERROR)
 
-    return jsonify({
+    response_data = {
       'language': language,
       'gameId': active_id,
       'pageName': page_name,
@@ -46,4 +46,10 @@ def page(language: str = 'en', game_id: Optional[int] = None):
         page_name,
         language=language,
       ).to_json(),
-    })
+    }
+
+    if active_id > 0:
+      yesterday = get_game_page_name(active_id - 1)
+      response_data['yesterdaysTitle'] = tuple(tokenize(yesterday.replace('_', ' ')))
+
+    return jsonify(response_data)

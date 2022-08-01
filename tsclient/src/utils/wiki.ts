@@ -17,7 +17,7 @@ export function wordAsLexicalEntry(word: string): string {
     .replace(/[žźż]/g, 'z');
 }
 
-function unmaskTokens(
+export function unmaskTokens(
   tokens: LexicalizedToken[],
   words: string[],
   unmasked: boolean,

@@ -2,7 +2,7 @@ import { allowedWords } from '../data/allowedWords';
 import { LexicalizedToken, Page, Section } from '../types/wiki';
 import { createLexicon } from '../utils/lexicon';
 import {
-  splitParagraphs, trimSections, unmaskPage, wordAsLexicalEntry,
+  splitParagraphs, trimSections, unmaskPage, unmaskTokens, wordAsLexicalEntry,
 } from '../utils/wiki';
 
 type Token = [token: string, isHidden: boolean];
@@ -25,6 +25,7 @@ interface ResponseJSON {
   gameId: number;
   pageName: string;
   page: ResponsePage;
+  yesterdaysTitle: Token[] | undefined;
 }
 
 function lexicalizeToken([word, isHidden]: Token): LexicalizedToken {
@@ -35,18 +36,18 @@ function transformSection({
   title, paragraphs, depth, sections,
 }: ResponseSection): Section {
   return {
-    title: title.map((token) => lexicalizeToken(token)),
+    title: title.map(lexicalizeToken),
     depth,
-    paragraphs: splitParagraphs(paragraphs.map((token) => lexicalizeToken(token))),
-    sections: sections.map((section) => transformSection(section)),
+    paragraphs: splitParagraphs(paragraphs.map(lexicalizeToken)),
+    sections: sections.map(transformSection),
   };
 }
 
 function transformPage({ title, summary, sections }: ResponsePage): Page {
   return {
-    title: title.map((token) => lexicalizeToken(token)),
-    summary: splitParagraphs(summary.map((token) => lexicalizeToken(token))),
-    sections: sections.map((section) => transformSection(section)),
+    title: title.map(lexicalizeToken),
+    summary: splitParagraphs(summary.map(lexicalizeToken)),
+    sections: sections.map(transformSection),
   };
 }
 
@@ -68,6 +69,11 @@ export function getPage() {
         gameId: data.gameId,
         pageName: data.pageName,
         language: data.language,
+        yesterdaysTitle: data.yesterdaysTitle === undefined ? undefined : unmaskTokens(
+          data.yesterdaysTitle.map(lexicalizeToken),
+          freeWords,
+          false,
+        ),
       };
     });
 }

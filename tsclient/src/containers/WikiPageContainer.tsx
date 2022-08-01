@@ -12,7 +12,7 @@ function WikiPageContainer(): JSX.Element {
     getPage,
   );
   const {
-    page, freeWords, lexicon, gameId, language, pageName,
+    page, freeWords, lexicon, gameId, language, pageName, yesterdaysTitle,
   } = data ?? { lexicon: {} as Record<string, number> };
 
   const [titleLexes, headingLexes] = React.useMemo(() => {
@@ -46,6 +46,7 @@ function WikiPageContainer(): JSX.Element {
       page={page}
       titleLexes={titleLexes}
       headingLexes={headingLexes}
+      yesterdaysTitle={yesterdaysTitle}
     />
   );
 }

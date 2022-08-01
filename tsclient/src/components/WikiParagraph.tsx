@@ -13,7 +13,7 @@ const Blocked = styled('span')({
 });
 const regex = /./gi;
 
-function WordBlock({ word }: WordBlockProps): JSX.Element {
+export function WordBlock({ word }: WordBlockProps): JSX.Element {
   return (
     <Blocked>{word.replace(regex, '\u00A0')}</Blocked>
   );
@@ -40,7 +40,7 @@ interface RevealedWordProps {
   scrollTo: boolean;
 }
 
-function RevealedWord({ word, focused, scrollTo }: RevealedWordProps): JSX.Element {
+export function RevealedWord({ word, focused, scrollTo }: RevealedWordProps): JSX.Element {
   const ref = React.useRef<HTMLSpanElement | null>(null);
   React.useEffect(() => {
     if (scrollTo) {

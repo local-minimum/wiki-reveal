@@ -6,28 +6,14 @@ import { useMemo } from 'react';
 
 import useClearStoredValues from '../hooks/useClearStoredValues';
 import useStoredValue from '../hooks/useStoredValue';
-import { Page } from '../types/wiki';
+import { LexicalizedToken, Page } from '../types/wiki';
 import { unmaskPage, wordAsLexicalEntry } from '../utils/wiki';
 import GuessInput from './GuessInput';
 import GuessTable from './GuessTable';
 import RedactedPage from './RedactedPage';
 import SiteMenu from './SiteMenu';
 import Victory from './Victory';
-
-/* Palette
-#25283D
-#8F3985
-#A675A1
-#CEA2AC
-#EFD9CE
-*/
-
-interface VictoryType {
-  guesses: number;
-  hints: number;
-  revealed: number;
-  accuracy: number;
-}
+import { VictoryType } from './VictoryType';
 
 function randomEntry<T>(arr: T[]): T {
   return arr[Math.min(Math.floor(Math.random() * arr.length), arr.length - 1)];
@@ -46,6 +32,7 @@ interface WikiPageProps {
   page: Page | undefined;
   titleLexes: string[];
   headingLexes: string[];
+  yesterdaysTitle: LexicalizedToken[] | undefined;
 }
 
 function calculateProgress(
@@ -73,7 +60,7 @@ function calculateAccuracy(
 
 function WikiPage({
   isLoading, isError, freeWords, lexicon, gameId, language, pageName, page,
-  titleLexes, headingLexes,
+  titleLexes, headingLexes, yesterdaysTitle,
 }: WikiPageProps): JSX.Element {
   const [guesses, setGuesses] = useStoredValue<Array<[word: string, hinted: boolean]>>(`guesses-${gameId}`, []);
   const [victory, setVictory] = useStoredValue<VictoryType | null>(`victory-${gameId}`, null);
@@ -133,12 +120,14 @@ function WikiPage({
       if (
         title.some(([_, __, lex]) => lex === entry)
         && title.every(([_, isHidden, lex]) => !isHidden || lex === entry)
+        && pageName !== undefined
       ) {
         const newVictory = {
           guesses: guesses.length - hints + 1,
           hints,
           accuracy: calculateAccuracy(lexicon, nextGuesses),
           revealed: calculateProgress(lexicon, freeWords, nextGuesses),
+          pageName,
         };
         setVictory(newVictory);
         if (gameId !== undefined) {
@@ -150,7 +139,7 @@ function WikiPage({
     }
   }, [
     freeWords, gameId, guesses, handleSetFocusWord, hints, lexicon, playerResults,
-    setGuesses, setPlayerResults, setVictory, title,
+    setGuesses, setPlayerResults, setVictory, title, pageName,
   ]);
 
   const addHint = React.useCallback((): void => {
@@ -195,7 +184,7 @@ function WikiPage({
         overflow: 'hidden',
       }}
     >
-      <SiteMenu />
+      <SiteMenu yesterdaysTitle={yesterdaysTitle} />
       <Grid
         container
         spacing={0}
