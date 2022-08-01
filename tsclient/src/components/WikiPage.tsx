@@ -11,6 +11,7 @@ import { unmaskPage, wordAsLexicalEntry } from '../utils/wiki';
 import GuessInput from './GuessInput';
 import GuessTable from './GuessTable';
 import RedactedPage from './RedactedPage';
+import SiteMenu from './SiteMenu';
 import Victory from './Victory';
 
 /* Palette
@@ -194,6 +195,7 @@ function WikiPage({
         overflow: 'hidden',
       }}
     >
+      <SiteMenu />
       <Grid
         container
         spacing={0}
