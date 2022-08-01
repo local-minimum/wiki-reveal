@@ -199,7 +199,7 @@ function WikiPage({
         spacing={0}
         sx={{ height: '100%' }}
       >
-        <Grid item xs={8} sx={{ height: '100vh', overflow: 'hidden', backgroundColor: '#EFD9CE' }}>
+        <Grid item sm={7} md={8} sx={{ height: '100vh', overflow: 'hidden', backgroundColor: '#EFD9CE' }}>
           <TableContainer component="div" sx={{ height: '100%' }} ref={articleRef}>
             {isError && <Alert severity="error">Could not load the article, perhaps try again later or wait for tomorrow</Alert>}
             <Tooltip title={`${progress.toFixed(1)}% of article revealed.`}>
@@ -234,7 +234,8 @@ function WikiPage({
         </Grid>
         <Grid
           item
-          xs={4}
+          sm={5}
+          md={4}
           flexDirection="column"
           gap={1}
           sx={{

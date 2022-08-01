@@ -2,6 +2,7 @@ import { faHeading, faPuzzlePiece, faStar } from '@fortawesome/free-solid-svg-ic
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip,
+  useMediaQuery, useTheme,
 } from '@mui/material';
 import * as React from 'react';
 import usePrevious from '../hooks/usePrevious';
@@ -110,40 +111,65 @@ function GuessTable({
     return Object.fromEntries(sorted.map(([word], idx) => [word, idx + 1]));
   }, [freeWords, lexicon]);
 
+  const theme = useTheme();
+  const isCramped = useMediaQuery(theme.breakpoints.down('lg'));
+
   const tableContainerRef = React.useRef<HTMLDivElement | null>(null);
   const firstRowId = 'first-guess-row';
+  const [showSort, setShowSort] = React.useState(false);
 
   return (
     <TableContainer sx={{ height: '100%' }} ref={tableContainerRef}>
       <Table size="small" stickyHeader>
         <TableHead>
-          <TableRow sx={{ cursor: 'pointer' }}>
-            <TableCell onClick={() => changeSort('order')}>
+          <TableRow
+            sx={{ cursor: 'pointer' }}
+            onMouseEnter={() => setShowSort(true)}
+            onMouseLeave={() => setShowSort(false)}
+          >
+            <TableCell
+              onClick={() => changeSort('order')}
+              title="Guess order"
+            >
               #
-              <Box component="span" sx={{ float: 'right' }}>
-                <SortIcon filter="order" sortType={sortType} sortVariant={sortVariant} />
-              </Box>
+              {(showSort || !isCramped) && (
+                <Box component="span" sx={{ float: 'right' }}>
+                  <SortIcon filter="order" sortType={sortType} sortVariant={sortVariant} />
+                </Box>
+              )}
             </TableCell>
-            <TableCell onClick={() => changeSort('alphabetical')}>
+            <TableCell
+              onClick={() => changeSort('alphabetical')}
+              title="The lexical entry of your guess (lower case and removing diacritics)."
+            >
               Guess
-              <Box component="span" sx={{ float: 'right' }}>
-                <SortIcon filter="alphabetical" sortType={sortType} sortVariant={sortVariant} />
-              </Box>
+              {(showSort || !isCramped) && (
+                <Box component="span" sx={{ float: 'right' }}>
+                  <SortIcon filter="alphabetical" sortType={sortType} sortVariant={sortVariant} />
+                </Box>
+              )}
             </TableCell>
-            <TableCell onClick={() => changeSort('count')}>
-              Count
-              <Box component="span" sx={{ float: 'right' }}>
-                <SortIcon filter="count" sortType={sortType} sortVariant={sortVariant} />
-              </Box>
+            <TableCell
+              onClick={() => changeSort('count')}
+              title="Number of occurances (if any) in article."
+            >
+              {isCramped ? 'n' : 'Count' }
+              {(showSort || !isCramped) && (
+                <Box component="span" sx={{ float: 'right' }}>
+                  <SortIcon filter="count" sortType={sortType} sortVariant={sortVariant} />
+                </Box>
+              )}
             </TableCell>
             <TableCell
               title="Most frequent word has rank 1, second most rank 2 and so on."
               onClick={() => changeSort('rank')}
             >
               Rank
-              <Box component="span" sx={{ float: 'right' }}>
-                <SortIcon filter="rank" sortType={sortType} sortVariant={sortVariant} />
-              </Box>
+              {(showSort || !isCramped) && (
+                <Box component="span" sx={{ float: 'right' }}>
+                  <SortIcon filter="rank" sortType={sortType} sortVariant={sortVariant} />
+                </Box>
+              )}
             </TableCell>
           </TableRow>
         </TableHead>
