@@ -17,7 +17,7 @@ from wiki_reveal.exceptions import (
 from wiki_reveal.nice_random import get_option
 
 tokenizer = re.compile(
-    r'[             \t\n\r\v\f:;,.⋯…<>/\\~`\'"!?@#$%^&*()[\]{}|=+-\-–—− _→?\‑]+',  # noqa: E501
+    r'[             \t\n\r\v\f:;,.⋯…<>/\\~`\'"!?@#$%^&*°()[\]{}|=+-\-–—− _→?\‑]+',  # noqa: E501
 )
 Token = tuple[str, bool]
 Paragraph = tuple[Token, ...]
