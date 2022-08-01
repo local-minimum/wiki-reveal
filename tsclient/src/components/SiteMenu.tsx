@@ -1,5 +1,5 @@
 import {
-  faBars, faBroom, faInfo, faStar, faTrophy, faUserSecret,
+  faBars, faBroom, faInfo, faMedal, faStar, faTrophy, faUserSecret,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -7,6 +7,7 @@ import {
 } from '@mui/material';
 import * as React from 'react';
 import { LexicalizedToken } from '../types/wiki';
+import { AchievementsType } from '../utils/achievements';
 import Achievements from './menu/Achievements';
 import InfoDialog from './menu/InfoDialog';
 import RevealYesterday from './menu/RevealYesterday';
@@ -15,9 +16,15 @@ import WipeDataDialog from './menu/WipeDataDialog';
 
 interface SiteMenuProps {
   yesterdaysTitle: LexicalizedToken[] | undefined;
+  onShowVictory: (() => void) | undefined;
+  achievements: AchievementsType;
+  onSetAchievements: (achievements: AchievementsType) => void;
+  gameId: number | undefined;
 }
 
-function SiteMenu({ yesterdaysTitle }: SiteMenuProps): JSX.Element {
+function SiteMenu({
+  yesterdaysTitle, onShowVictory, achievements, onSetAchievements, gameId,
+}: SiteMenuProps): JSX.Element {
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null);
   const open = Boolean(anchorEl);
   const handleButtonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -42,6 +49,16 @@ function SiteMenu({ yesterdaysTitle }: SiteMenuProps): JSX.Element {
         <FontAwesomeIcon icon={faBars} size="1x" />
       </IconButton>
       <Menu open={open} onClose={handleClose} anchorEl={anchorEl}>
+        {onShowVictory !== undefined && (
+          <MenuItem onClick={onShowVictory}>
+            <ListItemIcon>
+              <FontAwesomeIcon icon={faMedal} />
+            </ListItemIcon>
+            <ListItemText>
+              Show Current Victory
+            </ListItemText>
+          </MenuItem>
+        )}
         <MenuItem onClick={() => setShowGameHistory(true)}>
           <ListItemIcon>
             <FontAwesomeIcon icon={faTrophy} />
@@ -88,9 +105,17 @@ function SiteMenu({ yesterdaysTitle }: SiteMenuProps): JSX.Element {
       {showWipe && <WipeDataDialog onClose={() => setShowWipe(false)} />}
       {showAbout && <InfoDialog onClose={() => setShowAbout(false)} />}
       {showGameHistory && <VictoryHistory onClose={() => setShowGameHistory(false)} />}
-      {showAchievements && <Achievements onClose={() => setShowAchievements(false)} />}
+      {showAchievements && (
+        <Achievements achievements={achievements} onClose={() => setShowAchievements(false)} />
+      )}
       {showYesterdays && (
-        <RevealYesterday onClose={() => setShowYesterdays(false)} title={yesterdaysTitle} />
+        <RevealYesterday
+          onClose={() => setShowYesterdays(false)}
+          title={yesterdaysTitle}
+          achievements={achievements}
+          onSetAchievements={onSetAchievements}
+          gameId={gameId}
+        />
       )}
     </>
   );

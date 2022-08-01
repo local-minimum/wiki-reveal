@@ -25,6 +25,8 @@ interface ResponseJSON {
   gameId: number;
   pageName: string;
   page: ResponsePage;
+  start: string;
+  end: string;
   yesterdaysTitle: Token[] | undefined;
 }
 
@@ -69,6 +71,8 @@ export function getPage() {
         gameId: data.gameId,
         pageName: data.pageName,
         language: data.language,
+        start: new Date(data.start),
+        end: new Date(data.end),
         yesterdaysTitle: data.yesterdaysTitle === undefined ? undefined : unmaskTokens(
           data.yesterdaysTitle.map(lexicalizeToken),
           freeWords,

@@ -7,17 +7,37 @@ import {
 } from '@mui/material';
 import * as React from 'react';
 import { LexicalizedToken } from '../../types/wiki';
+import { Achievement, AchievementsType, updateAchievements } from '../../utils/achievements';
 import { RevealedWord, WordBlock } from '../WikiParagraph';
 
 interface RevealYesterdayProps {
   onClose: () => void;
   title: LexicalizedToken[] | undefined;
+  gameId: number | undefined;
+  achievements: AchievementsType;
+  onSetAchievements: (achievements: AchievementsType) => void;
 }
 
-function RevealYesterday({ onClose, title }: RevealYesterdayProps): JSX.Element {
+function RevealYesterday({
+  onClose, title, gameId, achievements, onSetAchievements,
+}: RevealYesterdayProps): JSX.Element {
   const [revealed, setRevealed] = React.useState<boolean[]>(
     (title ?? []).map(() => false),
   );
+
+  React.useEffect(() => {
+    if (
+      gameId !== undefined
+      && revealed.length > 0
+      && achievements[Achievement.CheckYesterdaysSolution] === undefined
+      && revealed.every((v) => v)
+    ) {
+      onSetAchievements(
+        updateAchievements(achievements, [Achievement.CheckYesterdaysSolution], gameId),
+      );
+    }
+  }, [achievements, gameId, onSetAchievements, revealed]);
+
   const handleReveal = (idx: number) => setRevealed([
     ...revealed.slice(0, idx),
     true,

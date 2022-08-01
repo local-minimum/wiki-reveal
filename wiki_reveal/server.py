@@ -1,10 +1,10 @@
 from http import HTTPStatus
 import logging
 import os
-from typing import Optional
+from typing import Any, Optional
 from flask import Flask, Response, abort, jsonify
 from wiki_reveal.exceptions import WikiError
-from wiki_reveal.game_id import get_game_id
+from wiki_reveal.game_id import get_game_id, get_start_and_end
 
 from wiki_reveal.wiki import get_game_page_name, get_page, tokenize
 
@@ -21,16 +21,10 @@ def root():
     return Response("""Yes,\nthe server is online.\n""")
 
 
-@app.get('/api/page')
-@app.get('/api/page/<language>')
-# @app.get('/api/page/<language>/<int: game_id>')
-def page(language: str = 'en', game_id: Optional[int] = None):
+def get_page_payload(language: str, game_id: int) -> dict[str, Any]:
+    start, end = get_start_and_end(game_id)
     try:
-      current_id = get_game_id()
-      active_id = min(current_id if game_id is None else game_id, current_id)
-      logging.info(f'Request for game with id {active_id} ({language})')
-
-      page_name = get_game_page_name(active_id)
+      page_name = get_game_page_name(game_id)
     except WikiError:
       logging.exception('Could not load game page')
       abort(HTTPStatus.INTERNAL_SERVER_ERROR)
@@ -38,9 +32,11 @@ def page(language: str = 'en', game_id: Optional[int] = None):
       logging.exception('Unexpected error occured')
       abort(HTTPStatus.INTERNAL_SERVER_ERROR)
 
-    response_data = {
+    return {
+      'start': start,
+      'end': end,
       'language': language,
-      'gameId': active_id,
+      'gameId': game_id,
       'pageName': page_name,
       'page': get_page(
         page_name,
@@ -48,8 +44,33 @@ def page(language: str = 'en', game_id: Optional[int] = None):
       ).to_json(),
     }
 
-    if active_id > 0:
-      yesterday = get_game_page_name(active_id - 1)
+
+@app.get('/api/yesterday')
+@app.get('/api/yesterday/<language>')
+def yesterday(language: str = 'en'):
+    current_id = get_game_id() - 1
+    if (current_id < 0):
+      logging.error('Request for yesterday\'s game though today is the first game')
+      abort(HTTPStatus.BAD_REQUEST)
+
+    logging.info(f'Request for yesterday\'s game with id {current_id} ({language})')
+
+    response_data = get_page_payload(language, current_id)
+    response_data['isYesterday'] = True
+
+    return jsonify(response_data)
+
+
+@app.get('/api/page')
+@app.get('/api/page/<language>')
+def page(language: str = 'en'):
+    current_id = get_game_id()
+    logging.info(f'Request for game with id {current_id} ({language})')
+
+    response_data = get_page_payload(language, current_id)
+
+    if current_id > 0:
+      yesterday = get_game_page_name(current_id - 1)
       response_data['yesterdaysTitle'] = tuple(tokenize(yesterday.replace('_', ' ')))
 
     return jsonify(response_data)

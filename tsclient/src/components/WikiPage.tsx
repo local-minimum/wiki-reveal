@@ -7,6 +7,11 @@ import { useMemo } from 'react';
 import useClearStoredValues from '../hooks/useClearStoredValues';
 import useStoredValue from '../hooks/useStoredValue';
 import { LexicalizedToken, Page } from '../types/wiki';
+import {
+  Achievement,
+  AchievementsType, checkAchievementsPercent, checkRankAchievements,
+  checkRevealAchievements, checkVictoryAchievements, updateAchievements,
+} from '../utils/achievements';
 import { unmaskPage, wordAsLexicalEntry } from '../utils/wiki';
 import GuessInput from './GuessInput';
 import GuessTable from './GuessTable';
@@ -19,7 +24,7 @@ function randomEntry<T>(arr: T[]): T {
   return arr[Math.min(Math.floor(Math.random() * arr.length), arr.length - 1)];
 }
 
-const CASH_KEYS = ['guesses', 'victory'];
+const CASH_KEYS = ['guesses', 'victory', 'start'];
 
 interface WikiPageProps {
   isLoading: boolean;
@@ -33,6 +38,8 @@ interface WikiPageProps {
   titleLexes: string[];
   headingLexes: string[];
   yesterdaysTitle: LexicalizedToken[] | undefined;
+  start: Date | undefined;
+  end: Date | undefined;
 }
 
 function calculateProgress(
@@ -60,13 +67,24 @@ function calculateAccuracy(
 
 function WikiPage({
   isLoading, isError, freeWords, lexicon, gameId, language, pageName, page,
-  titleLexes, headingLexes, yesterdaysTitle,
+  titleLexes, headingLexes, yesterdaysTitle, start, end,
 }: WikiPageProps): JSX.Element {
   const [guesses, setGuesses] = useStoredValue<Array<[word: string, hinted: boolean]>>(`guesses-${gameId}`, []);
   const [victory, setVictory] = useStoredValue<VictoryType | null>(`victory-${gameId}`, null);
+  const [playStart, setPlayStart] = useStoredValue<string| null>(`start-${gameId}`, null);
+  const [victoryVisible, setVictoryVisible] = React.useState<boolean>(true);
   const [playerResults, setPlayerResults] = useStoredValue<Array<[number, VictoryType]>>('player-results', []);
+  const [achievements, setAchievements] = useStoredValue<AchievementsType>('achievements', {});
 
-  useClearStoredValues(gameId, CASH_KEYS);
+  useClearStoredValues(gameId, CASH_KEYS, 2);
+
+  React.useEffect(
+    () => {
+      if (gameId === undefined) return;
+      setPlayStart(new Date().toISOString());
+    },
+    [gameId, setPlayStart],
+  );
 
   const [unmasked, setUnmasked] = React.useState(false);
   const [[focusWord, focusWordIndex], setFocusWord] = React
@@ -110,6 +128,8 @@ function WikiPage({
   );
 
   const addGuess = React.useCallback((currentGuess: string): void => {
+    if (gameId === undefined) return;
+
     const entry = wordAsLexicalEntry(currentGuess);
     if (freeWords?.includes(entry)) {
       return;
@@ -117,11 +137,29 @@ function WikiPage({
     if (!guesses.some(([word]) => word === entry)) {
       const nextGuesses: Array<[string, boolean]> = [...guesses, [entry, false]];
       setGuesses(nextGuesses);
+
+      let newAchievements = [];
+      if (victory !== null && achievements[Achievement.ContinueGuessing] === undefined) {
+        newAchievements.push(Achievement.ContinueGuessing);
+      }
+
+      newAchievements = [
+        ...newAchievements,
+        ...checkRankAchievements(nextGuesses, lexicon)
+          .filter((achievement) => achievements[achievement] === undefined),
+      ];
+
       if (
         title.some(([_, __, lex]) => lex === entry)
         && title.every(([_, isHidden, lex]) => !isHidden || lex === entry)
         && pageName !== undefined
       ) {
+        const playEnd = new Date();
+        const playDuration = playStart === null ? null : (
+          Math.floor(playEnd.getTime() / 1000)
+          - Math.floor(new Date(playStart).getTime() / 1000)
+        );
+
         const newVictory = {
           guesses: guesses.length - hints + 1,
           hints,
@@ -130,16 +168,39 @@ function WikiPage({
           pageName,
         };
         setVictory(newVictory);
-        if (gameId !== undefined) {
-          setPlayerResults([...playerResults, [gameId, newVictory]]);
+        const newVictoryAchievements = checkVictoryAchievements(
+          gameId,
+          newVictory,
+          nextGuesses,
+          titleLexes,
+          headingLexes,
+          playerResults,
+          playDuration,
+          playEnd,
+          start,
+          end,
+        )
+          .filter((achievement) => achievements[achievement] === undefined);
+        if (newVictoryAchievements.length) {
+          setAchievements(
+            updateAchievements(
+              achievements,
+              [...newAchievements, ...newVictoryAchievements],
+              gameId,
+            ),
+          );
         }
+        setPlayerResults([...playerResults, [gameId, newVictory]]);
+      } else if (newAchievements.length > 0) {
+        setAchievements(updateAchievements(achievements, newAchievements, gameId));
       }
     } else {
       handleSetFocusWord(entry);
     }
   }, [
     freeWords, gameId, guesses, handleSetFocusWord, hints, lexicon, playerResults,
-    setGuesses, setPlayerResults, setVictory, title, pageName,
+    setGuesses, setPlayerResults, setVictory, title, pageName, achievements, setAchievements,
+    titleLexes, headingLexes, victory, playStart, start, end,
   ]);
 
   const addHint = React.useCallback((): void => {
@@ -169,6 +230,24 @@ function WikiPage({
     [freeWords, guesses, lexicon],
   );
 
+  React.useEffect(() => {
+    if (gameId === undefined) return;
+    const progressAchievements = checkRevealAchievements(progress)
+      .filter((a) => achievements[a] === undefined);
+    if (progressAchievements.length > 0) {
+      setAchievements(updateAchievements(achievements, progressAchievements, gameId));
+    }
+  }, [achievements, gameId, progress, setAchievements]);
+
+  React.useEffect(() => {
+    if (gameId === undefined) return;
+    const percentAchievements = checkAchievementsPercent(achievements)
+      .filter((a) => achievements[a] === undefined);
+    if (percentAchievements.length > 0) {
+      setAchievements(updateAchievements(achievements, percentAchievements, gameId));
+    }
+  }, [achievements, gameId, setAchievements]);
+
   const accuracy = useMemo(
     () => calculateAccuracy(lexicon, guesses),
     [guesses, lexicon],
@@ -184,7 +263,15 @@ function WikiPage({
         overflow: 'hidden',
       }}
     >
-      <SiteMenu yesterdaysTitle={yesterdaysTitle} />
+      <SiteMenu
+        yesterdaysTitle={yesterdaysTitle}
+        onShowVictory={
+          victory !== null && !victoryVisible ? () => setVictoryVisible(true) : undefined
+        }
+        achievements={achievements}
+        onSetAchievements={setAchievements}
+        gameId={gameId}
+      />
       <Grid
         container
         spacing={0}
@@ -208,6 +295,8 @@ function WikiPage({
                 revealed={victory.revealed}
                 onRevealAll={revealAll}
                 gameId={gameId}
+                visible={victoryVisible}
+                onSetVisible={setVictoryVisible}
               />
             )}
             <RedactedPage
