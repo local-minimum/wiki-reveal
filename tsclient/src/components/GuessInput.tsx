@@ -41,14 +41,14 @@ function GuessInput({
       <Tooltip title="Enter guess">
         <TextField
           sx={{ flex: 1 }}
-          disabled={isLoading || isError || isDone || unmasked || hasIllegal}
+          disabled={isLoading || isError || isDone || unmasked}
           variant="outlined"
           focused
           color={isFreeWord || hasIllegal ? 'warning' : undefined}
           value={currentGuess}
           onChange={({ target: { value } }) => setCurrentGuess(value)}
           onKeyDown={({ key }) => {
-            if (key === 'Enter' && currentGuess.length > 0 && !isFreeWord) {
+            if (key === 'Enter' && currentGuess.length > 0 && !isFreeWord && !hasIllegal) {
               setCurrentGuess('');
               onAddGuess(currentGuess);
             }
