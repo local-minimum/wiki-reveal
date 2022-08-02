@@ -25,10 +25,16 @@ function Victory({
   hints, guesses, gameId, onRevealAll, accuracy, revealed, visible, onSetVisible,
   achievements,
 }: VictoryProps): JSX.Element {
+  const newAchievements = Object
+    .values(Achievement)
+    .filter((achievement) => achievements[achievement] === gameId);
+
   const handleShare = () => {
+    const nAchieve = newAchievements.length;
     const total = guesses + hints;
+    const hasAchievements = nAchieve === 0 ? '' : ` earning me ${nAchieve} new achievement${nAchieve === 1 ? '' : 's'}`;
     const msg = `I solved Wiki-Reveal #${gameId} in ${total} guess${total === 1 ? '' : 'es'} using ${hints} hint${hints === 1 ? '' : 's'}!
-My accuracy was ${accuracy.toFixed(1)}% revealing ${revealed.toFixed(1)}% of the article.`;
+My accuracy was ${accuracy.toFixed(1)}% revealing ${revealed.toFixed(1)}% of the article${hasAchievements}.`;
     navigator.clipboard.writeText(msg);
   };
 
@@ -61,9 +67,7 @@ My accuracy was ${accuracy.toFixed(1)}% revealing ${revealed.toFixed(1)}% of the
           </Typography>
         </DialogContentText>
         <Grid container alignItems="stretch">
-          {Object
-            .values(Achievement)
-            .filter((achievement) => achievements[achievement] === gameId)
+          {newAchievements
             .sort((a, b) => (a < b ? -1 : 1))
             .map((achievement) => {
               const [title, description] = achievementToTitle(achievement);

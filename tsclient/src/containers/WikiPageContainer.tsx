@@ -7,10 +7,22 @@ import { Section } from '../types/wiki';
 import uniq from '../utils/uniq';
 
 function WikiPageContainer(): JSX.Element {
+  const [staleTime, setStaleTime] = React.useState<number>(Infinity);
+
   const { isLoading, isError, data } = useQuery(
     ['page'],
     getPage,
+    {
+      staleTime,
+      onSuccess: ({ end: endTime }) => {
+        const remaining = endTime.getTime() - new Date().getTime();
+        // Keep stale until just after next game publication
+        // Allows for a certain achievement
+        setStaleTime(remaining + 1000 + Math.random() * 2000);
+      },
+    },
   );
+
   const {
     page, freeWords, lexicon, gameId, language, pageName, yesterdaysTitle,
     start, end,
