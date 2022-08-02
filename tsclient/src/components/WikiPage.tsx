@@ -77,7 +77,8 @@ function WikiPage({
     enqueueSnackbar(
       (
         <>
-          <strong>Achievement: </strong>
+          <strong>Achievement:</strong>
+          {' '}
           {achievementToTitle(achievement)[0]}
         </>
       ),

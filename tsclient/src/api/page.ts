@@ -54,7 +54,7 @@ function transformPage({ title, summary, sections }: ResponsePage): Page {
 }
 
 export function getPage() {
-  return fetch('/api/page')
+  return fetch('api/page')
     .then(((result): Promise<ResponseJSON> => {
       if (result.ok) return result.json();
       throw new Error('Failed to download page');

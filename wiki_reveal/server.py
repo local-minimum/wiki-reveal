@@ -13,13 +13,10 @@ logging.basicConfig(
     format="%(asctime)s  %(levelname)s  %(message)s",
 )
 
-ROOT = f"/{os.environ.get('WR_ROOT', '').strip('/')}".rstrip('/')
-logging.info(f"Using web root '{ROOT}'")
-
 app = Flask('Wiki-Reveal')
 
 
-@app.get(f'{ROOT}/api/test.txt')
+@app.get(f'/api/test.txt')
 def root():
     return Response("""Yes,\nthe server is online.\n""")
 
@@ -48,8 +45,8 @@ def get_page_payload(language: str, game_id: int) -> dict[str, Any]:
     }
 
 
-@app.get(f'{ROOT}/api/yesterday')
-@app.get(f'{ROOT}/api/yesterday/<language>')
+@app.get(f'/api/yesterday')
+@app.get(f'/api/yesterday/<language>')
 def yesterday(language: str = 'en'):
     current_id = get_game_id() - 1
     if (current_id < 0):
@@ -64,8 +61,8 @@ def yesterday(language: str = 'en'):
     return jsonify(response_data)
 
 
-@app.get(f'{ROOT}/api/page')
-@app.get(f'{ROOT}/api/page/<language>')
+@app.get(f'/api/page')
+@app.get(f'/api/page/<language>')
 def page(language: str = 'en'):
     current_id = get_game_id()
     logging.info(f'Request for game with id {current_id} ({language})')

@@ -22,6 +22,7 @@ function LoadFail(): JSX.Element {
           <Typography>
             However, should there be cause for concern consider reporting
             an issue on
+            {' '}
             <Link href="https://github.com/local-minimum/wiki-reveal/issues">
               Github
             </Link>

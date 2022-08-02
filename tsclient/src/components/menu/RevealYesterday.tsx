@@ -51,7 +51,8 @@ function RevealYesterday({
       enqueueSnackbar(
         (
           <>
-            <strong>Achievement: </strong>
+            <strong>Achievement:</strong>
+            {' '}
             {achievementToTitle(Achievement.CheckYesterdaysSolution)[0]}
           </>
         ),
