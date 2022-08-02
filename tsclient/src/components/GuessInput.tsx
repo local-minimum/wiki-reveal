@@ -15,19 +15,20 @@ interface GuessInputProps {
   freeWords: string[] | undefined;
   onAddGuess: (word: string) => void;
   onAddHint: () => void;
+  compact?: boolean;
 }
 
 function GuessInput({
   isLoading, isError, isDone, unmasked, hints, onAddGuess, onAddHint, freeWords,
+  compact = false,
 }: GuessInputProps): JSX.Element {
   const [currentGuess, setCurrentGuess] = React.useState('');
   const theme = useTheme();
   const isExtraLarge = useMediaQuery(theme.breakpoints.up('xl'));
-  const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
   const isFreeWord = currentGuess !== '' && freeWords?.includes(wordAsLexicalEntry(currentGuess));
 
   return (
-    <Stack direction="row" gap={1} sx={isSmall ? { fontSize: '80%' } : undefined}>
+    <Stack direction="row" gap={1}>
       <Tooltip title="Enter guess">
         <TextField
           sx={{ flex: 1 }}
@@ -49,6 +50,7 @@ function GuessInput({
               : 'Guess'
           }
           spellCheck
+          size={compact ? 'small' : 'medium'}
         />
       </Tooltip>
       <Tooltip title="Submit guess">
@@ -58,6 +60,7 @@ function GuessInput({
             onClick={() => onAddGuess(currentGuess)}
             startIcon={<FontAwesomeIcon icon={faPlay} />}
             disabled={isFreeWord || currentGuess.length === 0 || isDone || unmasked}
+            size={compact ? 'small' : 'medium'}
           >
             Submit
           </Button>
@@ -66,6 +69,7 @@ function GuessInput({
             onClick={() => onAddGuess(currentGuess)}
             color="primary"
             disabled={isFreeWord || currentGuess.length === 0 || isDone || unmasked}
+            size={compact ? 'small' : 'medium'}
           >
             <FontAwesomeIcon icon={faCirclePlay} />
           </IconButton>
@@ -79,11 +83,17 @@ function GuessInput({
             onClick={onAddHint}
             startIcon={<FontAwesomeIcon icon={faPuzzlePiece} />}
             disabled={isDone || unmasked}
+            size={compact ? 'small' : 'medium'}
           >
             {`${hints} Hint${hints === 1 ? '' : 's'}`}
           </Button>
         ) : (
-          <IconButton onClick={onAddHint} disabled={isDone || unmasked} color="secondary">
+          <IconButton
+            onClick={onAddHint}
+            disabled={isDone || unmasked}
+            color="secondary"
+            size={compact ? 'small' : 'medium'}
+          >
             <FontAwesomeIcon icon={faPuzzlePiece} />
           </IconButton>
         )}

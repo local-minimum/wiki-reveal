@@ -1,5 +1,5 @@
 import {
-  Box, Grid, LinearProgress, TableContainer, Tooltip, Typography,
+  Box, Grid, LinearProgress, TableContainer, Tooltip, useMediaQuery, useTheme,
 } from '@mui/material';
 import { useSnackbar } from 'notistack';
 import * as React from 'react';
@@ -14,6 +14,7 @@ import {
   checkRevealAchievements, checkVictoryAchievements, updateAchievements,
 } from '../utils/achievements';
 import { unmaskPage, wordAsLexicalEntry } from '../utils/wiki';
+import GuessHeader from './GuessHeader';
 import GuessInput from './GuessInput';
 import GuessTable from './GuessTable';
 import LoadFail from './LoadFail';
@@ -273,6 +274,8 @@ function WikiPage({
   );
 
   const articleRef = React.useRef<HTMLDivElement | null>(null);
+  const theme = useTheme();
+  const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
 
   return (
     <Box
@@ -282,6 +285,20 @@ function WikiPage({
         overflow: 'hidden',
       }}
     >
+      {isError && <LoadFail />}
+      {victory !== null && (
+        <Victory
+          guesses={victory.guesses}
+          hints={victory.hints}
+          accuracy={victory.accuracy}
+          revealed={victory.revealed}
+          onRevealAll={revealAll}
+          gameId={gameId}
+          visible={victoryVisible}
+          onSetVisible={setVictoryVisible}
+          achievements={achievements}
+        />
+      )}
       <SiteMenu
         yesterdaysTitle={yesterdaysTitle}
         onShowVictory={
@@ -296,9 +313,18 @@ function WikiPage({
         spacing={0}
         sx={{ height: '100%' }}
       >
-        <Grid item sm={7} md={8} sx={{ height: '100vh', overflow: 'hidden', backgroundColor: '#EFD9CE' }}>
+        <Grid
+          item
+          xs={12}
+          sm={7}
+          md={8}
+          sx={{
+            height: isSmall ? '75vh' : '100vh',
+            overflow: 'hidden',
+            backgroundColor: '#EFD9CE',
+          }}
+        >
           <TableContainer component="div" sx={{ height: '100%' }} ref={articleRef}>
-            {isError && <LoadFail />}
             <Tooltip title={`${progress.toFixed(1)}% of article revealed.`}>
               <LinearProgress
                 variant={isLoading ? undefined : 'determinate'}
@@ -306,19 +332,6 @@ function WikiPage({
                 sx={{ position: 'sticky', top: 0, zIndex: 100 }}
               />
             </Tooltip>
-            {victory !== null && (
-              <Victory
-                guesses={victory.guesses}
-                hints={victory.hints}
-                accuracy={victory.accuracy}
-                revealed={victory.revealed}
-                onRevealAll={revealAll}
-                gameId={gameId}
-                visible={victoryVisible}
-                onSetVisible={setVictoryVisible}
-                achievements={achievements}
-              />
-            )}
             <RedactedPage
               isSolved={victory !== null && language !== undefined && pageName !== undefined}
               title={title}
@@ -334,24 +347,20 @@ function WikiPage({
         </Grid>
         <Grid
           item
+          xs={12}
           sm={5}
           md={4}
           flexDirection="column"
           gap={1}
           sx={{
-            p: 2, overflow: 'hidden', display: 'flex', height: '100vh',
+            p: isSmall ? 0.5 : 2,
+            overflow: 'hidden',
+            display: 'flex',
+            height: isSmall ? '25vh' : '100vh',
           }}
         >
-          <Typography variant="h6">
-            {`${guesses.length} `}
-            Guesses
-            <Tooltip title="Percent guesses included in the article, disregarding hints">
-              <span>
-                {` (${accuracy.toFixed(1)}% accuracy)`}
-              </span>
-            </Tooltip>
-          </Typography>
-          <Box sx={{ height: '87vh' }}>
+          <GuessHeader guesses={guesses.length} accuracy={accuracy} />
+          <Box sx={{ height: isSmall ? '18vh' : '87vh' }}>
             <GuessTable
               focusWord={focusWord}
               guesses={guesses}
@@ -371,6 +380,7 @@ function WikiPage({
             freeWords={freeWords}
             onAddGuess={addGuess}
             onAddHint={addHint}
+            compact={isSmall}
           />
         </Grid>
       </Grid>

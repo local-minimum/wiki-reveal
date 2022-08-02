@@ -72,7 +72,7 @@ My accuracy was ${accuracy.toFixed(1)}% revealing ${revealed.toFixed(1)}% of the
             .map((achievement) => {
               const [title, description] = achievementToTitle(achievement);
               return (
-                <Grid key={achievement} item lg={3} md={4} sm={6}>
+                <Grid key={achievement} item lg={3} md={4} xs={6}>
                   <SingleAchievement
                     gameId={achievements[achievement]}
                     icon={achievementToIcon(achievement)}

@@ -2,7 +2,8 @@ import { faClose } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+  SxProps,
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, useMediaQuery, useTheme,
 } from '@mui/material';
 import * as React from 'react';
 
@@ -14,7 +15,11 @@ interface VictoryHistoryProps {
 }
 
 function VictoryHistory({ onClose }: VictoryHistoryProps): JSX.Element {
+  const theme = useTheme();
+  const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
   const [playerResults] = useStoredValue<Array<[number, VictoryType]>>('player-results', []);
+
+  const xsTableSx: SxProps | undefined = isSmall ? { fontSize: '70%' } : undefined;
 
   return (
     <Dialog open onClose={onClose}>
@@ -29,24 +34,39 @@ function VictoryHistory({ onClose }: VictoryHistoryProps): JSX.Element {
           }
         </DialogContentText>
         {playerResults.length > 0 && (
-          <TableContainer sx={{ maxHeight: '50vw', overflow: 'hidden' }}>
+          <TableContainer sx={{ maxHeight: '50vw' }}>
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>
-                    Game #
+                  <TableCell
+                    sx={xsTableSx}
+                    title="The game id"
+                  >
+                    {isSmall ? '#' : 'Game Id'}
                   </TableCell>
-                  <TableCell>
+                  <TableCell
+                    sx={xsTableSx}
+                    title="The article title"
+                  >
                     Title
                   </TableCell>
-                  <TableCell>
-                    Guesses ( Hints )
+                  <TableCell
+                    sx={xsTableSx}
+                    title="The number of guesses and hints used"
+                  >
+                    {isSmall ? 'G(H)' : 'Guesses (Hints)'}
                   </TableCell>
-                  <TableCell>
-                    Accuracy [%]
+                  <TableCell
+                    sx={xsTableSx}
+                    title="How many percent of your guesses existed in the article"
+                  >
+                    {`Acc${isSmall ? '.' : 'uracy [%]'}`}
                   </TableCell>
-                  <TableCell>
-                    Revealed [%]
+                  <TableCell
+                    sx={xsTableSx}
+                    title="How many percent of the article that was revealed (When title was solved)."
+                  >
+                    {`Rev${isSmall ? '.' : 'ealed [%]'}`}
                   </TableCell>
                 </TableRow>
               </TableHead>
@@ -55,11 +75,11 @@ function VictoryHistory({ onClose }: VictoryHistoryProps): JSX.Element {
                   pageName, guesses, hints, accuracy, revealed,
                 }]) => (
                   <TableRow key={gameId}>
-                    <TableCell>{gameId}</TableCell>
-                    <TableCell>{pageName.replace('_', ' ')}</TableCell>
-                    <TableCell>{`${guesses} (${hints})`}</TableCell>
-                    <TableCell>{accuracy.toFixed(1)}</TableCell>
-                    <TableCell>{revealed.toFixed(1)}</TableCell>
+                    <TableCell sx={xsTableSx}>{gameId}</TableCell>
+                    <TableCell sx={xsTableSx}>{pageName.replace('_', ' ')}</TableCell>
+                    <TableCell sx={xsTableSx}>{`${guesses} (${hints})`}</TableCell>
+                    <TableCell sx={xsTableSx}>{accuracy.toFixed(1)}</TableCell>
+                    <TableCell sx={xsTableSx}>{revealed.toFixed(1)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
