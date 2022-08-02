@@ -12,6 +12,11 @@ services:
     depends_on:
       - wiki_reveal_api
       - wiki_reveal_frontend
+    environment:
+      - WR_LOGLEVEL
+      - WR_API_ROOT
+      - WR_SEED
+      - WR_EPOCH
 
   wiki_reveal_api:
     build: .
