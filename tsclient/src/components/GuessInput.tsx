@@ -18,6 +18,14 @@ interface GuessInputProps {
   compact?: boolean;
 }
 
+const INVALID = [' ', '-', '\'', '"', '_', '.', ':', ';'];
+
+function labelText(isFreeWord: boolean | undefined, hasIllegal: boolean): string {
+  if (hasIllegal) return 'Includes illegal character';
+  if (isFreeWord) return 'Free word given from start';
+  return 'Guess';
+}
+
 function GuessInput({
   isLoading, isError, isDone, unmasked, hints, onAddGuess, onAddHint, freeWords,
   compact = false,
@@ -25,17 +33,18 @@ function GuessInput({
   const [currentGuess, setCurrentGuess] = React.useState('');
   const theme = useTheme();
   const isExtraLarge = useMediaQuery(theme.breakpoints.up('xl'));
-  const isFreeWord = currentGuess !== '' && freeWords?.includes(wordAsLexicalEntry(currentGuess));
-
+  const lex = wordAsLexicalEntry(currentGuess);
+  const isFreeWord = currentGuess !== '' && freeWords?.includes(lex);
+  const hasIllegal = INVALID.some((sub) => lex.includes(sub));
   return (
     <Stack direction="row" gap={1}>
       <Tooltip title="Enter guess">
         <TextField
           sx={{ flex: 1 }}
-          disabled={isLoading || isError || isDone || unmasked}
+          disabled={isLoading || isError || isDone || unmasked || hasIllegal}
           variant="outlined"
           focused
-          color={isFreeWord ? 'warning' : undefined}
+          color={isFreeWord || hasIllegal ? 'warning' : undefined}
           value={currentGuess}
           onChange={({ target: { value } }) => setCurrentGuess(value)}
           onKeyDown={({ key }) => {
@@ -44,11 +53,7 @@ function GuessInput({
               onAddGuess(currentGuess);
             }
           }}
-          label={
-            isFreeWord
-              ? 'Free word given from start'
-              : 'Guess'
-          }
+          label={labelText(isFreeWord, hasIllegal)}
           spellCheck
           size={compact ? 'small' : 'medium'}
         />

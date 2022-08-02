@@ -14,7 +14,8 @@ export function wordAsLexicalEntry(word: string): string {
     .replace(/[ßśš]/g, 's')
     .replace(/[ûüùúū]/g, 'u')
     .replace(/[ýÿ]/g, 'y')
-    .replace(/[žźż]/g, 'z');
+    .replace(/[žźż]/g, 'z')
+    .trim();
 }
 
 export function unmaskTokens(

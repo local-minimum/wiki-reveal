@@ -32,6 +32,10 @@ function HowTo({ onClose }: HowToProps): JSX.Element {
                 You can get hints.
               </ListItem>
               <ListItem>
+                You get to know the rank of the word. Rank 1 being the most
+                frequent word in the article, rank 2 the second most and so on.
+              </ListItem>
+              <ListItem>
                 The guess list can be sorted as you please by clicking column headers.
               </ListItem>
               <ListItem>
