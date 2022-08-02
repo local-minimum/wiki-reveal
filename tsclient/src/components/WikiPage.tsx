@@ -236,7 +236,7 @@ function WikiPage({
 
     if (options.length === 0) return;
 
-    const worthy = options.filter((word) => lexicon[word] >= maxCount * 0.9);
+    const worthy = options.filter((word) => lexicon[word] >= maxCount * 0.95);
     if (worthy.length > 0) {
       setGuesses([...guesses, [randomEntry(worthy), true]]);
       return;
@@ -244,7 +244,10 @@ function WikiPage({
 
     const remaining = options.sort((a, b) => (lexicon[a] > lexicon[b] ? -1 : 1));
     setGuesses(
-      [...guesses, [randomEntry(remaining.slice(0, Math.ceil(remaining.length * 0.2))), true]],
+      [
+        ...guesses,
+        [randomEntry(remaining.slice(0, Math.max(10, Math.ceil(remaining.length * 0.05)))), true],
+      ],
     );
   }, [freeWords, guesses, lexicon, setGuesses, title]);
 
