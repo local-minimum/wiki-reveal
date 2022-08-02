@@ -1,10 +1,11 @@
 import * as React from 'react';
 import {
-  Dialog, DialogContent, DialogContentText, DialogTitle,
+  Button,
+  Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
   List, ListItem, ListItemIcon, ListItemText, Typography,
 } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHeading, faPuzzlePiece, faStar } from '@fortawesome/free-solid-svg-icons';
+import { faClose, faHeading, faPuzzlePiece, faStar } from '@fortawesome/free-solid-svg-icons';
 
 interface HowToProps {
   onClose: () => void;
@@ -81,6 +82,15 @@ function HowTo({ onClose }: HowToProps): JSX.Element {
           </ListItem>
         </List>
       </DialogContent>
+      <DialogActions>
+        <Button
+          variant="outlined"
+          onClick={onClose}
+          startIcon={<FontAwesomeIcon icon={faClose} />}
+        >
+          Close
+        </Button>
+      </DialogActions>
     </Dialog>
   );
 }
