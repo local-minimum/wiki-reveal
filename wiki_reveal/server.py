@@ -13,7 +13,8 @@ logging.basicConfig(
     format="%(asctime)s  %(levelname)s  %(message)s",
 )
 
-ROOT = f"/{os.environ.get('WR_ROOT', '').strip('/')}"
+ROOT = f"/{os.environ.get('WR_ROOT', '').strip('/')}".rstrip('/')
+logging.info(f"Using web root '{ROOT}'")
 
 app = Flask('Wiki-Reveal')
 
