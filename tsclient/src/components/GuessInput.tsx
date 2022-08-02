@@ -62,7 +62,7 @@ function GuessInput({
         {isExtraLarge ? (
           <Button
             variant="contained"
-            onClick={() => onAddGuess(currentGuess)}
+            onClick={() => { onAddGuess(currentGuess); setCurrentGuess(''); }}
             startIcon={<FontAwesomeIcon icon={faPlay} />}
             disabled={isFreeWord || currentGuess.length === 0 || isDone || unmasked}
             size={compact ? 'small' : 'medium'}
@@ -71,7 +71,7 @@ function GuessInput({
           </Button>
         ) : (
           <IconButton
-            onClick={() => onAddGuess(currentGuess)}
+            onClick={() => { onAddGuess(currentGuess); setCurrentGuess(''); }}
             color="primary"
             disabled={isFreeWord || currentGuess.length === 0 || isDone || unmasked}
             size={compact ? 'small' : 'medium'}

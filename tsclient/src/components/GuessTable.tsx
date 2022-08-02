@@ -55,7 +55,7 @@ function GuessTable({
     return null;
   };
 
-  const [[sortType, sortVariant], setSort] = useStoredValue<[SortType, SortVariant]>('sort-order', ['order', 'asc']);
+  const [[sortType, sortVariant], setSort] = useStoredValue<[SortType, SortVariant]>('sort-order', ['order', 'desc']);
 
   const changeSort = React.useCallback((newSortType: SortType): void => {
     if (sortType !== newSortType) setSort([newSortType, 'asc']);
