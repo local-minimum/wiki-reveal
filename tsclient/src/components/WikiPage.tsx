@@ -102,7 +102,8 @@ function WikiPage({
     [gameId, setPlayStart],
   );
 
-  const [unmasked, setUnmasked] = React.useState(false);
+  const [hideFound, setHideFound] = React.useState<boolean>(false);
+  const [unmasked, setUnmasked] = React.useState<boolean>(false);
   const [[focusWord, focusWordIndex], setFocusWord] = React
     .useState<[word: string | null, index: number]>([null, 0]);
 
@@ -307,6 +308,8 @@ function WikiPage({
         achievements={achievements}
         onSetAchievements={setAchievements}
         gameId={gameId}
+        hideFound={hideFound}
+        onHideFound={setHideFound}
       />
       <Grid
         container

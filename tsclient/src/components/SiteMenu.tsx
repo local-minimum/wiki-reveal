@@ -1,5 +1,5 @@
 import {
-  faBars, faBroom, faInfo, faMedal, faStar, faTrophy, faUserSecret,
+  faBars, faBroom, faEye, faEyeLowVision, faInfo, faMedal, faStar, faTrophy, faUserSecret,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -20,10 +20,12 @@ interface SiteMenuProps {
   achievements: AchievementsType;
   onSetAchievements: (achievements: AchievementsType) => void;
   gameId: number | undefined;
+  hideFound: boolean;
+  onHideFound: (hide: boolean) => void;
 }
 
 function SiteMenu({
-  yesterdaysTitle, onShowVictory, achievements, onSetAchievements, gameId,
+  yesterdaysTitle, onShowVictory, achievements, onSetAchievements, gameId, hideFound, onHideFound,
 }: SiteMenuProps): JSX.Element {
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null);
   const open = Boolean(anchorEl);
@@ -59,6 +61,17 @@ function SiteMenu({
             </ListItemText>
           </MenuItem>
         )}
+        <MenuItem
+          title="Useful for sharing progress, to brag or share in frustration."
+          onClick={() => onHideFound(!hideFound)}
+        >
+          <ListItemIcon>
+            <FontAwesomeIcon icon={hideFound ? faEye : faEyeLowVision} />
+          </ListItemIcon>
+          <ListItemText>
+            {`${hideFound ? 'Show' : 'Hide'} Found Words`}
+          </ListItemText>
+        </MenuItem>
         <MenuItem onClick={() => { handleClose(); setShowGameHistory(true); }}>
           <ListItemIcon>
             <FontAwesomeIcon icon={faTrophy} />
