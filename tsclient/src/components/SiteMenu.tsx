@@ -1,5 +1,6 @@
 import {
-  faBars, faBroom, faEye, faEyeLowVision, faInfo, faMedal, faStar, faTrophy, faUserSecret,
+  faBars, faBroom, faEye, faEyeLowVision, faInfo, faMedal,
+  faPersonChalkboard, faStar, faTrophy, faUserSecret,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -9,6 +10,7 @@ import * as React from 'react';
 import { LexicalizedToken } from '../types/wiki';
 import { AchievementsType } from '../utils/achievements';
 import Achievements from './menu/Achievements';
+import HowTo from './menu/HowTo';
 import InfoDialog from './menu/InfoDialog';
 import RevealYesterday from './menu/RevealYesterday';
 import VictoryHistory from './menu/VictoryHistory';
@@ -35,6 +37,7 @@ function SiteMenu({
   const handleClose = () => setAnchorEl(null);
   const [showWipe, setShowWipe] = React.useState<boolean>(false);
   const [showAbout, setShowAbout] = React.useState<boolean>(false);
+  const [showHowTo, setShowHowTo] = React.useState<boolean>(false);
   const [showGameHistory, setShowGameHistory] = React.useState<boolean>(false);
   const [showAchievements, setShowAchievements] = React.useState<boolean>(false);
   const [showYesterdays, setShowYesterdays] = React.useState<boolean>(false);
@@ -57,7 +60,7 @@ function SiteMenu({
               <FontAwesomeIcon icon={faMedal} />
             </ListItemIcon>
             <ListItemText>
-              Show Current Victory
+              Show current victory
             </ListItemText>
           </MenuItem>
         )}
@@ -77,7 +80,7 @@ function SiteMenu({
             <FontAwesomeIcon icon={faTrophy} />
           </ListItemIcon>
           <ListItemText>
-            Game History
+            Game history
           </ListItemText>
         </MenuItem>
         <MenuItem onClick={() => { handleClose(); setShowAchievements(true); }}>
@@ -93,10 +96,18 @@ function SiteMenu({
             <FontAwesomeIcon icon={faUserSecret} />
           </ListItemIcon>
           <ListItemText>
-            Yesterday&apos;s Solution
+            Yesterday&apos;s solution
           </ListItemText>
         </MenuItem>
         <Divider />
+        <MenuItem onClick={() => { handleClose(); setShowHowTo(true); }}>
+          <ListItemIcon>
+            <FontAwesomeIcon icon={faPersonChalkboard} />
+          </ListItemIcon>
+          <ListItemText>
+            How to play
+          </ListItemText>
+        </MenuItem>
         <MenuItem onClick={() => { handleClose(); setShowAbout(true); }}>
           <ListItemIcon>
             <FontAwesomeIcon icon={faInfo} />
@@ -117,6 +128,7 @@ function SiteMenu({
       </Menu>
       {showWipe && <WipeDataDialog onClose={() => setShowWipe(false)} />}
       {showAbout && <InfoDialog onClose={() => setShowAbout(false)} />}
+      {showHowTo && <HowTo onClose={() => setShowHowTo(false)} />}
       {showGameHistory && <VictoryHistory onClose={() => setShowGameHistory(false)} />}
       {showAchievements && (
         <Achievements achievements={achievements} onClose={() => setShowAchievements(false)} />
