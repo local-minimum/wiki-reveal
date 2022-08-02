@@ -1,4 +1,4 @@
-#!/usr/bin/sh
+#!/bin/sh
 if [ -x "$(command -v docker)" ]; then
     echo "This script should not be run outside the container"
     exit 1
