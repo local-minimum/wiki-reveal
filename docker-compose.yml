@@ -3,7 +3,7 @@ version: '3.3'
 
 services:
   wiki_reveal_gateway:
-    image: nginx
+    build: ./gateway
     ports: ["8088:80"]
     restart: unless-stopped
     volumes:
@@ -12,6 +12,8 @@ services:
     depends_on:
       - wiki_reveal_api
       - wiki_reveal_frontend
+    environment:
+      - WR_ROOT
 
   wiki_reveal_api:
     build: .
