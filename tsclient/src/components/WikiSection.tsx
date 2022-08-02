@@ -19,6 +19,7 @@ interface WikiSectionProps {
   section: Section;
   focusWord: string | null;
   scrollToCheck: () => boolean;
+  hideWords: string[];
 }
 
 function getHeader(depth: number) {
@@ -71,11 +72,17 @@ function WikiSection({
   },
   focusWord,
   scrollToCheck,
+  hideWords,
 }: WikiSectionProps): JSX.Element {
   return (
     <>
       <Typography variant={getHeader(depth)} sx={{ fontSize: getFontSize(depth), ...commonSX }}>
-        <WikiParagraph text={title} focusWord={focusWord} scrollToCheck={scrollToCheck} />
+        <WikiParagraph
+          text={title}
+          focusWord={focusWord}
+          scrollToCheck={scrollToCheck}
+          hideWords={hideWords}
+        />
       </Typography>
       {paragraphs.map((paragraph, idx) => (
         <Typography
@@ -84,7 +91,12 @@ function WikiSection({
           variant="body1"
           sx={bodySx}
         >
-          <WikiParagraph text={paragraph} focusWord={focusWord} scrollToCheck={scrollToCheck} />
+          <WikiParagraph
+            text={paragraph}
+            focusWord={focusWord}
+            scrollToCheck={scrollToCheck}
+            hideWords={hideWords}
+          />
         </Typography>
       ))}
       {
@@ -95,6 +107,7 @@ function WikiSection({
             scrollToCheck={scrollToCheck}
             // eslint-disable-next-line react/no-array-index-key
             key={idx}
+            hideWords={hideWords}
           />
         ))
       }

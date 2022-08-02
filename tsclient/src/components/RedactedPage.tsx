@@ -19,6 +19,7 @@ interface RedactedPageProps {
   scrollToFocusWordCheck: () => boolean;
   focusWord: string | null;
   containerNode: Node | undefined;
+  hideWords: string[];
 }
 
 const commonSX: SxProps<Theme> = {
@@ -43,7 +44,7 @@ const summarySX: SxProps<Theme> = {
 
 function RedactedPage({
   title, summary, sections, isSolved, language, pageName, scrollToFocusWordCheck, focusWord,
-  containerNode,
+  containerNode, hideWords,
 }: RedactedPageProps): JSX.Element {
   const titleId = 'redacted-article-title';
   return (
@@ -53,6 +54,7 @@ function RedactedPage({
           text={title}
           focusWord={focusWord}
           scrollToCheck={scrollToFocusWordCheck}
+          hideWords={hideWords}
         />
         {isSolved && (
         <Link
@@ -75,6 +77,7 @@ function RedactedPage({
               text={paragraph}
               focusWord={focusWord}
               scrollToCheck={scrollToFocusWordCheck}
+              hideWords={hideWords}
             />
           </Typography>
         ))
@@ -87,6 +90,7 @@ function RedactedPage({
             scrollToCheck={scrollToFocusWordCheck}
             // eslint-disable-next-line react/no-array-index-key
             key={idx}
+            hideWords={hideWords}
           />
         ))
       }

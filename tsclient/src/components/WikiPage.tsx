@@ -103,6 +103,10 @@ function WikiPage({
   );
 
   const [hideFound, setHideFound] = React.useState<boolean>(false);
+  const hideWords = useMemo(
+    () => (hideFound ? guesses.map(([word]) => word) : []),
+    [guesses, hideFound],
+  );
   const [unmasked, setUnmasked] = React.useState<boolean>(false);
   const [[focusWord, focusWordIndex], setFocusWord] = React
     .useState<[word: string | null, index: number]>([null, 0]);
@@ -336,6 +340,7 @@ function WikiPage({
               />
             </Tooltip>
             <RedactedPage
+              hideWords={hideWords}
               isSolved={victory !== null && language !== undefined && pageName !== undefined}
               title={title}
               summary={summary}
