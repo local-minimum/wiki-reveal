@@ -5,7 +5,9 @@ import {
   List, ListItem, ListItemIcon, ListItemText, Typography,
 } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faClose, faHeading, faPuzzlePiece, faStar } from '@fortawesome/free-solid-svg-icons';
+import {
+  faClose, faHeading, faPuzzlePiece, faStar,
+} from '@fortawesome/free-solid-svg-icons';
 
 interface HowToProps {
   onClose: () => void;
