@@ -19,7 +19,7 @@ services:
     ports: ["8080"]
     environment:
       - WR_LOGLEVEL
-      - WR_API_ROOT
+      - WR_ROOT
       - WR_SEED
       - WR_EPOCH
 
@@ -27,3 +27,5 @@ services:
     build: ./tsclient
     restart: unless-stopped
     ports: ["80"]
+    environment:
+      - WR_ROOT
