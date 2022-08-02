@@ -1,9 +1,13 @@
 import { faEye, faShare, faX } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography,
+  Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Grid, Typography,
 } from '@mui/material';
 import * as React from 'react';
+import {
+  Achievement, AchievementsType, achievementToColor, achievementToIcon, achievementToTitle,
+} from '../utils/achievements';
+import { SingleAchievement } from './menu/SingleAchievement';
 
 interface VictoryProps {
   hints: number;
@@ -14,10 +18,12 @@ interface VictoryProps {
   onRevealAll: () => void;
   visible: boolean;
   onSetVisible: (visible: boolean) => void;
+  achievements: AchievementsType;
 }
 
 function Victory({
   hints, guesses, gameId, onRevealAll, accuracy, revealed, visible, onSetVisible,
+  achievements,
 }: VictoryProps): JSX.Element {
   const handleShare = () => {
     const total = guesses + hints;
@@ -54,6 +60,26 @@ My accuracy was ${accuracy.toFixed(1)}% revealing ${revealed.toFixed(1)}% of the
             You may continue guessing words to your heart&apos;s content.
           </Typography>
         </DialogContentText>
+        <Grid container alignItems="stretch">
+          {Object
+            .values(Achievement)
+            .filter((achievement) => achievements[achievement] === gameId)
+            .sort((a, b) => (a < b ? -1 : 1))
+            .map((achievement) => {
+              const [title, description] = achievementToTitle(achievement);
+              return (
+                <Grid key={achievement} item lg={3} md={4} sm={6}>
+                  <SingleAchievement
+                    gameId={achievements[achievement]}
+                    icon={achievementToIcon(achievement)}
+                    title={title}
+                    description={description}
+                    color={achievementToColor(achievement)}
+                  />
+                </Grid>
+              );
+            })}
+        </Grid>
       </DialogContent>
       <DialogActions>
         <Button

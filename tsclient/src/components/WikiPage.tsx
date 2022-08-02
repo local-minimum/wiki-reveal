@@ -1,6 +1,7 @@
 import {
-  Alert, Box, Grid, LinearProgress, TableContainer, Tooltip, Typography,
+  Box, Grid, LinearProgress, TableContainer, Tooltip, Typography,
 } from '@mui/material';
+import { useSnackbar } from 'notistack';
 import * as React from 'react';
 import { useMemo } from 'react';
 
@@ -9,12 +10,13 @@ import useStoredValue from '../hooks/useStoredValue';
 import { LexicalizedToken, Page } from '../types/wiki';
 import {
   Achievement,
-  AchievementsType, checkAchievementsPercent, checkRankAchievements,
+  AchievementsType, achievementToTitle, checkAchievementsPercent, checkRankAchievements,
   checkRevealAchievements, checkVictoryAchievements, updateAchievements,
 } from '../utils/achievements';
 import { unmaskPage, wordAsLexicalEntry } from '../utils/wiki';
 import GuessInput from './GuessInput';
 import GuessTable from './GuessTable';
+import LoadFail from './LoadFail';
 import RedactedPage from './RedactedPage';
 import SiteMenu from './SiteMenu';
 import Victory from './Victory';
@@ -69,6 +71,19 @@ function WikiPage({
   isLoading, isError, freeWords, lexicon, gameId, language, pageName, page,
   titleLexes, headingLexes, yesterdaysTitle, start, end,
 }: WikiPageProps): JSX.Element {
+  const { enqueueSnackbar } = useSnackbar();
+  const reportAchievement = React.useCallback((achievement: Achievement): void => {
+    enqueueSnackbar(
+      (
+        <>
+          <strong>Achievement: </strong>
+          {achievementToTitle(achievement)[0]}
+        </>
+      ),
+      { variant: 'success' },
+    );
+  }, [enqueueSnackbar]);
+
   const [guesses, setGuesses] = useStoredValue<Array<[word: string, hinted: boolean]>>(`guesses-${gameId}`, []);
   const [victory, setVictory] = useStoredValue<VictoryType | null>(`victory-${gameId}`, null);
   const [playStart, setPlayStart] = useStoredValue<string| null>(`start-${gameId}`, null);
@@ -148,6 +163,7 @@ function WikiPage({
         ...checkRankAchievements(nextGuesses, lexicon)
           .filter((achievement) => achievements[achievement] === undefined),
       ];
+      newAchievements.map(reportAchievement);
 
       if (
         title.some(([_, __, lex]) => lex === entry)
@@ -189,6 +205,7 @@ function WikiPage({
               gameId,
             ),
           );
+          newVictoryAchievements.map(reportAchievement);
         }
         setPlayerResults([...playerResults, [gameId, newVictory]]);
       } else if (newAchievements.length > 0) {
@@ -200,7 +217,7 @@ function WikiPage({
   }, [
     freeWords, gameId, guesses, handleSetFocusWord, hints, lexicon, playerResults,
     setGuesses, setPlayerResults, setVictory, title, pageName, achievements, setAchievements,
-    titleLexes, headingLexes, victory, playStart, start, end,
+    titleLexes, headingLexes, victory, playStart, start, end, reportAchievement,
   ]);
 
   const addHint = React.useCallback((): void => {
@@ -236,8 +253,9 @@ function WikiPage({
       .filter((a) => achievements[a] === undefined);
     if (progressAchievements.length > 0) {
       setAchievements(updateAchievements(achievements, progressAchievements, gameId));
+      progressAchievements.map(reportAchievement);
     }
-  }, [achievements, gameId, progress, setAchievements]);
+  }, [achievements, gameId, progress, reportAchievement, setAchievements]);
 
   React.useEffect(() => {
     if (gameId === undefined) return;
@@ -245,8 +263,9 @@ function WikiPage({
       .filter((a) => achievements[a] === undefined);
     if (percentAchievements.length > 0) {
       setAchievements(updateAchievements(achievements, percentAchievements, gameId));
+      percentAchievements.map(reportAchievement);
     }
-  }, [achievements, gameId, setAchievements]);
+  }, [achievements, gameId, reportAchievement, setAchievements]);
 
   const accuracy = useMemo(
     () => calculateAccuracy(lexicon, guesses),
@@ -279,7 +298,7 @@ function WikiPage({
       >
         <Grid item sm={7} md={8} sx={{ height: '100vh', overflow: 'hidden', backgroundColor: '#EFD9CE' }}>
           <TableContainer component="div" sx={{ height: '100%' }} ref={articleRef}>
-            {isError && <Alert severity="error">Could not load the article, perhaps try again later or wait for tomorrow</Alert>}
+            {isError && <LoadFail />}
             <Tooltip title={`${progress.toFixed(1)}% of article revealed.`}>
               <LinearProgress
                 variant={isLoading ? undefined : 'determinate'}
@@ -297,6 +316,7 @@ function WikiPage({
                 gameId={gameId}
                 visible={victoryVisible}
                 onSetVisible={setVictoryVisible}
+                achievements={achievements}
               />
             )}
             <RedactedPage

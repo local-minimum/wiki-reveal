@@ -48,6 +48,7 @@ function GuessInput({
               ? 'Free word given from start'
               : 'Guess'
           }
+          spellCheck
         />
       </Tooltip>
       <Tooltip title="Submit guess">

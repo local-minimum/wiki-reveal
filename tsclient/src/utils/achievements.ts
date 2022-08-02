@@ -192,7 +192,7 @@ const GOLD: Achievement[] = [
 export function achievementToColor(achievement: Achievement): string {
   if (GOLD.includes(achievement)) return '#C9B037';
   if (SILVER.includes(achievement)) return '#B4B4B4';
-  return '#6A3805';
+  return '#AD8A56'; // '#6A3805';
 }
 
 export function achievementToTitle(achievement: Achievement): [string, string] {
@@ -351,11 +351,11 @@ export function checkRevealAchievements(
 
 const GUESSES_ACHIEVEMENTS: Array<[(total: number) => boolean, Achievement]> = [
   [(total) => total < 10, Achievement.GuessSingleDigit],
-  [(total) => total < 20, Achievement.GuessLessThan20],
+  [(total) => total < 20 && total >= 10, Achievement.GuessLessThan20],
   [(total) => total === 42, Achievement.Guess42],
-  [(total) => total < 50, Achievement.GuessLessThan50],
-  [(total) => total < 100, Achievement.GuessLessThan100],
-  [(total) => total > 500, Achievement.GuessMoreThan500],
+  [(total) => total < 50 && total >= 20, Achievement.GuessLessThan50],
+  [(total) => total < 100 && total >= 50, Achievement.GuessLessThan100],
+  [(total) => total > 500 && total < 1000, Achievement.GuessMoreThan500],
   [(total) => total > 1000, Achievement.GuessMoreThan1000],
 ];
 
@@ -367,9 +367,9 @@ function checkVictoryGuessTotal(total: number): Achievement[] {
 
 const HINT_ACHIEVEMENTS: Array<[(hints: number) => boolean, Achievement]> = [
   [(hints) => hints === 0, Achievement.HintNone],
-  [(hints) => hints <= 3, Achievement.HintMax3],
-  [(hints) => hints <= 10, Achievement.HintMax10],
-  [(hints) => hints >= 100, Achievement.HintMin100],
+  [(hints) => hints <= 3 && hints > 0, Achievement.HintMax3],
+  [(hints) => hints <= 10 && hints > 3, Achievement.HintMax10],
+  [(hints) => hints >= 100 && hints > 10, Achievement.HintMin100],
 ];
 
 function checkVictoryHints(hints: number): Achievement[] {
@@ -380,8 +380,8 @@ function checkVictoryHints(hints: number): Achievement[] {
 
 const ACCURACY_ACHIEVEMENTS: Array<[(accuracy: number) => boolean, Achievement]> = [
   [(accuracy) => accuracy === 100, Achievement.Accurate100],
-  [(accuracy) => accuracy > 90, Achievement.Accurate90],
-  [(accuracy) => accuracy > 50, Achievement.Accurate50],
+  [(accuracy) => accuracy > 90 && accuracy < 100, Achievement.Accurate90],
+  [(accuracy) => accuracy > 50 && accuracy <= 90, Achievement.Accurate50],
   [(accuracy) => accuracy < 10, Achievement.AccurateLessThan10],
 ];
 
@@ -451,27 +451,29 @@ function checkStreak(
     .map(([, achievement]) => achievement);
 }
 
-const SPEED_ACHIEVEMENTS: Array<[number, Achievement]> = [
-  [1 * 60, Achievement.SpeedOneMinute],
-  [10 * 60, Achievement.SpeedTenMinutes],
-  [60 * 60, Achievement.SpeedOneHour],
+const SPEED_ACHIEVEMENTS: Array<[(seconds: number) => boolean, Achievement]> = [
+  [(seconds) => seconds < 60, Achievement.SpeedOneMinute],
+  [(seconds) => seconds < 10 * 60 && seconds >= 60, Achievement.SpeedTenMinutes],
+  [(seconds) => seconds < 60 * 60 && seconds >= 10 * 60, Achievement.SpeedOneHour],
 ];
 
-const EARLY_ACHIEVEMENTS: Array<[number, Achievement]> = [
-  [10 * 60, Achievement.EarlyTenMinutes],
-  [60 * 60, Achievement.EarlyOneHour],
+const EARLY_ACHIEVEMENTS: Array<[(minutes: number) => boolean, Achievement]> = [
+  [(minutes) => minutes < 10, Achievement.EarlyTenMinutes],
+  [(minutes) => minutes < 60 && minutes >= 10, Achievement.EarlyOneHour],
 ];
 
-const LATE_ACHIEVEMENTS: Array<[number, Achievement]> = [
-  [5 * 60, Achievement.LateFiveMinutes],
-  [60, Achievement.LateLastMinute],
-  [0, Achievement.LateOverdue],
+const LATE_ACHIEVEMENTS: Array<[(minutes: number) => boolean, Achievement]> = [
+  [(minutes) => minutes < 5 && minutes >= 1, Achievement.LateFiveMinutes],
+  [(minutes) => minutes < 1 && minutes >= 0, Achievement.LateLastMinute],
+  [(minutes) => minutes < 0, Achievement.LateOverdue],
 ];
 
 function deltaMinutes(
-  from: Date,
-  to: Date,
+  from: Date | undefined,
+  to: Date | undefined,
 ): number {
+  if (from === undefined || to === undefined) return NaN;
+
   return (
     Math.floor(to.getTime() / 1000)
     - Math.floor(from.getTime() / 1000)
@@ -490,16 +492,19 @@ function checkDurationAchievements(
     playDurationSeconds >= 60 * 60 * 18 ? [Achievement.ThinkOnIt] : []
   );
 
+  const minutesSinceStart = deltaMinutes(start, playEnd);
+  const minutesUntilEnd = deltaMinutes(playEnd, end);
+
   return [
     ...SPEED_ACHIEVEMENTS
-      .filter(([threshold]) => playDurationSeconds < threshold)
+      .filter(([check]) => check(playDurationSeconds))
       .map(([, achievement]) => achievement),
     ...longPlay,
     ...EARLY_ACHIEVEMENTS
-      .filter(([threshold]) => start !== undefined && deltaMinutes(start, playEnd) < threshold)
+      .filter(([check]) => start !== undefined && check(minutesSinceStart))
       .map((([, achievement]) => achievement)),
     ...LATE_ACHIEVEMENTS
-      .filter(([threshold]) => end !== undefined && deltaMinutes(playEnd, end) < threshold)
+      .filter(([check]) => end !== undefined && check(minutesUntilEnd))
       .map((([, achievement]) => achievement)),
   ];
 }

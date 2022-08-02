@@ -5,9 +5,12 @@ import {
   Button,
   Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography,
 } from '@mui/material';
+import { useSnackbar } from 'notistack';
 import * as React from 'react';
 import { LexicalizedToken } from '../../types/wiki';
-import { Achievement, AchievementsType, updateAchievements } from '../../utils/achievements';
+import {
+  Achievement, AchievementsType, achievementToTitle, updateAchievements,
+} from '../../utils/achievements';
 import { RevealedWord, WordBlock } from '../WikiParagraph';
 
 interface RevealYesterdayProps {
@@ -21,6 +24,7 @@ interface RevealYesterdayProps {
 function RevealYesterday({
   onClose, title, gameId, achievements, onSetAchievements,
 }: RevealYesterdayProps): JSX.Element {
+  const { enqueueSnackbar } = useSnackbar();
   const [revealed, setRevealed] = React.useState<boolean[]>(
     (title ?? []).map(([, isHidden]) => !isHidden),
   );
@@ -44,6 +48,15 @@ function RevealYesterday({
       onSetAchievements(
         updateAchievements(achievements, [Achievement.CheckYesterdaysSolution], gameId),
       );
+      enqueueSnackbar(
+        (
+          <>
+            <strong>Achievement: </strong>
+            {achievementToTitle(Achievement.CheckYesterdaysSolution)[0]}
+          </>
+        ),
+        { variant: 'success' },
+      );
     }
     return setRevealed(newRevealed);
   };
@@ -63,7 +76,7 @@ function RevealYesterday({
                   <Typography>
                     Yesterday&apos;s article title was:
                   </Typography>
-                  <Typography variant="h4">
+                  <Typography variant="h4" sx={{ fontFamily: 'monospace' }}>
                     {
                       title.map(([word, isHidden], idx) => {
                         if (isHidden && !revealed[idx]) {
