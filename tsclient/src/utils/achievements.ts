@@ -31,10 +31,6 @@ export enum Achievement {
   SpeedOneMinute = 'speed-less-than-1-min',
   SpeedTenMinutes = 'speed-less-than-10-min',
   SpeedOneHour = 'speed-less-than-1-hour',
-  // TODO Start
-  EndureActiveOneHour = 'endure-active-min-1-hour',
-  EndureActiveThreeHours = 'endure-active-min-3-hour',
-  // TODO End
   ThinkOnIt = 'think-on-it', // 18+ hours from start to done
   EarlyTenMinutes = 'early-first-10-min',
   EarlyOneHour = 'early-first-1-hour',
@@ -240,10 +236,6 @@ export function achievementToTitle(achievement: Achievement): [string, string] {
       return ['Horse', 'Solve game in less than 10 minutes'];
     case Achievement.SpeedOneHour:
       return ['Human', 'Solve game in less than one hour'];
-    case Achievement.EndureActiveOneHour:
-      return ['Ant', 'Actively work on the solution for at least 1 hour'];
-    case Achievement.EndureActiveThreeHours:
-      return ['Turtle', 'Actively work on the solution for at least 3 hours'];
     case Achievement.ThinkOnIt:
       return ['Pensative', 'Solve the game at least 18 hours after starting it'];
     case Achievement.EarlyTenMinutes:
