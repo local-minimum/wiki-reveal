@@ -1,7 +1,9 @@
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import {
+  faAlignJustify,
   faAward,
-  faBrain, faCalendarCheck, faCalendarDays, faCat, faCow, faCrow, faCrown, faDna, faEye,
+  faBrain, faCalendarCheck, faCalendarDays, faCat, faCow,
+  faCrow, faCrown, faDna, faDraftingCompass, faEye,
   faFaceRollingEyes, faGlobe, faHandsHoldingChild, faMagnifyingGlass, faMedal,
   faPerson, faPersonPraying, faTrophy, faUserGraduate,
 } from '@fortawesome/free-solid-svg-icons';
@@ -52,6 +54,8 @@ export enum Achievement {
   Reveal80 = 'reveal-80',
   Reveal90 = 'reveal-90',
   Reveal100 = 'reveal-100',
+  RevealAllHeaders = 'reveal-headers',
+  RevealSummary90 = 'reveal-summary-90',
   RankTop10 = 'find-top-guesses-10', // All guesses found rank 1-10
   RankTop20 = 'find-top-guesses-20',
   RankTop50 = 'find-top-guesses-50',
@@ -95,6 +99,9 @@ export function achievementToIcon(achievement: Achievement): IconProp {
     Achievement.Reveal90,
     Achievement.Reveal100,
   ].includes(achievement)) return faEye;
+
+  if (achievement === Achievement.RevealAllHeaders) return faDraftingCompass;
+  if (achievement === Achievement.RevealSummary90) return faAlignJustify;
 
   if (achievement === Achievement.HintMin100) return faFaceRollingEyes;
   if ([
@@ -274,6 +281,10 @@ export function achievementToTitle(achievement: Achievement): [string, string] {
       return ['Manic', 'Reveal at lest 90% of the article'];
     case Achievement.Reveal100:
       return ['Complete', 'Reveal at lest 100% of the article'];
+    case Achievement.RevealAllHeaders:
+      return ['Big Text', 'Reveal all sub-headers completely'];
+    case Achievement.RevealSummary90:
+      return ['TDLR', 'Reveal at least 90% of the article summary'];
     case Achievement.RankTop10:
       return ['Inspired', 'Guess the 10 most frequent words in the article'];
     case Achievement.RankTop20:
@@ -302,12 +313,13 @@ const TOP_GUESSES: Array<[number, Achievement]> = [
 
 export function checkRankAchievements(
   guesses: Array<[string, boolean]>,
-  lexicon: Record<string, number>,
+  rankings: Record<string, number>,
 ): Achievement[] {
   if (guesses.length === 0) return [];
 
-  const [, topGuesses] = Object
-    .entries(lexicon)
+  const [, topGuesses] = guesses
+    .filter(([word, isHint]) => !isHint && rankings[word] !== undefined)
+    .map(([word]) => [word, rankings[word]])
     .sort(([, a], [, b]) => (a > b ? -1 : 1))
     .reduce<[boolean, number]>(([foundAll, count], [lex]) => {
       if (
@@ -334,10 +346,14 @@ const REVEAL_ACHIEVEMENTS: Array<[number, Achievement]> = [
 
 export function checkRevealAchievements(
   revealed: number,
+  solvedHeaders: boolean,
 ): Achievement[] {
-  return REVEAL_ACHIEVEMENTS
-    .filter(([threshold]) => revealed >= threshold)
-    .map(([, achievement]) => achievement);
+  return [
+    ...REVEAL_ACHIEVEMENTS
+      .filter(([threshold]) => revealed >= threshold)
+      .map(([, achievement]) => achievement),
+    ...(solvedHeaders ? [Achievement.RevealAllHeaders] : []),
+  ];
 }
 
 const GUESSES_ACHIEVEMENTS: Array<[(total: number) => boolean, Achievement]> = [

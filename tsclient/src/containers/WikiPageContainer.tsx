@@ -42,6 +42,13 @@ function WikiPageContainer(): JSX.Element {
     start, end,
   } = data ?? { lexicon: {} as Record<string, number> };
 
+  const rankings = React.useMemo(() => {
+    const sorted: Array<[string, number]> = [...Object.entries(lexicon)]
+      .filter(([word]) => !(freeWords?.includes(word) ?? false))
+      .sort(([, a], [, b]) => (a < b ? 1 : -1));
+    return Object.fromEntries(sorted.map(([word], idx) => [word, idx + 1]));
+  }, [freeWords, lexicon]);
+
   const [titleLexes, headingLexes] = React.useMemo(() => {
     const getSectionLexes = (sections: Section[]): string[] => sections
       .map((section) => [
@@ -67,6 +74,7 @@ function WikiPageContainer(): JSX.Element {
       isError={isError}
       freeWords={freeWords}
       lexicon={lexicon}
+      rankings={rankings}
       gameId={gameId}
       language={language}
       pageName={pageName}

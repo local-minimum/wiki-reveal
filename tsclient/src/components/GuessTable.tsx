@@ -13,6 +13,7 @@ import SortIcon from './SortIcon';
 interface GuessTableProps {
   guesses: Array<[name: string, isHint: boolean]>;
   lexicon: Record<string, number>;
+  rankings: Record<string, number>;
   freeWords: string[] | undefined;
   onSetFocusWord: (word: string) => void;
   focusWord: string | null;
@@ -25,6 +26,7 @@ type SortVariant = 'asc' | 'desc';
 
 function GuessTable({
   guesses, lexicon, onSetFocusWord, focusWord, freeWords, titleLexes, headingLexes,
+  rankings,
 }: GuessTableProps): JSX.Element {
   const mostRecentGuess = guesses[guesses.length - 1]?.[0];
   const previousGuess = usePrevious(mostRecentGuess);
@@ -103,13 +105,6 @@ function GuessTable({
     }
     return indexedGuesses;
   }, [indexedGuesses, lexicon, sortType, sortVariant]);
-
-  const rankings = React.useMemo(() => {
-    const sorted: Array<[string, number]> = [...Object.entries(lexicon)]
-      .filter(([word]) => !(freeWords?.includes(word) ?? false))
-      .sort(([, a], [, b]) => (a < b ? 1 : -1));
-    return Object.fromEntries(sorted.map(([word], idx) => [word, idx + 1]));
-  }, [freeWords, lexicon]);
 
   const theme = useTheme();
   const isCramped = useMediaQuery(theme.breakpoints.down('lg'));

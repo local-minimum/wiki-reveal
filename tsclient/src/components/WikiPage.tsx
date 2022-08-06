@@ -36,6 +36,7 @@ interface WikiPageProps {
   isError: boolean;
   freeWords: string[] | undefined;
   lexicon: Record<string, number>,
+  rankings: Record<string, number>,
   gameId: number | undefined;
   language: string | undefined;
   pageName: string | undefined;
@@ -75,6 +76,7 @@ function calculateAccuracy(
 function WikiPage({
   isLoading, isError, freeWords, lexicon, gameId, language, pageName, page,
   titleLexes, headingLexes, yesterdaysTitle, start, end, gameMode, onChangeGameMode,
+  rankings,
 }: WikiPageProps): JSX.Element {
   const { enqueueSnackbar } = useSnackbar();
   const reportAchievement = React.useCallback((achievement: Achievement): void => {
@@ -172,7 +174,7 @@ function WikiPage({
 
       newAchievements = [
         ...newAchievements,
-        ...checkRankAchievements(nextGuesses, lexicon)
+        ...checkRankAchievements(nextGuesses, rankings)
           .filter((achievement) => achievements[achievement] === undefined),
       ];
       newAchievements.map(reportAchievement);
@@ -231,6 +233,7 @@ function WikiPage({
     freeWords, gameId, guesses, handleSetFocusWord, hints, lexicon, playerResults,
     setGuesses, setPlayerResults, setVictory, title, pageName, achievements, setAchievements,
     titleLexes, headingLexes, victory, playStart, start, end, reportAchievement, gameMode,
+    rankings,
   ]);
 
   const addHint = React.useCallback((): void => {
@@ -265,13 +268,16 @@ function WikiPage({
 
   React.useEffect(() => {
     if (gameId === undefined) return;
-    const progressAchievements = checkRevealAchievements(progress)
+    const solvedHeaders = headingLexes
+      .filter((lex) => !guesses.some(([word, isHint]) => !isHint && lex === word))
+      .length === 0;
+    const progressAchievements = checkRevealAchievements(progress, solvedHeaders)
       .filter((a) => achievements[a] === undefined);
     if (progressAchievements.length > 0) {
       setAchievements(updateAchievements(achievements, progressAchievements, gameId));
       progressAchievements.map(reportAchievement);
     }
-  }, [achievements, gameId, progress, reportAchievement, setAchievements]);
+  }, [achievements, gameId, guesses, headingLexes, progress, reportAchievement, setAchievements]);
 
   React.useEffect(() => {
     if (gameId === undefined) return;
@@ -402,6 +408,7 @@ function WikiPage({
               onSetFocusWord={handleSetFocusWord}
               titleLexes={titleLexes}
               headingLexes={headingLexes}
+              rankings={rankings}
             />
           </Box>
           <GuessInput
