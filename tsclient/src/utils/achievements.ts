@@ -292,9 +292,9 @@ export function achievementToTitle(achievement: Achievement): [string, string] {
     case Achievement.RankTop100:
       return ['Galaxy Brain', 'Guess the 100 most frequent words in the article'];
     case Achievement.Achieve50:
-      return ['Scholar', 'Unlock at least half of all achievements'];
+      return ['Scholar', 'At any time, unlock at least half of all achievements'];
     case Achievement.Achieve100:
-      return ['All-knowing', 'Unlock all achievements'];
+      return ['All-knowing', 'At any time, unlock all achievements'];
     case Achievement.CheckYesterdaysSolution:
       return ['Curious', 'Check yesterday\'s solution'];
     default:
