@@ -18,7 +18,7 @@ interface GuessInputProps {
   compact?: boolean;
 }
 
-const INVALID = [' ', '-', '\'', '"', '_', '.', ':', ';'];
+const INVALID = [' ', '-', '\'', '"', '_', '.', ':', ';', '\n', '\t', '\r'];
 
 function labelText(isFreeWord: boolean | undefined, hasIllegal: boolean): string {
   if (hasIllegal) return 'Includes illegal character';
@@ -46,7 +46,7 @@ function GuessInput({
           focused
           color={isFreeWord || hasIllegal ? 'warning' : undefined}
           value={currentGuess}
-          onChange={({ target: { value } }) => setCurrentGuess(value)}
+          onChange={({ target: { value } }) => setCurrentGuess(value.replace(/\s/g, ''))}
           onKeyDown={({ key }) => {
             if (key === 'Enter' && currentGuess.length > 0 && !isFreeWord && !hasIllegal) {
               setCurrentGuess('');
