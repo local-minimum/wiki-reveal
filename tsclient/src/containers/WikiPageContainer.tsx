@@ -46,7 +46,18 @@ function WikiPageContainer(): JSX.Element {
     const sorted: Array<[string, number]> = [...Object.entries(lexicon)]
       .filter(([word]) => !(freeWords?.includes(word) ?? false))
       .sort(([, a], [, b]) => (a < b ? 1 : -1));
-    return Object.fromEntries(sorted.map(([word], idx) => [word, idx + 1]));
+
+    let splitting = 0;
+    return Object.fromEntries(
+      sorted.map(([word, count], idx, arr) => {
+        if (idx === 0 || arr[idx - 1][1] !== count) {
+          splitting = 0;
+          return [word, idx + 1];
+        }
+        splitting += 1;
+        return [word, idx + 1 - splitting];
+      }),
+    );
   }, [freeWords, lexicon]);
 
   const [titleLexes, headingLexes] = React.useMemo(() => {

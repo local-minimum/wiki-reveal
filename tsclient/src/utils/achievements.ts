@@ -319,11 +319,12 @@ export function checkRankAchievements(
 
   const [, topGuesses] = guesses
     .filter(([word, isHint]) => !isHint && rankings[word] !== undefined)
-    .map(([word]) => [word, rankings[word]])
+    .map<[string, number]>(([word]) => [word, rankings[word]])
     .sort(([, a], [, b]) => (a > b ? -1 : 1))
-    .reduce<[boolean, number]>(([foundAll, count], [lex]) => {
+    .reduce<[boolean, number]>(([foundAll, count], [lex, rank], idx) => {
       if (
         !foundAll
+        || (idx + 1) < rank
         || !guesses.some(([guess, isHint]) => guess === lex && !isHint)
       ) return [false, count];
       return [true, count + 1];
