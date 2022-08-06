@@ -18,6 +18,7 @@ import GuessHeader from './GuessHeader';
 import GuessInput from './GuessInput';
 import GuessTable from './GuessTable';
 import LoadFail from './LoadFail';
+import HowTo from './menu/HowTo';
 import RedactedPage from './RedactedPage';
 import SiteMenu from './SiteMenu';
 import Victory from './Victory';
@@ -89,6 +90,7 @@ function WikiPage({
   const [guesses, setGuesses] = useStoredValue<Array<[word: string, hinted: boolean]>>(`guesses-${gameId}`, []);
   const [victory, setVictory] = useStoredValue<VictoryType | null>(`victory-${gameId}`, null);
   const [playStart, setPlayStart] = useStoredValue<string| null>(`start-${gameId}`, null);
+  const [firstVisit, setFirstVisit] = useStoredValue<boolean>('first-visit', true);
   const [victoryVisible, setVictoryVisible] = React.useState<boolean>(true);
   const [playerResults, setPlayerResults] = useStoredValue<Array<[number, VictoryType]>>('player-results', []);
   const [achievements, setAchievements] = useStoredValue<AchievementsType>('achievements', {});
@@ -282,6 +284,8 @@ function WikiPage({
     [guesses, lexicon],
   );
 
+  const closeHowTo = React.useCallback(() => setFirstVisit(false), [setFirstVisit]);
+
   const articleRef = React.useRef<HTMLDivElement | null>(null);
   const theme = useTheme();
   const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
@@ -295,6 +299,7 @@ function WikiPage({
       }}
     >
       {isError && <LoadFail />}
+      {firstVisit && <HowTo onClose={closeHowTo} />}
       {victory !== null && (
         <Victory
           guesses={victory.guesses}
