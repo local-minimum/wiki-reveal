@@ -173,6 +173,8 @@ const SILVER: Achievement[] = [
   Achievement.GuessSingleDigit,
   Achievement.GuessLessThan20,
   Achievement.Guess42,
+  Achievement.RevealAllHeaders,
+  Achievement.RevealSummary90,
 ];
 
 const GOLD: Achievement[] = [
