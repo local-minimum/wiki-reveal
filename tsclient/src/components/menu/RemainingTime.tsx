@@ -5,32 +5,28 @@ import { simpleDuration } from '../../utils/time';
 
 interface RemainingTimeProps {
   end: Date;
+  yesterdays: boolean
 }
 
-function RemainingTime({ end }: RemainingTimeProps): JSX.Element {
+const DAY = 1000 * 60 * 60 * 24;
+
+function RemainingTime({ end, yesterdays }: RemainingTimeProps): JSX.Element {
   const [updateFreq, setUpdateFreq] = React.useState<number>(1000);
   const now = useLive(updateFreq);
-  const remaining = end.getTime() - now;
+  const remaining = end.getTime() - now + (yesterdays ? DAY : 0);
+
   React.useEffect(() => {
     if (remaining < 120000 && updateFreq !== 1000) setUpdateFreq(1000);
     if (remaining > 120000 && updateFreq !== 60000) setUpdateFreq(60000);
   }, [remaining, updateFreq]);
 
-  if (remaining < 60000) {
-    return (
-      <Alert severity="warning">
-        Remaining time:
-        {' '}
-        {simpleDuration(end)}
-      </Alert>
-    );
-  }
+  const durationText = simpleDuration(new Date(end.getTime() + (yesterdays ? DAY : 0)));
 
   return (
-    <Alert severity="info">
+    <Alert severity={remaining < 60000 ? 'warning' : 'info'}>
       Remaining time:
       {' '}
-      {simpleDuration(end)}
+      {durationText}
     </Alert>
   );
 }

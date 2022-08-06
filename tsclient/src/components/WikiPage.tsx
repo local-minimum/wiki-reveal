@@ -4,6 +4,7 @@ import {
 import { useSnackbar } from 'notistack';
 import * as React from 'react';
 import { useMemo } from 'react';
+import { GameMode } from '../api/page';
 
 import useClearStoredValues from '../hooks/useClearStoredValues';
 import useStoredValue from '../hooks/useStoredValue';
@@ -44,6 +45,8 @@ interface WikiPageProps {
   yesterdaysTitle: LexicalizedToken[] | undefined;
   start: Date | undefined;
   end: Date | undefined;
+  gameMode: GameMode;
+  onChangeGameMode: (mode: GameMode) => void;
 }
 
 function calculateProgress(
@@ -71,7 +74,7 @@ function calculateAccuracy(
 
 function WikiPage({
   isLoading, isError, freeWords, lexicon, gameId, language, pageName, page,
-  titleLexes, headingLexes, yesterdaysTitle, start, end,
+  titleLexes, headingLexes, yesterdaysTitle, start, end, gameMode, onChangeGameMode,
 }: WikiPageProps): JSX.Element {
   const { enqueueSnackbar } = useSnackbar();
   const reportAchievement = React.useCallback((achievement: Achievement): void => {
@@ -324,6 +327,8 @@ function WikiPage({
         hideFound={hideFound}
         onHideFound={setHideFound}
         end={end}
+        gameMode={gameMode}
+        onChangeGameMode={onChangeGameMode}
       />
       <Grid
         container

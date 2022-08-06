@@ -1,17 +1,19 @@
 import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
 
-import { getPage } from '../api/page';
+import { GameMode, getPage } from '../api/page';
 import WikiPage from '../components/WikiPage';
 import { Section } from '../types/wiki';
 import uniq from '../utils/uniq';
+import useStoredValue from '../hooks/useStoredValue';
 
 function WikiPageContainer(): JSX.Element {
+  const [gameMode, setGameMode] = useStoredValue<GameMode>('game-mode', 'today');
   const [staleTime, setStaleTime] = React.useState<number>(Infinity);
 
   const { isLoading, isError, data } = useQuery(
-    ['page'],
-    getPage,
+    ['page', gameMode],
+    () => getPage(gameMode),
     {
       staleTime,
       onSuccess: ({ end: endTime }) => {
@@ -62,6 +64,8 @@ function WikiPageContainer(): JSX.Element {
       yesterdaysTitle={yesterdaysTitle}
       start={start}
       end={end}
+      gameMode={gameMode}
+      onChangeGameMode={setGameMode}
     />
   );
 }

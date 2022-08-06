@@ -53,8 +53,16 @@ function transformPage({ title, summary, sections }: ResponsePage): Page {
   };
 }
 
-export function getPage() {
-  return fetch('api/page')
+export type GameMode = 'today' | 'yesterday' | 'coop';
+
+function gameModeToPath(gameMode: GameMode): string {
+  if (gameMode === 'today') return 'api/page';
+  if (gameMode === 'yesterday') return 'api/yesterday';
+  throw new Error('Game mode not implemented');
+}
+
+export function getPage(gameMode: GameMode) {
+  return fetch(gameModeToPath(gameMode))
     .then(((result): Promise<ResponseJSON> => {
       if (result.ok) return result.json();
       throw new Error('Failed to download page');

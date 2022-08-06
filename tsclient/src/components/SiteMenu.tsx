@@ -1,12 +1,13 @@
 import {
   faBars, faBroom, faEye, faEyeLowVision, faInfo, faMedal,
-  faPersonChalkboard, faStar, faTrophy, faUserSecret,
+  faPersonChalkboard, faPlay, faStar, faTrophy, faUserSecret,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   Divider, IconButton, ListItemIcon, ListItemText, Menu, MenuItem,
 } from '@mui/material';
 import * as React from 'react';
+import { GameMode } from '../api/page';
 import { LexicalizedToken } from '../types/wiki';
 import { AchievementsType } from '../utils/achievements';
 import Achievements from './menu/Achievements';
@@ -26,11 +27,13 @@ interface SiteMenuProps {
   hideFound: boolean;
   onHideFound: (hide: boolean) => void;
   end: Date | undefined;
+  gameMode: GameMode;
+  onChangeGameMode: (mode: GameMode) => void;
 }
 
 function SiteMenu({
   yesterdaysTitle, onShowVictory, achievements, onSetAchievements, gameId, hideFound, onHideFound,
-  end,
+  end, gameMode, onChangeGameMode,
 }: SiteMenuProps): JSX.Element {
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null);
   const open = Boolean(anchorEl);
@@ -57,6 +60,12 @@ function SiteMenu({
         <FontAwesomeIcon icon={faBars} size="1x" />
       </IconButton>
       <Menu open={open} onClose={handleClose} anchorEl={anchorEl}>
+        {end !== undefined && (
+          <>
+            <RemainingTime end={end} yesterdays={gameMode === 'yesterday'} />
+            <Divider />
+          </>
+        )}
         {onShowVictory !== undefined && (
           <MenuItem onClick={() => { handleClose(); onShowVictory(); }}>
             <ListItemIcon>
@@ -66,12 +75,6 @@ function SiteMenu({
               Show current victory
             </ListItemText>
           </MenuItem>
-        )}
-        {end !== undefined && (
-          <>
-            <RemainingTime end={end} />
-            <Divider />
-          </>
         )}
         <MenuItem
           title="Useful for sharing progress, to brag or share in frustration."
@@ -98,6 +101,26 @@ function SiteMenu({
           </ListItemIcon>
           <ListItemText>
             Achievements
+          </ListItemText>
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            handleClose();
+            if (gameMode === 'today') {
+              onChangeGameMode('yesterday');
+            } else {
+              onChangeGameMode('today');
+            }
+          }}
+        >
+          <ListItemIcon>
+            <FontAwesomeIcon icon={faPlay} />
+          </ListItemIcon>
+          <ListItemText>
+            Play
+            {' '}
+            {gameMode === 'today' ? 'yesterday' : 'today'}
+            &apos;s game
           </ListItemText>
         </MenuItem>
         <MenuItem onClick={() => { handleClose(); setShowYesterdays(true); }}>
