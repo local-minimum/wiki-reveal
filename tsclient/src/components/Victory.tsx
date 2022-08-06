@@ -7,6 +7,7 @@ import * as React from 'react';
 import {
   Achievement, AchievementsType, achievementToColor, achievementToIcon, achievementToTitle,
 } from '../utils/achievements';
+import { pluralize } from '../utils/plural';
 import { SingleAchievement } from './menu/SingleAchievement';
 
 interface VictoryProps {
@@ -29,11 +30,12 @@ function Victory({
     .values(Achievement)
     .filter((achievement) => achievements[achievement] === gameId);
 
+  const total = guesses + hints;
+
   const handleShare = () => {
     const nAchieve = newAchievements.length;
-    const total = guesses + hints;
-    const hasAchievements = nAchieve === 0 ? '' : ` earning me ${nAchieve} new achievement${nAchieve === 1 ? '' : 's'}`;
-    const msg = `I solved Wiki-Reveal #${gameId} in ${total} guess${total === 1 ? '' : 'es'} using ${hints} hint${hints === 1 ? '' : 's'}!
+    const hasAchievements = nAchieve === 0 ? '' : ` earning me ${nAchieve} new ${pluralize('achievement', nAchieve)}`;
+    const msg = `I solved Wiki-Reveal #${gameId} in ${total} ${pluralize('guess', total)} using ${hints} ${pluralize('hint', hints)}!
 My accuracy was ${accuracy.toFixed(1)}% revealing ${revealed.toFixed(1)}% of the article${hasAchievements}.`;
     navigator.clipboard.writeText(msg);
   };
@@ -52,8 +54,8 @@ My accuracy was ${accuracy.toFixed(1)}% revealing ${revealed.toFixed(1)}% of the
             You solved today&apos;s challenge (#
             {gameId ?? '??'}
             ) in
-            {` ${guesses + hints} guess${(guesses + hints) === 1 ? '' : 'es'}`}
-            {` using ${hints} hint${hints === 1 ? '' : 's'}!`}
+            {` ${total} ${pluralize('guess', total)}`}
+            {` using ${hints} ${pluralize('hint', hints)}!`}
           </Typography>
           <Typography>
             Your accuracy was
