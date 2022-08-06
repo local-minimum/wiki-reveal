@@ -323,6 +323,7 @@ function WikiPage({
         gameId={gameId}
         hideFound={hideFound}
         onHideFound={setHideFound}
+        end={end}
       />
       <Grid
         container

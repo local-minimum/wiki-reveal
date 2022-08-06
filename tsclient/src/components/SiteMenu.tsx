@@ -12,6 +12,7 @@ import { AchievementsType } from '../utils/achievements';
 import Achievements from './menu/Achievements';
 import HowTo from './menu/HowTo';
 import InfoDialog from './menu/InfoDialog';
+import RemainingTime from './menu/RemainingTime';
 import RevealYesterday from './menu/RevealYesterday';
 import VictoryHistory from './menu/VictoryHistory';
 import WipeDataDialog from './menu/WipeDataDialog';
@@ -24,10 +25,12 @@ interface SiteMenuProps {
   gameId: number | undefined;
   hideFound: boolean;
   onHideFound: (hide: boolean) => void;
+  end: Date | undefined;
 }
 
 function SiteMenu({
   yesterdaysTitle, onShowVictory, achievements, onSetAchievements, gameId, hideFound, onHideFound,
+  end,
 }: SiteMenuProps): JSX.Element {
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null);
   const open = Boolean(anchorEl);
@@ -63,6 +66,12 @@ function SiteMenu({
               Show current victory
             </ListItemText>
           </MenuItem>
+        )}
+        {end !== undefined && (
+          <>
+            <RemainingTime end={end} />
+            <Divider />
+          </>
         )}
         <MenuItem
           title="Useful for sharing progress, to brag or share in frustration."
