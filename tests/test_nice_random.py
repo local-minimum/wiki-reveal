@@ -1,8 +1,8 @@
-from random import random
-from wiki_reveal.nice_random import reset_seed
+from wiki_reveal.nice_random import get_seeded_random
+
 
 def test_reset_seed():
-    reset_seed()
-    v = random()
-    reset_seed()
-    assert v == random()
+    rng = get_seeded_random()
+    v = rng.random()
+    rng = get_seeded_random()
+    assert v == rng.random()

@@ -7,11 +7,24 @@ import WikiPage from '../components/WikiPage';
 import { Section } from '../types/wiki';
 import uniq from '../utils/uniq';
 import useStoredValue from '../hooks/useStoredValue';
+import useCoop from '../hooks/useCoop';
 
 function WikiPageContainer(): JSX.Element {
   const { enqueueSnackbar } = useSnackbar();
   const [gameMode, setGameMode] = useStoredValue<GameMode>('game-mode', 'today');
   const [staleTime, setStaleTime] = React.useState<number>(Infinity);
+
+  const {
+    room, connected, connect, createGame,
+  } = useCoop();
+
+  React.useEffect(() => {
+    if (localStorage.getItem('test-ws') !== null && connected === undefined) {
+      connect();
+    } else if (room === null) {
+      createGame();
+    }
+  }, [room, createGame, connected, connect]);
 
   const { isLoading, isError, data } = useQuery(
     ['page', gameMode],

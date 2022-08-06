@@ -90,7 +90,7 @@ def unwrap_sections(
     return tuple(parse_section(section) for section in page.sections)
 
 
-@lru_cache(maxsize=16)
+@lru_cache(maxsize=256)
 def get_page(
     page_name: str,
     *,
@@ -117,7 +117,14 @@ def load_page_name_options() -> dict[str, list[str]]:
         return json.load(fh)
 
 
-@lru_cache(maxsize=16)
+@lru_cache(maxsize=1)
+def get_number_of_options() -> int:
+    options = load_page_name_options()
+    counts = {k: len(v) for k, v in options.items()}
+    return sum(counts.values())
+
+
+@lru_cache(maxsize=256)
 def get_game_page_name(game_id: int) -> str:
     names = load_page_name_options()
     page = get_option(names, game_id)
