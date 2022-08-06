@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
 
+import { useSnackbar } from 'notistack';
 import { GameMode, getPage } from '../api/page';
 import WikiPage from '../components/WikiPage';
 import { Section } from '../types/wiki';
@@ -8,6 +9,7 @@ import uniq from '../utils/uniq';
 import useStoredValue from '../hooks/useStoredValue';
 
 function WikiPageContainer(): JSX.Element {
+  const { enqueueSnackbar } = useSnackbar();
   const [gameMode, setGameMode] = useStoredValue<GameMode>('game-mode', 'today');
   const [staleTime, setStaleTime] = React.useState<number>(Infinity);
 
@@ -24,6 +26,16 @@ function WikiPageContainer(): JSX.Element {
       },
     },
   );
+
+  React.useEffect(() => {
+    if (gameMode === 'yesterday') {
+      enqueueSnackbar('Playing yesterday\'s game', { variant: 'info' });
+    } else if (gameMode === 'today') {
+      enqueueSnackbar('Playing today\'s game', { variant: 'info' });
+    } else {
+      enqueueSnackbar('Playing a cooperative game', { variant: 'info' });
+    }
+  }, [enqueueSnackbar, gameMode]);
 
   const {
     page, freeWords, lexicon, gameId, language, pageName, yesterdaysTitle,

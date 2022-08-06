@@ -123,14 +123,16 @@ function SiteMenu({
             &apos;s game
           </ListItemText>
         </MenuItem>
-        <MenuItem onClick={() => { handleClose(); setShowYesterdays(true); }}>
-          <ListItemIcon>
-            <FontAwesomeIcon icon={faUserSecret} />
-          </ListItemIcon>
-          <ListItemText>
-            Yesterday&apos;s solution
-          </ListItemText>
-        </MenuItem>
+        {gameMode === 'today' && (
+          <MenuItem onClick={() => { handleClose(); setShowYesterdays(true); }}>
+            <ListItemIcon>
+              <FontAwesomeIcon icon={faUserSecret} />
+            </ListItemIcon>
+            <ListItemText>
+              Yesterday&apos;s solution
+            </ListItemText>
+          </MenuItem>
+        )}
         <Divider />
         <MenuItem onClick={() => { handleClose(); setShowHowTo(true); }}>
           <ListItemIcon>

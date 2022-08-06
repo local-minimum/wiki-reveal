@@ -5,6 +5,7 @@ import {
   faFaceRollingEyes, faGlobe, faHandsHoldingChild, faMagnifyingGlass, faMedal,
   faPerson, faPersonPraying, faTrophy, faUserGraduate,
 } from '@fortawesome/free-solid-svg-icons';
+import { GameMode } from '../api/page';
 import { VictoryType } from '../components/VictoryType';
 
 export enum Achievement {
@@ -40,9 +41,7 @@ export enum Achievement {
   LateFiveMinutes = 'late-last-5-minutes',
   LateLastMinute = 'late-last-1-minute',
   LateOverdue = 'late-overdue', // Play out today but solve it after time's up
-  // TODO Start
   LateYesterdays = 'late-yesterdays', // Play out yesterdays game
-  // TODO End
   // About more than one game
   Streak3 = 'streak-win-3',
   Streak10 = 'streak-win-10',
@@ -509,7 +508,20 @@ function checkDurationAchievements(
   ];
 }
 
+const GAME_MODE_ACHIEVEMENTS: Array<[(mode: GameMode) => boolean, Achievement]> = [
+  [(gameMode) => gameMode === 'yesterday', Achievement.LateYesterdays],
+];
+
+function gameModeSpecificAchievements(
+  gameMode: GameMode,
+): Achievement[] {
+  return GAME_MODE_ACHIEVEMENTS
+    .filter(([check]) => check(gameMode))
+    .map(([, achievement]) => achievement);
+}
+
 export function checkVictoryAchievements(
+  gameMode: GameMode,
   gameId: GameId,
   victory: VictoryType,
   guesses: Array<[string, boolean]>,
@@ -523,6 +535,7 @@ export function checkVictoryAchievements(
 ): Achievement[] {
   return [
     Achievement.FirstWin,
+    ...gameModeSpecificAchievements(gameMode),
     ...checkVictoryGuessTotal(victory.guesses + victory.hints),
     ...checkVictoryHints(victory.hints),
     ...checkVictoryAccuracy(victory.accuracy),

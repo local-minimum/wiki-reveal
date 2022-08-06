@@ -197,6 +197,7 @@ function WikiPage({
         };
         setVictory(newVictory);
         const newVictoryAchievements = checkVictoryAchievements(
+          gameMode,
           gameId,
           newVictory,
           nextGuesses,
@@ -229,7 +230,7 @@ function WikiPage({
   }, [
     freeWords, gameId, guesses, handleSetFocusWord, hints, lexicon, playerResults,
     setGuesses, setPlayerResults, setVictory, title, pageName, achievements, setAchievements,
-    titleLexes, headingLexes, victory, playStart, start, end, reportAchievement,
+    titleLexes, headingLexes, victory, playStart, start, end, reportAchievement, gameMode,
   ]);
 
   const addHint = React.useCallback((): void => {
