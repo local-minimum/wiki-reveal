@@ -1,4 +1,6 @@
+eventlet==0.30.2
 flask
-gunicorn
+flask-socketio
+gunicorn==20.1.0
 types-Flask
 wikipedia-api

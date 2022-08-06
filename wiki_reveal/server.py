@@ -1,7 +1,9 @@
 from http import HTTPStatus
 import logging
 import os
-from typing import Any, Optional
+from secrets import token_urlsafe
+from flask_socketio import SocketIO
+from typing import Any
 from flask import Flask, Response, abort, jsonify
 from wiki_reveal.exceptions import WikiError
 from wiki_reveal.game_id import get_game_id, get_start_and_end
@@ -14,6 +16,8 @@ logging.basicConfig(
 )
 
 app = Flask('Wiki-Reveal')
+app.config['SECRET_KEY'] = token_urlsafe(16)
+socketio = SocketIO(app)
 
 
 @app.get(f'/api/test.txt')
