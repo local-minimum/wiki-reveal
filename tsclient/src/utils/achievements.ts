@@ -464,7 +464,6 @@ const EARLY_ACHIEVEMENTS: Array<[(minutes: number) => boolean, Achievement]> = [
 const LATE_ACHIEVEMENTS: Array<[(minutes: number) => boolean, Achievement]> = [
   [(minutes) => minutes < 5 && minutes >= 1, Achievement.LateFiveMinutes],
   [(minutes) => minutes < 1 && minutes >= 0, Achievement.LateLastMinute],
-  [(minutes) => minutes < 0, Achievement.LateOverdue],
 ];
 
 function deltaMinutes(
@@ -508,15 +507,20 @@ function checkDurationAchievements(
   ];
 }
 
-const GAME_MODE_ACHIEVEMENTS: Array<[(mode: GameMode) => boolean, Achievement]> = [
+const GAME_MODE_ACHIEVEMENTS: Array<[(mode: GameMode, minutes: number) => boolean, Achievement]> = [
   [(gameMode) => gameMode === 'yesterday', Achievement.LateYesterdays],
+  [(gameMode, minutes) => gameMode === 'today' && minutes < 0, Achievement.LateOverdue],
 ];
 
 function gameModeSpecificAchievements(
   gameMode: GameMode,
+  playEnd: Date,
+  end: Date | undefined,
 ): Achievement[] {
+  const minutesUntilEnd = deltaMinutes(playEnd, end);
+
   return GAME_MODE_ACHIEVEMENTS
-    .filter(([check]) => check(gameMode))
+    .filter(([check]) => check(gameMode, minutesUntilEnd))
     .map(([, achievement]) => achievement);
 }
 
@@ -535,7 +539,7 @@ export function checkVictoryAchievements(
 ): Achievement[] {
   return [
     Achievement.FirstWin,
-    ...gameModeSpecificAchievements(gameMode),
+    ...gameModeSpecificAchievements(gameMode, playEnd, end),
     ...checkVictoryGuessTotal(victory.guesses + victory.hints),
     ...checkVictoryHints(victory.hints),
     ...checkVictoryAccuracy(victory.accuracy),
