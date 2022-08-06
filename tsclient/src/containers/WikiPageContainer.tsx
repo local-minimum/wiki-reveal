@@ -68,6 +68,18 @@ function WikiPageContainer(): JSX.Element {
     ];
   }, [page]);
 
+  const summaryToReveal = React.useMemo(
+    () => page?.summary.reduce<Record<string, number>>((acc, paragraph) => {
+      paragraph.forEach(([, isHidden, lex]) => {
+        if (!isHidden && !freeWords?.includes(lex)) {
+          acc[lex] = (acc[lex] ?? 0) + 1;
+        }
+      });
+      return acc;
+    }, {}),
+    [freeWords, page?.summary],
+  );
+
   return (
     <WikiPage
       isLoading={isLoading}
@@ -81,6 +93,7 @@ function WikiPageContainer(): JSX.Element {
       page={page}
       titleLexes={titleLexes}
       headingLexes={headingLexes}
+      summaryToReveal={summaryToReveal}
       yesterdaysTitle={yesterdaysTitle}
       start={start}
       end={end}

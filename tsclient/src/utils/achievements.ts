@@ -347,12 +347,18 @@ const REVEAL_ACHIEVEMENTS: Array<[number, Achievement]> = [
 export function checkRevealAchievements(
   revealed: number,
   solvedHeaders: boolean,
+  summaryRevealed: number,
 ): Achievement[] {
   return [
     ...REVEAL_ACHIEVEMENTS
       .filter(([threshold]) => revealed >= threshold)
       .map(([, achievement]) => achievement),
     ...(solvedHeaders ? [Achievement.RevealAllHeaders] : []),
+    ...(
+      Number.isFinite(summaryRevealed) && summaryRevealed > 90
+        ? [Achievement.RevealSummary90]
+        : []
+    ),
   ];
 }
 

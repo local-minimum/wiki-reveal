@@ -43,6 +43,7 @@ interface WikiPageProps {
   page: Page | undefined;
   titleLexes: string[];
   headingLexes: string[];
+  summaryToReveal: Record<string, number> | undefined;
   yesterdaysTitle: LexicalizedToken[] | undefined;
   start: Date | undefined;
   end: Date | undefined;
@@ -76,7 +77,7 @@ function calculateAccuracy(
 function WikiPage({
   isLoading, isError, freeWords, lexicon, gameId, language, pageName, page,
   titleLexes, headingLexes, yesterdaysTitle, start, end, gameMode, onChangeGameMode,
-  rankings,
+  rankings, summaryToReveal,
 }: WikiPageProps): JSX.Element {
   const { enqueueSnackbar } = useSnackbar();
   const reportAchievement = React.useCallback((achievement: Achievement): void => {
@@ -271,13 +272,28 @@ function WikiPage({
     const solvedHeaders = headingLexes
       .filter((lex) => !guesses.some(([word, isHint]) => !isHint && lex === word))
       .length === 0;
-    const progressAchievements = checkRevealAchievements(progress, solvedHeaders)
+    const [summaryFound, summaryTotal] = Object
+      .entries(summaryToReveal ?? {})
+      .reduce<[number, number]>(([found, total], [lex, count]) => {
+        if (guesses.some(([word, isHint]) => word === lex && !isHint)) {
+          return [found + count, total + count];
+        }
+        return [found, total + count];
+      }, [0, 0]);
+    const progressAchievements = checkRevealAchievements(
+      progress,
+      solvedHeaders,
+      summaryFound / summaryTotal,
+    )
       .filter((a) => achievements[a] === undefined);
     if (progressAchievements.length > 0) {
       setAchievements(updateAchievements(achievements, progressAchievements, gameId));
       progressAchievements.map(reportAchievement);
     }
-  }, [achievements, gameId, guesses, headingLexes, progress, reportAchievement, setAchievements]);
+  }, [
+    achievements, gameId, guesses, headingLexes, progress,
+    reportAchievement, setAchievements, summaryToReveal,
+  ]);
 
   React.useEffect(() => {
     if (gameId === undefined) return;
