@@ -384,7 +384,16 @@ function WikiPage({
           }}
         >
           <GuessHeader guesses={guesses.length} accuracy={accuracy} />
-          <Box sx={{ height: isSmall ? '18vh' : '87vh' }}>
+          <Box
+            sx={{
+              // Header height 0px / 32px
+              // Guess box height 40px / 56px
+              // Gap 8px
+              // Padding 4px
+              // And some extra?
+              height: `calc(${isSmall ? 25 : 100}vh - ${isSmall ? 60 : 130}px)`,
+            }}
+          >
             <GuessTable
               focusWord={focusWord}
               guesses={guesses}

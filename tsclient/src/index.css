@@ -1,15 +1,15 @@
 html {
-  height: 100vh;
+  height: 100%;
   height: -moz-available;          /* WebKit-based browsers will ignore this. */
   height: -webkit-fill-available;  /* Mozilla-based browsers will ignore this. */
   height: fill-available;
+  overflow: hidden;
 }
 
 body {
   margin: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  height: 100vh;
   height: -moz-available;          /* WebKit-based browsers will ignore this. */
   height: -webkit-fill-available;  /* Mozilla-based browsers will ignore this. */
   height: fill-available;
