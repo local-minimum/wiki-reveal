@@ -16,8 +16,9 @@ from wiki_reveal.game_id import (
 )
 from wiki_reveal.generate_name import generate_name
 from wiki_reveal.rooms import (
-    add_coop_game, add_coop_user, clear_old_coop_games,
-    coop_game_exists, get_room_data, remove_coop_user, rename_user,
+    add_coop_game, add_coop_guess, add_coop_user, clear_old_coop_games,
+    coop_game_exists, coop_game_is_full, get_room_data, remove_coop_user,
+    rename_user,
 )
 
 from wiki_reveal.wiki import (
@@ -78,6 +79,30 @@ def coop_on_create(data: dict[str, Any]):
     )
 
 
+@socketio.on('guess')
+def coop_on_guess(data: dict[str, Any]):
+    room = data['room']
+    username = data['username']
+    lex = data['lex']
+
+    try:
+        idx = add_coop_guess(room, username, lex)
+    except CoopGameDoesNotExistError:
+        abort(HTTPStatus.BAD_REQUEST)
+
+    if idx >= 0:
+        send(
+            {
+                "type": 'GUESS',
+                "username": username,
+                "lex": lex,
+                "index": idx,
+            },
+            to=room,
+
+        )
+
+
 @socketio.on('rename')
 def coop_on_rename(data: dict[str, Any]):
     from_name = data['from']
@@ -117,6 +142,14 @@ def coop_on_join(data: dict[str, Any]):
             {
                 "type": 'JOIN-FAIL',
                 "reason": 'Room does not exist',
+            },
+            to=sid,
+        )
+    elif coop_game_is_full(room):
+        send(
+            {
+                "type": 'JOIN-FAIL',
+                "reason": 'Room is full',
             },
             to=sid,
         )

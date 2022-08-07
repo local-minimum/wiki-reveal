@@ -15,7 +15,8 @@ function WikiPageContainer(): JSX.Element {
   const [staleTime, setStaleTime] = React.useState<number>(Infinity);
 
   const {
-    room, connected, connect, createGame, username, renameMe, disconnect, users,
+    room, connected, connect, createGame, username, renameMe, disconnect, users, guess,
+    registerGuessReciever, registerRenameReciever,
   } = useCoop(gameMode);
 
   const handleCreateCoopGame = React.useCallback((
@@ -147,6 +148,9 @@ function WikiPageContainer(): JSX.Element {
       onDisconnect={disconnect}
       coopUsers={users}
       coopRoom={room}
+      onCoopGuess={guess}
+      registerGuessReciever={registerGuessReciever}
+      registerRenameReciever={registerRenameReciever}
     />
   );
 }

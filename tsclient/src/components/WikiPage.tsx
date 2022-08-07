@@ -60,6 +60,9 @@ interface WikiPageProps {
   onDisconnect: () => void;
   coopRoom: string | null;
   coopUsers: string[];
+  registerGuessReciever: (reciever: (guessIdx: number, guess: Guess) => void) => void;
+  registerRenameReciever: (reciever: (from: string, to: string) => void) => void;
+  onCoopGuess: (lex: string) => void;
 }
 
 function calculateProgress(
@@ -89,7 +92,8 @@ function WikiPage({
   isLoading, isError, freeWords, lexicon, gameId, language, pageName, page,
   titleLexes, headingLexes, yesterdaysTitle, start, end, gameMode, onChangeGameMode,
   rankings, summaryToReveal, username, onChangeUsername, onCreateCoopGame, connected,
-  onConnect, onDisconnect, coopRoom, coopUsers,
+  onConnect, onDisconnect, coopRoom, coopUsers, registerGuessReciever, registerRenameReciever,
+  onCoopGuess,
 }: WikiPageProps): JSX.Element {
   const prevGameMode = usePrevious(gameMode);
   const { enqueueSnackbar } = useSnackbar();
@@ -136,6 +140,27 @@ function WikiPage({
   const focusedWordCounter = React.useRef(0);
 
   focusedWordCounter.current = focusWordIndex;
+
+  const renameGuesser = React.useCallback((from: string, to: string): void => {
+    if (gameMode !== 'coop') return;
+    setGuesses(guesses.map(([lex, isHint, user]) => [lex, isHint, user === from ? to : user]));
+  }, [gameMode, guesses, setGuesses]);
+
+  React.useEffect(() => {
+    registerRenameReciever(renameGuesser);
+  }, [registerRenameReciever, renameGuesser]);
+
+  const recieveGuess = React.useCallback((guessIdx: number, guess: Guess): void => {
+    console.log(gameMode, guess, guessIdx);
+    if (gameMode !== 'coop') return;
+    const newGuesses = [...guesses];
+    newGuesses[guessIdx] = guess;
+    setGuesses(newGuesses);
+  }, [gameMode, guesses, setGuesses]);
+
+  React.useEffect(() => {
+    registerGuessReciever(recieveGuess);
+  }, [recieveGuess, registerGuessReciever]);
 
   const handleSetFocusWord = React.useCallback((word: string): void => {
     if (word !== focusWord) {
@@ -186,6 +211,10 @@ function WikiPage({
       return;
     }
     if (!guesses.some(([word]) => word === entry)) {
+      if (gameMode === 'coop') {
+        onCoopGuess(entry);
+        return;
+      }
       const nextGuesses: Array<Guess> = [...guesses, [entry, false, username]];
       setGuesses(nextGuesses);
 
@@ -244,11 +273,8 @@ function WikiPage({
           );
           newVictoryAchievements.map(reportAchievement);
         }
-        // TODO allow it if it is todays?
         // TODO what happens if player complete yesterdays after todays?
-        if (gameMode !== 'coop') {
-          setPlayerResults([...playerResults, [gameId, newVictory]]);
-        }
+        setPlayerResults([...playerResults, [gameId, newVictory]]);
       } else if (newAchievements.length > 0) {
         setAchievements(updateAchievements(achievements, newAchievements, gameId));
       }
@@ -259,7 +285,7 @@ function WikiPage({
     freeWords, gameId, guesses, handleSetFocusWord, hints, lexicon, playerResults,
     setGuesses, setPlayerResults, setVictory, title, pageName, achievements, setAchievements,
     titleLexes, headingLexes, victory, playStart, start, end, reportAchievement, gameMode,
-    rankings, username,
+    rankings, username, onCoopGuess,
   ]);
 
   const addHint = React.useCallback((): void => {

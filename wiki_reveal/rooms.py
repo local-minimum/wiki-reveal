@@ -2,13 +2,20 @@ from datetime import datetime, timedelta, timezone
 import logging
 from typing import Any, Optional
 from xmlrpc.client import boolean
-from flask_socketio import close_room
-from wiki_reveal.exceptions import CoopGameDoesNotExistError  # type: ignore
+from flask_socketio import close_room  # type: ignore
+from wiki_reveal.exceptions import CoopGameDoesNotExistError
 
 from wiki_reveal.game_id import SECONDS_PER_DAY, get_end_of_current
 
 SID = Any
-ROOM_DATA = tuple[datetime, Optional[datetime], int, dict[SID, str]]
+GUESS = list[str]
+ROOM_DATA = tuple[
+    datetime,
+    Optional[datetime],
+    int,
+    dict[SID, str],
+    list[GUESS]
+]
 ROOMS: dict[str, ROOM_DATA] = {}
 
 
@@ -16,7 +23,7 @@ def clear_old_coop_games():
     keys = tuple(ROOMS.keys())
     now = datetime.now(tz=timezone.utc)
     for key in keys:
-        start, end, _, __ = ROOMS[key]
+        start, end, _, __, ___ = ROOMS[key]
         if (
             (start - now).total_seconds() > SECONDS_PER_DAY
             or (
@@ -30,6 +37,11 @@ def clear_old_coop_games():
 
 def coop_game_exists(room: str) -> boolean:
     return room in ROOMS
+
+
+def coop_game_is_full(room: str) -> boolean:
+    _, __, ___, users, ____ = ROOMS[room]
+    return len(users) < 16
 
 
 def add_coop_game(
@@ -50,6 +62,7 @@ def add_coop_game(
         ),
         game_id,
         {sid: username},
+        [],
     )
 
 
@@ -58,7 +71,7 @@ def add_coop_user(room: str, sid: SID, username: str) -> list[str]:
         logging.error('Attempted to add user to a non-existing rom')
         return []
 
-    _, __, ___, users = ROOMS[room]
+    _, __, ___, users, ____ = ROOMS[room]
     users[sid] = username
     return list(users.values())
 
@@ -67,7 +80,7 @@ def remove_coop_user(room: str, sid: SID) -> tuple[Optional[str], list[str]]:
     if not coop_game_exists(room):
         return None, []
 
-    _, __, ___, users = ROOMS[room]
+    _, __, ___, users, ____ = ROOMS[room]
     username = users.get(sid)
     del users[sid]
     return username, list(users.values())
@@ -77,14 +90,32 @@ def rename_user(room: str, sid: SID, username: str):
     if not coop_game_exists(room):
         return
 
-    _, __, ___, users = ROOMS[room]
+    _, __, ___, users, guesses = ROOMS[room]
+    old_name = users.get('sid')
     users[sid] = username
-    # TODO: update guess list
+
+    if old_name is not None:
+        for guess in guesses:
+            ____, user = guess
+            if user == old_name:
+                guess[1] = username
 
 
 def get_room_data(room: str) -> tuple[datetime, Optional[datetime], int]:
     if not coop_game_exists(room):
         raise CoopGameDoesNotExistError
 
-    start, end, game_id, _ = ROOMS[room]
+    start, end, game_id, _, __ = ROOMS[room]
     return start, end, game_id
+
+
+def add_coop_guess(room: str, username: str, lex: str) -> int:
+    if not coop_game_exists(room):
+        raise CoopGameDoesNotExistError
+
+    _, __, ___, ____, guesses = ROOMS[room]
+    if any(guess for guess, _ in guesses):
+        return -1
+
+    guesses.append([lex, username])
+    return len(guesses)
