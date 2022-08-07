@@ -1,7 +1,7 @@
 import { faClose } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  Button, Dialog, DialogActions, DialogContent, DialogContentText,
+  Button, Dialog, DialogActions, DialogContent,
   DialogTitle, Grid, useMediaQuery, useTheme,
 } from '@mui/material';
 import * as React from 'react';

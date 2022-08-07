@@ -131,7 +131,8 @@ function useCoop(gameMode: GameMode): Coop {
       return;
     }
 
-    const newSocket = io();
+    const path = window.location.href.replace(/\/$/, '');
+    const newSocket = io(path);
     setSocket(newSocket);
 
     newSocket.on('connect', () => {

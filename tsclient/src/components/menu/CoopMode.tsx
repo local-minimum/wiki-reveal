@@ -200,11 +200,11 @@ function CoopMode({
               onChange={({ target: { value } }) => setJoinRoom(value ?? '')}
             />
             <Button
-              disabled={(joinRoom ?? room ?? '').trim().length === 0}
+              disabled={connected !== true || (joinRoom ?? room ?? '').trim().length === 0}
               variant="contained"
               onClick={() => {
                 onJoin((joinRoom ?? room ?? '').trim());
-                handleClose();
+                onClose();
               }}
               startIcon={<FontAwesomeIcon icon={faHandshake} />}
             >
