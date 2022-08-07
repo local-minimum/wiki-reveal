@@ -23,7 +23,11 @@ function useStoredValue<T>(
 
   const handleNewValue = useCallback((newValue: T): void => {
     setValue(newValue);
-    localStorage.setItem(key, JSON.stringify(newValue));
+    if (newValue == null) {
+      localStorage.removeItem(key);
+    } else {
+      localStorage.setItem(key, JSON.stringify(newValue));
+    }
   }, [key]);
 
   return [value, handleNewValue];

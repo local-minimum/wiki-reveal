@@ -26,6 +26,7 @@ import SiteMenu from './SiteMenu';
 import Victory from './Victory';
 import { VictoryType } from './VictoryType';
 import { CoopGameType, ExpireType } from '../hooks/useCoop';
+import usePrevious from '../hooks/usePrevious';
 
 function randomEntry<T>(arr: T[]): T {
   return arr[Math.min(Math.floor(Math.random() * arr.length), arr.length - 1)];
@@ -90,6 +91,7 @@ function WikiPage({
   rankings, summaryToReveal, username, onChangeUsername, onCreateCoopGame, connected,
   onConnect, onDisconnect, coopRoom, coopUsers,
 }: WikiPageProps): JSX.Element {
+  const prevGameMode = usePrevious(gameMode);
   const { enqueueSnackbar } = useSnackbar();
   const reportAchievement = React.useCallback((achievement: Achievement): void => {
     enqueueSnackbar(
@@ -124,8 +126,8 @@ function WikiPage({
 
   const [hideFound, setHideFound] = React.useState<boolean>(false);
   const hideWords = useMemo(
-    () => (hideFound ? guesses.map(([word]) => word) : []),
-    [guesses, hideFound],
+    () => (prevGameMode === gameMode && hideFound ? guesses.map(([word]) => word) : []),
+    [gameMode, guesses, hideFound, prevGameMode],
   );
   const [unmasked, setUnmasked] = React.useState<number>(-1);
   const [[focusWord, focusWordIndex], setFocusWord] = React
@@ -157,11 +159,19 @@ function WikiPage({
   const { title, summary, sections } = React.useMemo(
     () => unmaskPage(
       page ?? { title: [], summary: [], sections: [] },
-      guesses.map(([word]) => word),
-      unmasked === gameId,
+      (prevGameMode === gameMode ? guesses : []).map(([word]) => word),
+      prevGameMode === gameMode && unmasked === gameId,
     ),
-    [gameId, guesses, page, unmasked],
+    [gameId, gameMode, guesses, page, prevGameMode, unmasked],
   );
+
+  React.useEffect(() => {
+    if (prevGameMode !== gameMode && (gameMode === 'coop' || prevGameMode === 'coop')) {
+      setGuesses([]);
+      setVictory(null);
+      setVictoryVisible(true);
+    }
+  }, [gameMode, prevGameMode, setGuesses, setVictory]);
 
   const hints = React.useMemo(
     () => guesses.reduce((acc, [_, isHint]) => (isHint ? acc + 1 : acc), 0),
@@ -234,7 +244,11 @@ function WikiPage({
           );
           newVictoryAchievements.map(reportAchievement);
         }
-        setPlayerResults([...playerResults, [gameId, newVictory]]);
+        // TODO allow it if it is todays?
+        // TODO what happens if player complete yesterdays after todays?
+        if (gameMode !== 'coop') {
+          setPlayerResults([...playerResults, [gameId, newVictory]]);
+        }
       } else if (newAchievements.length > 0) {
         setAchievements(updateAchievements(achievements, newAchievements, gameId));
       }
@@ -333,14 +347,14 @@ function WikiPage({
 
   const handleChangeUsername = React.useCallback((newName: string | null) => {
     if (gameMode !== 'coop') {
-      setGuesses(guesses.map(([lex, isHint, user]) => [
+      setGuesses(guesses.map(([lex, isHint]) => [
         lex,
         isHint,
-        !isHint && user === username ? newName : user,
+        !isHint ? newName : null,
       ]));
     }
     onChangeUsername(newName);
-  }, [gameMode, guesses, setGuesses, username, onChangeUsername]);
+  }, [gameMode, guesses, setGuesses, onChangeUsername]);
 
   return (
     <Box
@@ -374,7 +388,7 @@ function WikiPage({
         achievements={achievements}
         onSetAchievements={setAchievements}
         gameId={gameId}
-        hideFound={hideFound}
+        hideFound={hideFound && prevGameMode === gameMode}
         onHideFound={setHideFound}
         end={end}
         gameMode={gameMode}
@@ -453,7 +467,7 @@ function WikiPage({
           >
             <GuessTable
               focusWord={focusWord}
-              guesses={guesses}
+              guesses={prevGameMode !== gameMode && gameMode === 'coop' ? [] : guesses}
               lexicon={lexicon}
               onSetFocusWord={handleSetFocusWord}
               titleLexes={titleLexes}

@@ -217,7 +217,7 @@ function GuessTable({
                     {gameMode === 'coop' && userName != null && (
                       <Avatar
                         sx={{
-                          color: stringToColor(userName),
+                          bgcolor: stringToColor(userName),
                           height: 24,
                           width: 24,
                           fontSize: '0.75rem',
