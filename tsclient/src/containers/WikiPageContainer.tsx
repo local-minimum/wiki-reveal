@@ -15,7 +15,7 @@ function WikiPageContainer(): JSX.Element {
   const [staleTime, setStaleTime] = React.useState<number>(Infinity);
 
   const {
-    room, connected, connect, createGame,
+    room, connected, connect, createGame, username,
   } = useCoop();
 
   React.useEffect(() => {
@@ -123,6 +123,7 @@ function WikiPageContainer(): JSX.Element {
       end={end}
       gameMode={gameMode}
       onChangeGameMode={setGameMode}
+      username={username}
     />
   );
 }

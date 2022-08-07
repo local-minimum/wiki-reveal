@@ -8,6 +8,7 @@ import {
   faPerson, faPersonPraying, faTrophy, faUserGraduate,
 } from '@fortawesome/free-solid-svg-icons';
 import { GameMode } from '../api/page';
+import { Guess } from '../components/Guess';
 import { VictoryType } from '../components/VictoryType';
 
 export enum Achievement {
@@ -314,7 +315,7 @@ const TOP_GUESSES: Array<[number, Achievement]> = [
 ];
 
 export function checkRankAchievements(
-  guesses: Array<[string, boolean]>,
+  guesses: Array<Guess>,
   rankings: Record<string, number>,
 ): Achievement[] {
   if (guesses.length === 0) return [];
@@ -408,7 +409,7 @@ function checkVictoryAccuracy(accuracy: number): Achievement[] {
 }
 
 function checkSpecialGuessRules(
-  guesses: Array<[string, boolean]>,
+  guesses: Array<Guess>,
   titleLexes: string[],
   headingLexes: string[],
 ): Achievement[] {
@@ -545,7 +546,7 @@ export function checkVictoryAchievements(
   gameMode: GameMode,
   gameId: GameId,
   victory: VictoryType,
-  guesses: Array<[string, boolean]>,
+  guesses: Array<Guess>,
   titleLexes: string[],
   headingLexes: string[],
   history: Array<[GameId, VictoryType]>,

@@ -1,32 +1,36 @@
 import { faHeading, faPuzzlePiece, faStar } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
+  Avatar,
   Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip,
   useMediaQuery, useTheme,
 } from '@mui/material';
 import * as React from 'react';
+import { GameMode } from '../api/page';
 import usePrevious from '../hooks/usePrevious';
 import useStoredValue from '../hooks/useStoredValue';
+import { initials, stringToColor } from '../utils/avatar';
+import { Guess } from './Guess';
 import ScrollToTop from './ScrollToTop';
 import SortIcon from './SortIcon';
 
 interface GuessTableProps {
-  guesses: Array<[name: string, isHint: boolean]>;
+  guesses: Array<Guess>;
   lexicon: Record<string, number>;
   rankings: Record<string, number>;
-  freeWords: string[] | undefined;
   onSetFocusWord: (word: string) => void;
   focusWord: string | null;
   titleLexes: string[];
   headingLexes: string[];
+  gameMode: GameMode;
 }
 
 type SortType = 'order' | 'alphabetical' | 'count' | 'rank';
 type SortVariant = 'asc' | 'desc';
 
 function GuessTable({
-  guesses, lexicon, onSetFocusWord, focusWord, freeWords, titleLexes, headingLexes,
-  rankings,
+  guesses, lexicon, onSetFocusWord, focusWord, titleLexes, headingLexes,
+  rankings, gameMode,
 }: GuessTableProps): JSX.Element {
   const mostRecentGuess = guesses[guesses.length - 1]?.[0];
   const previousGuess = usePrevious(mostRecentGuess);
@@ -66,9 +70,10 @@ function GuessTable({
   }, [setSort, sortType, sortVariant]);
 
   const indexedGuesses: Array<[
-    word: string, ordinal: number, isHint: boolean
+    word: string, ordinal: number, isHint: boolean, userName: string | null
   ]> = guesses
-    .map(([word, isHint], idx) => [word, idx + 1, isHint]);
+    .map(([word, isHint, userName], idx) => [word, idx + 1, isHint, userName]);
+
   const sortedGuesses = React.useMemo(() => {
     if (sortType === 'order') {
       if (sortVariant === 'desc') {
@@ -169,7 +174,7 @@ function GuessTable({
           </TableRow>
         </TableHead>
         <TableBody>
-          {sortedGuesses.map(([word, ordinal, isHint], idx) => {
+          {sortedGuesses.map(([word, ordinal, isHint, userName], idx) => {
             const focused = word === focusWord;
             const mostRecent = ordinal === sortedGuesses.length;
 
@@ -208,6 +213,19 @@ function GuessTable({
                       <Tooltip title="Word gotten as a hint">
                         <FontAwesomeIcon icon={faPuzzlePiece} />
                       </Tooltip>
+                    )}
+                    {gameMode === 'coop' && userName != null && (
+                      <Avatar
+                        sx={{
+                          color: stringToColor(userName),
+                          height: 24,
+                          width: 24,
+                          fontSize: '0.75rem',
+                        }}
+                        alt={userName}
+                      >
+                        {initials(userName)}
+                      </Avatar>
                     )}
                   </Box>
                 </TableCell>

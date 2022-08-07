@@ -18,6 +18,7 @@ import { unmaskPage, wordAsLexicalEntry } from '../utils/wiki';
 import GuessHeader from './GuessHeader';
 import GuessInput from './GuessInput';
 import GuessTable from './GuessTable';
+import { Guess } from './Guess';
 import LoadFail from './LoadFail';
 import HowTo from './menu/HowTo';
 import RedactedPage from './RedactedPage';
@@ -49,12 +50,13 @@ interface WikiPageProps {
   end: Date | undefined;
   gameMode: GameMode;
   onChangeGameMode: (mode: GameMode) => void;
+  username: string | null;
 }
 
 function calculateProgress(
   lexicon: Record<string, number>,
   freeWords: string[] | undefined,
-  guesses: Array<[string, boolean]>,
+  guesses: Array<Guess>,
 ): number {
   const total = Object.values(lexicon).reduce((acc, count) => acc + count, 0);
   const found = [...(freeWords ?? []), ...guesses.map(([w]) => w)]
@@ -64,7 +66,7 @@ function calculateProgress(
 
 function calculateAccuracy(
   lexicon: Record<string, number>,
-  guesses: Array<[string, boolean]>,
+  guesses: Array<Guess>,
 ): number {
   const trueGuesses = guesses.filter(([, hinted]) => !hinted);
   if (trueGuesses.length === 0) return 0;
@@ -77,7 +79,7 @@ function calculateAccuracy(
 function WikiPage({
   isLoading, isError, freeWords, lexicon, gameId, language, pageName, page,
   titleLexes, headingLexes, yesterdaysTitle, start, end, gameMode, onChangeGameMode,
-  rankings, summaryToReveal,
+  rankings, summaryToReveal, username,
 }: WikiPageProps): JSX.Element {
   const { enqueueSnackbar } = useSnackbar();
   const reportAchievement = React.useCallback((achievement: Achievement): void => {
@@ -93,7 +95,7 @@ function WikiPage({
     );
   }, [enqueueSnackbar]);
 
-  const [guesses, setGuesses] = useStoredValue<Array<[word: string, hinted: boolean]>>(`guesses-${gameId}`, []);
+  const [guesses, setGuesses] = useStoredValue<Array<Guess>>(`guesses-${gameId}`, []);
   const [victory, setVictory] = useStoredValue<VictoryType | null>(`victory-${gameId}`, null);
   const [playStart, setPlayStart] = useStoredValue<string| null>(`start-${gameId}`, null);
   const [firstVisit, setFirstVisit] = useStoredValue<boolean>('first-visit', true);
@@ -165,7 +167,7 @@ function WikiPage({
       return;
     }
     if (!guesses.some(([word]) => word === entry)) {
-      const nextGuesses: Array<[string, boolean]> = [...guesses, [entry, false]];
+      const nextGuesses: Array<Guess> = [...guesses, [entry, false, username]];
       setGuesses(nextGuesses);
 
       let newAchievements = [];
@@ -234,7 +236,7 @@ function WikiPage({
     freeWords, gameId, guesses, handleSetFocusWord, hints, lexicon, playerResults,
     setGuesses, setPlayerResults, setVictory, title, pageName, achievements, setAchievements,
     titleLexes, headingLexes, victory, playStart, start, end, reportAchievement, gameMode,
-    rankings,
+    rankings, username,
   ]);
 
   const addHint = React.useCallback((): void => {
@@ -249,7 +251,7 @@ function WikiPage({
 
     const worthy = options.filter((word) => lexicon[word] >= maxCount * 0.95);
     if (worthy.length > 0) {
-      setGuesses([...guesses, [randomEntry(worthy), true]]);
+      setGuesses([...guesses, [randomEntry(worthy), true, null]]);
       return;
     }
 
@@ -257,7 +259,11 @@ function WikiPage({
     setGuesses(
       [
         ...guesses,
-        [randomEntry(remaining.slice(0, Math.max(10, Math.ceil(remaining.length * 0.05)))), true],
+        [
+          randomEntry(remaining.slice(0, Math.max(10, Math.ceil(remaining.length * 0.05)))),
+          true,
+          null,
+        ],
       ],
     );
   }, [freeWords, guesses, lexicon, setGuesses, title]);
@@ -421,11 +427,11 @@ function WikiPage({
               focusWord={focusWord}
               guesses={guesses}
               lexicon={lexicon}
-              freeWords={freeWords}
               onSetFocusWord={handleSetFocusWord}
               titleLexes={titleLexes}
               headingLexes={headingLexes}
               rankings={rankings}
+              gameMode={gameMode}
             />
           </Box>
           <GuessInput

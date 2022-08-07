@@ -25,6 +25,19 @@ interface VictoryProps {
   gameMode: GameMode;
 }
 
+function gameModeToText(gameMode: GameMode): string {
+  switch (gameMode) {
+    case 'today':
+      return 'today\'s';
+    case 'yesterday':
+      return 'yesterday\'s';
+    case 'coop':
+      return 'a coop';
+    default:
+      return '';
+  }
+}
+
 function Victory({
   hints, guesses, gameId, onRevealAll, accuracy, revealed, visible, onSetVisible,
   achievements, gameMode,
@@ -39,7 +52,7 @@ function Victory({
   const handleShare = () => {
     const nAchieve = newAchievements.length;
     const hasAchievements = nAchieve === 0 ? '' : ` earning me ${nAchieve} new ${pluralize('achievement', nAchieve)}`;
-    const msg = `I solved ${gameMode === 'yesterday' ? 'yesterday\'s' : ''}Wiki-Reveal #${gameId} in ${total} ${pluralize('guess', total)} using ${hints} ${pluralize('hint', hints)}!
+    const msg = `I solved ${gameModeToText(gameMode)} Wiki-Reveal #${gameId} in ${total} ${pluralize('guess', total)} using ${hints} ${pluralize('hint', hints)}!
 My accuracy was ${accuracy.toFixed(1)}% revealing ${revealed.toFixed(1)}% of the article${hasAchievements}.`;
     navigator.clipboard.writeText(msg);
     enqueueSnackbar('Copied message to clipboard', { variant: 'info' });
@@ -56,7 +69,11 @@ My accuracy was ${accuracy.toFixed(1)}% revealing ${revealed.toFixed(1)}% of the
       <DialogContent>
         <DialogContentText>
           <Typography>
-            You solved today&apos;s challenge (#
+            You solved
+            {' '}
+            {gameModeToText(gameMode)}
+            {' '}
+            challenge (#
             {gameId ?? '??'}
             ) in
             {` ${total} ${pluralize('guess', total)}`}
