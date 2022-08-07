@@ -25,6 +25,7 @@ import RedactedPage from './RedactedPage';
 import SiteMenu from './SiteMenu';
 import Victory from './Victory';
 import { VictoryType } from './VictoryType';
+import { CoopGameType, ExpireType } from '../hooks/useCoop';
 
 function randomEntry<T>(arr: T[]): T {
   return arr[Math.min(Math.floor(Math.random() * arr.length), arr.length - 1)];
@@ -51,6 +52,13 @@ interface WikiPageProps {
   gameMode: GameMode;
   onChangeGameMode: (mode: GameMode) => void;
   username: string | null;
+  onChangeUsername: (newName: string | null) => void;
+  onCreateCoopGame: (gameType: CoopGameType, expireType: ExpireType, expire: number) => void;
+  connected: boolean;
+  onConnect: () => void;
+  onDisconnect: () => void;
+  coopRoom: string | null;
+  coopUsers: string[];
 }
 
 function calculateProgress(
@@ -79,7 +87,8 @@ function calculateAccuracy(
 function WikiPage({
   isLoading, isError, freeWords, lexicon, gameId, language, pageName, page,
   titleLexes, headingLexes, yesterdaysTitle, start, end, gameMode, onChangeGameMode,
-  rankings, summaryToReveal, username,
+  rankings, summaryToReveal, username, onChangeUsername, onCreateCoopGame, connected,
+  onConnect, onDisconnect, coopRoom, coopUsers,
 }: WikiPageProps): JSX.Element {
   const { enqueueSnackbar } = useSnackbar();
   const reportAchievement = React.useCallback((achievement: Achievement): void => {
@@ -322,6 +331,17 @@ function WikiPage({
   const theme = useTheme();
   const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
 
+  const handleChangeUsername = React.useCallback((newName: string | null) => {
+    if (gameMode !== 'coop') {
+      setGuesses(guesses.map(([lex, isHint, user]) => [
+        lex,
+        isHint,
+        !isHint && user === username ? newName : user,
+      ]));
+    }
+    onChangeUsername(newName);
+  }, [gameMode, guesses, setGuesses, username, onChangeUsername]);
+
   return (
     <Box
       sx={{
@@ -359,6 +379,14 @@ function WikiPage({
         end={end}
         gameMode={gameMode}
         onChangeGameMode={onChangeGameMode}
+        username={username}
+        onChangeUsername={handleChangeUsername}
+        connected={connected}
+        onCreateCoopGame={onCreateCoopGame}
+        onConnect={onConnect}
+        onDisconnect={onDisconnect}
+        coopRoom={coopRoom}
+        coopUsers={coopUsers}
       />
       <Grid
         container

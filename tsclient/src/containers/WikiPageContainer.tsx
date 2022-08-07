@@ -7,7 +7,7 @@ import WikiPage from '../components/WikiPage';
 import { Section } from '../types/wiki';
 import uniq from '../utils/uniq';
 import useStoredValue from '../hooks/useStoredValue';
-import useCoop from '../hooks/useCoop';
+import useCoop, { CoopGameType, ExpireType } from '../hooks/useCoop';
 
 function WikiPageContainer(): JSX.Element {
   const { enqueueSnackbar } = useSnackbar();
@@ -15,16 +15,31 @@ function WikiPageContainer(): JSX.Element {
   const [staleTime, setStaleTime] = React.useState<number>(Infinity);
 
   const {
-    room, connected, connect, createGame, username,
-  } = useCoop();
+    room, connected, connect, createGame, username, renameMe, disconnect, users,
+  } = useCoop(gameMode);
 
-  React.useEffect(() => {
-    if (localStorage.getItem('test-ws') !== null && connected === undefined) {
-      connect();
-    } else if (room === null) {
-      createGame();
+  const handleCreateCoopGame = React.useCallback((
+    gameType: CoopGameType,
+    expireType: ExpireType,
+    expire: number,
+  ) => {
+    if (connected !== true) {
+      enqueueSnackbar(
+        'Could not create room because you are not live-connected',
+        { variant: 'error' },
+      );
+    } else {
+      createGame(gameType, expireType, expire);
+      setGameMode('coop');
     }
-  }, [room, createGame, connected, connect]);
+  }, [connected, createGame, enqueueSnackbar, setGameMode]);
+
+  const handleChangeGameMode = React.useCallback((newGameMode: GameMode) => {
+    if (gameMode === 'coop' && newGameMode !== 'coop') {
+      disconnect();
+    }
+    setGameMode(newGameMode);
+  }, [disconnect, gameMode, setGameMode]);
 
   const { isLoading, isError, data } = useQuery(
     ['page', gameMode],
@@ -122,8 +137,15 @@ function WikiPageContainer(): JSX.Element {
       start={start}
       end={end}
       gameMode={gameMode}
-      onChangeGameMode={setGameMode}
+      onChangeGameMode={handleChangeGameMode}
       username={username}
+      onChangeUsername={renameMe}
+      connected={connected}
+      onCreateCoopGame={handleCreateCoopGame}
+      onConnect={connect}
+      onDisconnect={disconnect}
+      coopUsers={users}
+      coopRoom={room}
     />
   );
 }

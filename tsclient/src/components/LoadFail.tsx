@@ -15,7 +15,7 @@ function LoadFail(): JSX.Element {
       <DialogTitle>Failed to load article</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          <Typography>
+          <Typography gutterBottom>
             Hopefully this is a transitory thing so check back in a little
             while and it ought to be up and runnig.
           </Typography>

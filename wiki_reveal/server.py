@@ -3,15 +3,18 @@ from http import HTTPStatus
 import logging
 import os
 from random import randint
+import re
 from secrets import token_urlsafe
-from flask_socketio import SocketIO, join_room, leave_room, send  # type: ignore
+from flask_socketio import (  # type: ignore
+    SocketIO, join_room, leave_room, send, rooms,
+)
 from typing import Any
-from flask import Flask, Response, abort, jsonify
+from flask import Flask, Response, abort, jsonify, request
 from wiki_reveal.exceptions import WikiError
 from wiki_reveal.game_id import get_game_id, get_start_and_end
 from wiki_reveal.generate_name import generate_name
 from wiki_reveal.rooms import (
-    add_coop_game, add_coop_user, clear_old_coop_games, remove_coop_user,
+    add_coop_game, add_coop_user, clear_old_coop_games, coop_game_exists, remove_coop_user, rename_user,
 )
 
 from wiki_reveal.wiki import (
@@ -47,7 +50,9 @@ def coop_on_create(data: dict[str, Any]):
     )
 
     join_room(room)
-    add_coop_game(room, game_id, username)
+    add_coop_game(room, game_id, request.sid, username)
+
+    logging.info(f'Created a game with id {room} ({game_id}) for {request.sid}')
 
     send(
         {
@@ -60,19 +65,55 @@ def coop_on_create(data: dict[str, Any]):
     )
 
 
+@socketio.on('rename')
+def coop_on_rename(data: dict[str, Any]):
+    from_name = data['from']
+    to_name = get_or(data, 'to', generate_name())
+    room = data['room']
+
+    if room is None:
+        send(
+            {
+                "type": 'RENAME',
+                "from": from_name,
+                "to": to_name,
+            },
+            to=request.sid,
+        )
+    else:
+        rename_user(room, request.sid, to_name)
+        send(
+            {
+                "type": 'RENAME',
+                "from": from_name,
+                "to": to_name,
+            },
+            to=room,
+        )
+
+
 @socketio.on('join')
 def coop_on_join(data: dict[str, Any]):
     username = get_or(data, 'username', generate_name())
     room = data['room']
-    join_room(room)
-    send(
-        {
-            "type": 'JOIN',
-            "name": username,
-            "users": add_coop_user(room, username),
-        },
-        to=room,
-    )
+    if not coop_game_exists(room):
+        send(
+            {
+                "type": 'JOIN-FAIL',
+                "reason": 'Room does not exist',
+            },
+            to=request.sid,
+        )
+    else:
+        join_room(room)
+        send(
+            {
+                "type": 'JOIN',
+                "name": username,
+                "users": add_coop_user(room, request.sid, username),
+            },
+            to=room,
+        )
 
 
 @socketio.on('leave')
@@ -84,11 +125,28 @@ def coop_on_leave(data: dict[str, Any]):
             {
                 "type": 'LEAVE',
                 "name": username,
-                "users": remove_coop_user(room, username),
+                "users": remove_coop_user(room, request.sid, username),
             },
             to=room,
         )
     leave_room(room)
+
+
+@socketio.on('disconnect')
+def coop_on_disconnect():
+    for room in rooms(request.sid):
+        username, users = remove_coop_user(room, request.sid)
+        send(
+            {
+                "type": 'LEAVE',
+                "name": username,
+                "users": users,
+            },
+            to=room,
+        )
+        leave_room(room)
+
+
 
 
 @app.get('/api/test.txt')

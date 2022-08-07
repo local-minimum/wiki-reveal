@@ -1,8 +1,18 @@
 import { useSnackbar } from 'notistack';
 import { useCallback, useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
+import { GameMode } from '../api/page';
 import { pluralize } from '../utils/plural';
 import useStoredValue from './useStoredValue';
+
+export type ExpireType = 'today' | 'custom';
+export type CoopGameType = 'today' | 'random';
+
+interface MessageRename {
+  type: 'RENAME';
+  from: string | null;
+  to: string | null;
+}
 
 interface MessageCreate {
   type: 'CREATE';
@@ -12,36 +22,69 @@ interface MessageCreate {
 
 interface MessageJoinLeave {
   type: 'JOIN' | 'LEAVE';
-  name: string;
+  name: string | null;
   users: string[];
 }
 
-type Message = MessageCreate | MessageJoinLeave;
+interface MessageJoinFail {
+  type: 'JOIN-FAIL',
+  reason: string;
+}
+
+type Message = MessageCreate
+  | MessageJoinLeave
+  | MessageRename
+  | MessageJoinFail;
 
 interface Coop {
-  connected: boolean | undefined;
+  connected: boolean;
   room: string | null;
   connect: () => void;
-  createGame: () => void;
+  disconnect: () => void;
+  createGame: (gameType: CoopGameType, expireType: ExpireType, expire: number) => void;
   join: (room: string) => void;
   leave: () => void;
   username: string | null;
+  renameMe: (newName: string | null) => void;
+  users: string[],
 }
 
-function useCoop(): Coop {
+function useCoop(gameMode: GameMode): Coop {
   const { enqueueSnackbar } = useSnackbar();
   const [username, setUsername] = useStoredValue<string | null>('coop-name', null);
   const [socket, setSocket] = useState<Socket | null>(null);
-  const [room, setRoom] = useState<string | null>(null);
+  const [room, setRoom] = useStoredValue<string | null>('coop-room', null);
   const [users, setUsers] = useState<string[] | null>(null);
+  const [connected, setConnected] = useState<boolean>(false);
 
-  const createGame = useCallback(() => { socket?.emit('create game', { username }); }, [username, socket]);
+  const createGame = useCallback((
+    gameType: CoopGameType,
+    expireType: ExpireType,
+    expire: number,
+  ) => {
+    socket?.emit(
+      'create game',
+      {
+        username, gameType, expireType, expire,
+      },
+    );
+  }, [username, socket]);
+
+  const renameMe = useCallback((newName: string | null) => {
+    if (socket === null) {
+      setUsername(newName);
+    } else if (room !== null || newName === null) {
+      socket.emit('rename', { room, from: username, to: newName });
+    } else {
+      setUsername(newName);
+    }
+  }, [room, setUsername, socket, username]);
 
   const join = useCallback((newRoom: string) => {
     setUsers(null);
     setRoom(newRoom);
     socket?.emit('join', { username, room: newRoom });
-  }, [socket, username]);
+  }, [setRoom, socket, username]);
 
   const leave = useCallback((silentFail = false): void => {
     if (room === null) {
@@ -54,7 +97,37 @@ function useCoop(): Coop {
     socket?.emit('leave', { username, room });
   }, [enqueueSnackbar, room, socket, username]);
 
-  const connect = useCallback((): void => {
+  const disconnect = useCallback((): void => {
+    socket?.disconnect();
+    setUsers(null);
+  }, [socket]);
+
+  const connect = useCallback((reconnect = false): void => {
+    if (socket !== null) {
+      socket.connect();
+      return;
+    }
+
+    const newSocket = io();
+    setSocket(newSocket);
+
+    newSocket.on('connect', () => {
+      enqueueSnackbar('You are live-connected', { variant: 'info' });
+      setConnected(true);
+      if (room !== null && reconnect) {
+        newSocket.emit('join', { username, room });
+      }
+    });
+
+    newSocket.on('disconnect', () => {
+      enqueueSnackbar('You are no longer live-connected', { variant: 'info' });
+      setConnected(false);
+    });
+  }, [enqueueSnackbar, room, socket, username]);
+
+  useEffect((): void => {
+    if (socket === null) return;
+
     const messageHandler = (message: Message) => {
       switch (message.type) {
         case 'CREATE':
@@ -96,40 +169,56 @@ function useCoop(): Coop {
           setUsers(message.users);
           break;
 
+        case 'JOIN-FAIL':
+          enqueueSnackbar(message.reason, { variant: 'error' });
+          setRoom(null);
+          break;
+
+        case 'RENAME':
+          enqueueSnackbar(
+            message.from === username
+              ? `New COOP name is: ${message.to}`
+              : `User "${message.from}" is now known as "${message.to}"`,
+            { variant: 'info' },
+          );
+          if (message.from === username) setUsername(message.to);
+          // TODO: update all guesses
+          break;
         default:
           // eslint-disable-next-line no-console
-          console.log('unhandled coop-message', message);
+          console.warn('unhandled coop-message', message);
           break;
       }
     };
 
-    if (socket !== null) {
-      if (!socket.connect) socket.connect();
-      socket.off('message');
-      socket.on('message', messageHandler);
-      return;
-    }
-
-    const newSocket = io();
-    newSocket.on('message', messageHandler);
-    newSocket.on('connect', () => {
-      setSocket(newSocket);
-    });
-  }, [enqueueSnackbar, setUsername, socket, username, users]);
+    socket.off('message');
+    socket.on('message', messageHandler);
+  }, [enqueueSnackbar, setRoom, setUsername, socket, username, users]);
 
   useEffect(() => () => {
-    leave(true);
     socket?.disconnect();
-  }, [leave, socket]);
+  }, [socket]);
+
+  useEffect(
+    () => {
+      if (gameMode === 'coop') connect(true);
+    },
+    // Should only run at start of coop
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [gameMode],
+  );
 
   return {
     createGame,
-    connected: socket?.connected,
+    connected,
     room,
     connect,
     join,
     username,
     leave,
+    renameMe,
+    disconnect,
+    users: users ?? [],
   };
 }
 

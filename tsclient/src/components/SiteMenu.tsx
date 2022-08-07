@@ -1,5 +1,6 @@
 import {
   faBars, faBroom, faEye, faEyeLowVision, faInfo, faMedal,
+  faPeopleGroup,
   faPersonChalkboard, faPlay, faStar, faTrophy, faUserSecret,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -8,9 +9,11 @@ import {
 } from '@mui/material';
 import * as React from 'react';
 import { GameMode } from '../api/page';
+import { CoopGameType, ExpireType } from '../hooks/useCoop';
 import { LexicalizedToken } from '../types/wiki';
 import { AchievementsType } from '../utils/achievements';
 import Achievements from './menu/Achievements';
+import CoopMode from './menu/CoopMode';
 import HowTo from './menu/HowTo';
 import InfoDialog from './menu/InfoDialog';
 import RemainingTime from './menu/RemainingTime';
@@ -29,11 +32,20 @@ interface SiteMenuProps {
   end: Date | undefined;
   gameMode: GameMode;
   onChangeGameMode: (mode: GameMode) => void;
+  username: string | null;
+  onChangeUsername: (newName: string | null) => void;
+  onCreateCoopGame: (gameType: CoopGameType, expireType: ExpireType, expire: number) => void;
+  connected: boolean;
+  onConnect: () => void;
+  onDisconnect: () => void;
+  coopRoom: string | null;
+  coopUsers: string[];
 }
 
 function SiteMenu({
   yesterdaysTitle, onShowVictory, achievements, onSetAchievements, gameId, hideFound, onHideFound,
-  end, gameMode, onChangeGameMode,
+  end, gameMode, onChangeGameMode, username, onChangeUsername, onCreateCoopGame, connected,
+  onConnect, onDisconnect, coopRoom, coopUsers,
 }: SiteMenuProps): JSX.Element {
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null);
   const open = Boolean(anchorEl);
@@ -47,6 +59,7 @@ function SiteMenu({
   const [showGameHistory, setShowGameHistory] = React.useState<boolean>(false);
   const [showAchievements, setShowAchievements] = React.useState<boolean>(false);
   const [showYesterdays, setShowYesterdays] = React.useState<boolean>(false);
+  const [showCoop, setShowCoop] = React.useState<boolean>(false);
 
   return (
     <>
@@ -123,6 +136,16 @@ function SiteMenu({
             &apos;s game
           </ListItemText>
         </MenuItem>
+        <MenuItem
+          onClick={() => { handleClose(); setShowCoop(true); }}
+        >
+          <ListItemIcon>
+            <FontAwesomeIcon icon={faPeopleGroup} />
+          </ListItemIcon>
+          <ListItemText>
+            Play COOP-game
+          </ListItemText>
+        </MenuItem>
         {gameMode === 'today' && (
           <MenuItem onClick={() => { handleClose(); setShowYesterdays(true); }}>
             <ListItemIcon>
@@ -174,6 +197,20 @@ function SiteMenu({
           achievements={achievements}
           onSetAchievements={onSetAchievements}
           gameId={gameId}
+        />
+      )}
+      {showCoop && (
+        <CoopMode
+          onClose={() => setShowCoop(false)}
+          onChangeUsername={onChangeUsername}
+          username={username}
+          onCreateGame={onCreateCoopGame}
+          connected={connected}
+          gameMode={gameMode}
+          onConnect={onConnect}
+          onDisconnect={onDisconnect}
+          users={coopUsers}
+          room={coopRoom}
         />
       )}
     </>

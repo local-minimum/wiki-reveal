@@ -14,7 +14,7 @@ function InfoDialog({ onClose }: InfoDialogProps): JSX.Element {
     <Dialog open onClose={onClose}>
       <DialogTitle>About</DialogTitle>
       <DialogContent>
-        <DialogContentText sx={{ marginBottom: 2 }}>
+        <DialogContentText gutterBottom>
           This variant of
           {' '}
           <Link href="https://www.redactle.com">Redactle</Link>
@@ -23,7 +23,7 @@ function InfoDialog({ onClose }: InfoDialogProps): JSX.Element {
           wanting to experiment with giving the player some more
           info and options when getting stuck.
         </DialogContentText>
-        <DialogContentText sx={{ marginBottom: 2 }}>
+        <DialogContentText gutterBottom>
           If you find any error consider reporting them on
           {' '}
           <Link href="https://github.com/local-minimum/wiki-reveal/issues">
