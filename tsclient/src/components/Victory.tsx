@@ -3,7 +3,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Grid, Typography,
 } from '@mui/material';
+import { useSnackbar } from 'notistack';
 import * as React from 'react';
+import { GameMode } from '../api/page';
 import {
   Achievement, AchievementsType, achievementToColor, achievementToIcon, achievementToTitle,
 } from '../utils/achievements';
@@ -20,12 +22,14 @@ interface VictoryProps {
   visible: boolean;
   onSetVisible: (visible: boolean) => void;
   achievements: AchievementsType;
+  gameMode: GameMode;
 }
 
 function Victory({
   hints, guesses, gameId, onRevealAll, accuracy, revealed, visible, onSetVisible,
-  achievements,
+  achievements, gameMode,
 }: VictoryProps): JSX.Element {
+  const { enqueueSnackbar } = useSnackbar();
   const newAchievements = Object
     .values(Achievement)
     .filter((achievement) => achievements[achievement] === gameId);
@@ -35,9 +39,10 @@ function Victory({
   const handleShare = () => {
     const nAchieve = newAchievements.length;
     const hasAchievements = nAchieve === 0 ? '' : ` earning me ${nAchieve} new ${pluralize('achievement', nAchieve)}`;
-    const msg = `I solved Wiki-Reveal #${gameId} in ${total} ${pluralize('guess', total)} using ${hints} ${pluralize('hint', hints)}!
+    const msg = `I solved ${gameMode === 'yesterday' ? 'yesterday\'s' : ''}Wiki-Reveal #${gameId} in ${total} ${pluralize('guess', total)} using ${hints} ${pluralize('hint', hints)}!
 My accuracy was ${accuracy.toFixed(1)}% revealing ${revealed.toFixed(1)}% of the article${hasAchievements}.`;
     navigator.clipboard.writeText(msg);
+    enqueueSnackbar('Copied message to clipboard', { variant: 'info' });
   };
 
   return (

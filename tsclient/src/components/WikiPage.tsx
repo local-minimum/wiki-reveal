@@ -328,6 +328,7 @@ function WikiPage({
       {firstVisit && <HowTo onClose={closeHowTo} />}
       {victory !== null && (
         <Victory
+          gameMode={gameMode}
           guesses={victory.guesses}
           hints={victory.hints}
           accuracy={victory.accuracy}
