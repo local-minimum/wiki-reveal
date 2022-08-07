@@ -23,6 +23,7 @@ services:
       - WR_LOGLEVEL
       - WR_SEED
       - WR_EPOCH
+      - WR_ROOT
 
   wiki_reveal_frontend:
     build: ./tsclient

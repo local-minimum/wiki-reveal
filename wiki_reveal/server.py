@@ -30,9 +30,19 @@ logging.basicConfig(
     format="%(asctime)s  %(levelname)s  %(message)s",
 )
 
+
+def root_or_none() -> Optional[str]:
+    root = os.environ.get('WR_ROOT')
+    if root:
+        return root
+    logging.info(f'Will adjust where websockets answer to {root}')
+    return None
+
+
 app = Flask('Wiki-Reveal')
 app.config['SECRET_KEY'] = token_urlsafe(16)
-socketio = SocketIO(app)
+
+socketio = SocketIO(app, path=root_or_none())
 
 
 def get_or(data: dict[str, Any], key: str, default: Any) -> Any:
