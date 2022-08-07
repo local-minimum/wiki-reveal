@@ -116,7 +116,7 @@ function WikiPage({
     () => (hideFound ? guesses.map(([word]) => word) : []),
     [guesses, hideFound],
   );
-  const [unmasked, setUnmasked] = React.useState<boolean>(false);
+  const [unmasked, setUnmasked] = React.useState<number>(-1);
   const [[focusWord, focusWordIndex], setFocusWord] = React
     .useState<[word: string | null, index: number]>([null, 0]);
 
@@ -140,16 +140,16 @@ function WikiPage({
   }, []);
 
   const revealAll = React.useCallback((): void => {
-    setUnmasked(true);
-  }, []);
+    setUnmasked(gameId ?? -1);
+  }, [gameId]);
 
   const { title, summary, sections } = React.useMemo(
     () => unmaskPage(
       page ?? { title: [], summary: [], sections: [] },
       guesses.map(([word]) => word),
-      unmasked,
+      unmasked === gameId,
     ),
-    [guesses, page, unmasked],
+    [gameId, guesses, page, unmasked],
   );
 
   const hints = React.useMemo(
@@ -431,7 +431,7 @@ function WikiPage({
             isLoading={isLoading}
             isError={isError}
             isDone={progress === 100}
-            unmasked={unmasked}
+            unmasked={unmasked === gameId}
             hints={hints}
             freeWords={freeWords}
             onAddGuess={addGuess}
