@@ -99,10 +99,6 @@ function CoopMode({
             </Typography>
           )}
           <Typography gutterBottom>
-            Please note that if you choose to play today&apos;s game in coop mode
-            your current progres will be reset.
-          </Typography>
-          <Typography gutterBottom>
             {
               username == null
                 ? 'You currently don\'t have a user name, one will be generated for you unless you create one first.'

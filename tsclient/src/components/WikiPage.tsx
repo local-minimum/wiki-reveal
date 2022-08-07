@@ -194,8 +194,9 @@ function WikiPage({
 
   React.useEffect(
     () => {
-      if (gameMode !== 'coop' || pageName === undefined) return;
-      const { title: originalTile } = page ?? { title: [] };
+      if (gameMode !== 'coop' || pageName === undefined || victory !== null || page === undefined) return;
+      const { title: originalTile } = page;
+      if (originalTile === []) return;
       const tLexes = originalTile
         .filter(([_, isHidden]) => isHidden)
         .map(([_, __, lex]) => lex);
@@ -208,7 +209,7 @@ function WikiPage({
             found[titleIdx] = true;
           }
         });
-        if (tLexes.every((v) => v)) {
+        if (found.every((v) => v)) {
           victoryGuess = guessIdx;
         }
       });
@@ -224,7 +225,7 @@ function WikiPage({
         setVictory(newVictory);
       }
     },
-    [coopGuesses, freeWords, gameMode, hints, lexicon, page, pageName, setVictory, title],
+    [coopGuesses, freeWords, gameMode, hints, lexicon, page, pageName, setVictory, title, victory],
   );
 
   const addGuess = React.useCallback((currentGuess: string): void => {
