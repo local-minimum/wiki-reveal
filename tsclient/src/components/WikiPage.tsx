@@ -60,9 +60,8 @@ interface WikiPageProps {
   onDisconnect: () => void;
   coopRoom: string | null;
   coopUsers: string[];
-  registerGuessReciever: (reciever: (guessIdx: number, guess: Guess) => void) => void;
-  registerRenameReciever: (reciever: (from: string, to: string) => void) => void;
   onCoopGuess: (lex: string) => void;
+  coopGuesses: Guess[];
 }
 
 function calculateProgress(
@@ -92,8 +91,7 @@ function WikiPage({
   isLoading, isError, freeWords, lexicon, gameId, language, pageName, page,
   titleLexes, headingLexes, yesterdaysTitle, start, end, gameMode, onChangeGameMode,
   rankings, summaryToReveal, username, onChangeUsername, onCreateCoopGame, connected,
-  onConnect, onDisconnect, coopRoom, coopUsers, registerGuessReciever, registerRenameReciever,
-  onCoopGuess,
+  onConnect, onDisconnect, coopRoom, coopUsers, coopGuesses, onCoopGuess,
 }: WikiPageProps): JSX.Element {
   const prevGameMode = usePrevious(gameMode);
   const { enqueueSnackbar } = useSnackbar();
@@ -128,10 +126,12 @@ function WikiPage({
     [gameId, setPlayStart],
   );
 
+  const activeGuesses = gameMode === 'coop' ? coopGuesses : guesses;
+
   const [hideFound, setHideFound] = React.useState<boolean>(false);
   const hideWords = useMemo(
-    () => (prevGameMode === gameMode && hideFound ? guesses.map(([word]) => word) : []),
-    [gameMode, guesses, hideFound, prevGameMode],
+    () => (hideFound ? activeGuesses.map(([word]) => word) : []),
+    [activeGuesses, hideFound],
   );
   const [unmasked, setUnmasked] = React.useState<number>(-1);
   const [[focusWord, focusWordIndex], setFocusWord] = React
@@ -140,27 +140,6 @@ function WikiPage({
   const focusedWordCounter = React.useRef(0);
 
   focusedWordCounter.current = focusWordIndex;
-
-  const renameGuesser = React.useCallback((from: string, to: string): void => {
-    if (gameMode !== 'coop') return;
-    setGuesses(guesses.map(([lex, isHint, user]) => [lex, isHint, user === from ? to : user]));
-  }, [gameMode, guesses, setGuesses]);
-
-  React.useEffect(() => {
-    registerRenameReciever(renameGuesser);
-  }, [registerRenameReciever, renameGuesser]);
-
-  const recieveGuess = React.useCallback((guessIdx: number, guess: Guess): void => {
-    console.log(gameMode, guess, guessIdx);
-    if (gameMode !== 'coop') return;
-    const newGuesses = [...guesses];
-    newGuesses[guessIdx] = guess;
-    setGuesses(newGuesses);
-  }, [gameMode, guesses, setGuesses]);
-
-  React.useEffect(() => {
-    registerGuessReciever(recieveGuess);
-  }, [recieveGuess, registerGuessReciever]);
 
   const handleSetFocusWord = React.useCallback((word: string): void => {
     if (word !== focusWord) {
@@ -184,10 +163,10 @@ function WikiPage({
   const { title, summary, sections } = React.useMemo(
     () => unmaskPage(
       page ?? { title: [], summary: [], sections: [] },
-      (prevGameMode === gameMode ? guesses : []).map(([word]) => word),
+      (activeGuesses).map(([word]) => word),
       prevGameMode === gameMode && unmasked === gameId,
     ),
-    [gameId, gameMode, guesses, page, prevGameMode, unmasked],
+    [activeGuesses, gameId, gameMode, page, prevGameMode, unmasked],
   );
 
   React.useEffect(() => {
@@ -199,8 +178,8 @@ function WikiPage({
   }, [gameMode, prevGameMode, setGuesses, setVictory]);
 
   const hints = React.useMemo(
-    () => guesses.reduce((acc, [_, isHint]) => (isHint ? acc + 1 : acc), 0),
-    [guesses],
+    () => activeGuesses.reduce((acc, [_, isHint]) => (isHint ? acc + 1 : acc), 0),
+    [activeGuesses],
   );
 
   const addGuess = React.useCallback((currentGuess: string): void => {
@@ -210,12 +189,12 @@ function WikiPage({
     if (freeWords?.includes(entry)) {
       return;
     }
-    if (!guesses.some(([word]) => word === entry)) {
+    if (!activeGuesses.some(([word]) => word === entry)) {
       if (gameMode === 'coop') {
         onCoopGuess(entry);
         return;
       }
-      const nextGuesses: Array<Guess> = [...guesses, [entry, false, username]];
+      const nextGuesses: Array<Guess> = [...activeGuesses, [entry, false, username]];
       setGuesses(nextGuesses);
 
       let newAchievements = [];
@@ -242,7 +221,7 @@ function WikiPage({
         );
 
         const newVictory = {
-          guesses: guesses.length - hints + 1,
+          guesses: activeGuesses.length - hints + 1,
           hints,
           accuracy: calculateAccuracy(lexicon, nextGuesses),
           revealed: calculateProgress(lexicon, freeWords, nextGuesses),
@@ -282,7 +261,7 @@ function WikiPage({
       handleSetFocusWord(entry);
     }
   }, [
-    freeWords, gameId, guesses, handleSetFocusWord, hints, lexicon, playerResults,
+    freeWords, gameId, activeGuesses, handleSetFocusWord, hints, lexicon, playerResults,
     setGuesses, setPlayerResults, setVictory, title, pageName, achievements, setAchievements,
     titleLexes, headingLexes, victory, playStart, start, end, reportAchievement, gameMode,
     rankings, username, onCoopGuess,
@@ -318,12 +297,12 @@ function WikiPage({
   }, [freeWords, guesses, lexicon, setGuesses, title]);
 
   const progress = useMemo(
-    () => calculateProgress(lexicon, freeWords, guesses),
-    [freeWords, guesses, lexicon],
+    () => calculateProgress(lexicon, freeWords, activeGuesses),
+    [freeWords, activeGuesses, lexicon],
   );
 
   React.useEffect(() => {
-    if (gameId === undefined) return;
+    if (gameId === undefined || gameMode === 'coop') return;
     const solvedHeaders = headingLexes
       .filter((lex) => !guesses.some(([word, isHint]) => !isHint && lex === word))
       .length === 0;
@@ -347,7 +326,7 @@ function WikiPage({
     }
   }, [
     achievements, gameId, guesses, headingLexes, progress,
-    reportAchievement, setAchievements, summaryToReveal,
+    reportAchievement, setAchievements, summaryToReveal, gameMode,
   ]);
 
   React.useEffect(() => {
@@ -361,8 +340,8 @@ function WikiPage({
   }, [achievements, gameId, reportAchievement, setAchievements]);
 
   const accuracy = useMemo(
-    () => calculateAccuracy(lexicon, guesses),
-    [guesses, lexicon],
+    () => calculateAccuracy(lexicon, activeGuesses),
+    [activeGuesses, lexicon],
   );
 
   const closeHowTo = React.useCallback(() => setFirstVisit(false), [setFirstVisit]);
@@ -480,7 +459,7 @@ function WikiPage({
             height: isSmall ? '25vh' : '100vh',
           }}
         >
-          <GuessHeader guesses={guesses.length} accuracy={accuracy} />
+          <GuessHeader guesses={activeGuesses.length} accuracy={accuracy} />
           <Box
             sx={{
               // Header height 0px / 32px
@@ -493,7 +472,7 @@ function WikiPage({
           >
             <GuessTable
               focusWord={focusWord}
-              guesses={prevGameMode !== gameMode && gameMode === 'coop' ? [] : guesses}
+              guesses={activeGuesses}
               lexicon={lexicon}
               onSetFocusWord={handleSetFocusWord}
               titleLexes={titleLexes}

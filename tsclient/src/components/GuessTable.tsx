@@ -175,6 +175,7 @@ function GuessTable({
         </TableHead>
         <TableBody>
           {sortedGuesses.map(([word, ordinal, isHint, userName], idx) => {
+            if (word === '') return null;
             const focused = word === focusWord;
             const mostRecent = ordinal === sortedGuesses.length;
 

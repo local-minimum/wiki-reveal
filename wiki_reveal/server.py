@@ -88,6 +88,7 @@ def coop_on_guess(data: dict[str, Any]):
     try:
         idx = add_coop_guess(room, username, lex)
     except CoopGameDoesNotExistError:
+        logging.error(f'Someone tried to guess "{lex}" in room {room}')
         abort(HTTPStatus.BAD_REQUEST)
 
     if idx >= 0:
@@ -100,6 +101,10 @@ def coop_on_guess(data: dict[str, Any]):
             },
             to=room,
 
+        )
+    else:
+        logging.warn(
+            f'Someone tried to guess duplicate lex "{lex}" in room {room}',
         )
 
 

@@ -114,8 +114,8 @@ def add_coop_guess(room: str, username: str, lex: str) -> int:
         raise CoopGameDoesNotExistError
 
     _, __, ___, ____, guesses = ROOMS[room]
-    if any(guess for guess, _ in guesses):
+    if any(guess == lex for guess, _ in guesses):
         return -1
 
     guesses.append([lex, username])
-    return len(guesses)
+    return len(guesses) - 1

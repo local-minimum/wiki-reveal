@@ -56,9 +56,8 @@ interface Coop {
   username: string | null;
   renameMe: (newName: string | null) => void;
   users: string[],
-  registerGuessReciever: (reciever: (guessIdx: number, guess: Guess) => void) => void;
-  registerRenameReciever: (reciever: (from: string, to: string) => void) => void;
   guess: (lex: string) => void;
+  guesses: Guess[];
 }
 
 function useCoop(gameMode: GameMode): Coop {
@@ -68,12 +67,7 @@ function useCoop(gameMode: GameMode): Coop {
   const [room, setRoom] = useStoredValue<string | null>('coop-room', null);
   const [users, setUsers] = useState<string[] | null>(null);
   const [connected, setConnected] = useState<boolean>(false);
-  const [
-    recieveGuess, setRecieveGuess,
-  ] = useState<((guessIdx: number, guess: Guess) => void) | null>(null);
-  const [
-    recieveRename, setRecieveRename,
-  ] = useState<((from: string, to: string) => void) | null>(null);
+  const [guesses, setGuesses] = useState<Guess[]>([]);
 
   const createGame = useCallback((
     gameType: CoopGameType,
@@ -105,6 +99,7 @@ function useCoop(gameMode: GameMode): Coop {
   const join = useCallback((newRoom: string) => {
     setUsers(null);
     setRoom(newRoom);
+    setGuesses([]);
     socket?.emit('join', { username, room: newRoom });
   }, [setRoom, socket, username]);
 
@@ -156,6 +151,7 @@ function useCoop(gameMode: GameMode): Coop {
           enqueueSnackbar('Created new COOP-game', { variant: 'info' });
           setRoom(message.room);
           setUsers([message.username]);
+          setGuesses([]);
           if (username !== message.username) {
             enqueueSnackbar(
               `You are known as '${message.username}'`,
@@ -205,11 +201,24 @@ function useCoop(gameMode: GameMode): Coop {
           );
           if (message.from === username) setUsername(message.to);
           if (message.from !== null && message.to !== null) {
-            recieveRename?.(message.from, message.to);
+            setGuesses(
+              guesses.map(([lex, isHint, user]) => [
+                lex,
+                isHint,
+                user === message.from ? message.to : user,
+              ]),
+            );
           }
           break;
         case 'GUESS':
-          recieveGuess?.(message.index, [message.lex, false, message.username]);
+          setGuesses(
+            [...new Array(Math.max(message.index + 1, guesses.length)).keys()]
+              .map((idx) => (
+                idx === message.index
+                  ? [message.lex, false, message.username]
+                  : (guesses[idx] ?? ['', false, null])
+              )),
+          );
           break;
         default:
           // eslint-disable-next-line no-console
@@ -220,7 +229,7 @@ function useCoop(gameMode: GameMode): Coop {
 
     socket.off('message');
     socket.on('message', messageHandler);
-  }, [enqueueSnackbar, recieveGuess, recieveRename, setRoom, setUsername, socket, username, users]);
+  }, [enqueueSnackbar, guesses, setRoom, setUsername, socket, username, users]);
 
   useEffect(() => () => {
     socket?.disconnect();
@@ -246,9 +255,8 @@ function useCoop(gameMode: GameMode): Coop {
     renameMe,
     disconnect,
     users: users ?? [],
-    registerGuessReciever: setRecieveGuess,
     guess,
-    registerRenameReciever: setRecieveRename,
+    guesses,
   };
 }
 
