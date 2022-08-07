@@ -131,7 +131,7 @@ function useCoop(gameMode: GameMode): Coop {
       return;
     }
 
-    const path = window.location.href;
+    const path = `${window.location.href.replace(/\/$/, '')}/socket.io`;
     // eslint-disable-next-line no-console
     console.log('Attempting websocket at', path);
     const newSocket = io(path);
