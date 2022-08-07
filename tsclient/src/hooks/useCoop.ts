@@ -12,7 +12,12 @@ export type CoopGameType = 'today' | 'random';
 interface MessageRename {
   type: 'RENAME';
   from: string | null;
-  to: string | null;
+  to: string;
+}
+
+interface MessageRenameMe {
+  type: 'RENAME-ME';
+  to: string;
 }
 
 interface MessageCreate {
@@ -41,12 +46,13 @@ interface MessageGuess {
 
 interface MessageGuesses {
   type: 'GUESSES',
-  backlog: Guess[],
+  backlog: Array<[string, string]>,
 }
 
 type Message = MessageCreate
   | MessageJoinLeave
   | MessageRename
+  | MessageRenameMe
   | MessageJoinFail
   | MessageGuess
   | MessageGuesses;
@@ -208,12 +214,9 @@ function useCoop(gameMode: GameMode): Coop {
 
         case 'RENAME':
           enqueueSnackbar(
-            message.from === username
-              ? `New COOP name is: ${message.to}`
-              : `User "${message.from}" is now known as "${message.to}"`,
+            `User "${message.from}" is now known as "${message.to}"`,
             { variant: 'info' },
           );
-          if (message.from === username) setUsername(message.to);
           if (message.from !== null && message.to !== null) {
             setGuesses(
               guesses.map(([lex, isHint, user]) => [
@@ -223,6 +226,9 @@ function useCoop(gameMode: GameMode): Coop {
               ]),
             );
           }
+          break;
+        case 'RENAME-ME':
+          setUsername(message.to);
           break;
         case 'GUESS':
           setGuesses(
@@ -235,7 +241,7 @@ function useCoop(gameMode: GameMode): Coop {
           );
           break;
         case 'GUESSES':
-          setGuesses(message.backlog);
+          setGuesses(message.backlog.map(([lex, user]) => [lex, false, user]));
           break;
         default:
           // eslint-disable-next-line no-console

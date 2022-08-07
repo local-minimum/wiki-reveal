@@ -1,4 +1,5 @@
-from random import sample
+from random import Random
+from time import time
 
 DESCRIPTOR: list[str] = [
     'fast',
@@ -150,8 +151,10 @@ ANIMALS: list[str] = [
     'zebra',
 ]
 
+rng = Random(time())
+
 
 def generate_name() -> str:
-    [descriptor] = sample(DESCRIPTOR, 1)
-    [animal] = sample(ANIMALS, 1)
+    [descriptor] = rng.sample(DESCRIPTOR, 1)
+    [animal] = rng.sample(ANIMALS, 1)
     return f'{descriptor.capitalize()} {animal.capitalize()}'

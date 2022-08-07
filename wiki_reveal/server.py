@@ -4,7 +4,7 @@ from http import HTTPStatus
 import logging
 import os
 from random import randint
-from secrets import token_urlsafe
+from secrets import token_hex, token_urlsafe
 from flask_socketio import (  # type: ignore
     SocketIO, join_room, leave_room, send, rooms,
 )
@@ -61,7 +61,7 @@ def get_sid(r: Any) -> str:
 @socketio.on('create game')
 def coop_on_create(data: dict[str, Any]):
     clear_old_coop_games()
-    room = get_or(data, 'room', token_urlsafe(16))
+    room = token_hex(16)
     username = get_or(data, 'username', generate_name())
     isToday = data['gameType'] == 'today'
     endsToday = data['expireType'] == 'today'
@@ -125,16 +125,7 @@ def coop_on_rename(data: dict[str, Any]):
     room = data['room']
     sid = get_sid(request)
 
-    if room is None:
-        send(
-            {
-                "type": 'RENAME',
-                "from": from_name,
-                "to": to_name,
-            },
-            to=sid,
-        )
-    else:
+    if room is not None:
         rename_user(room, sid, to_name)
         send(
             {
@@ -144,6 +135,14 @@ def coop_on_rename(data: dict[str, Any]):
             },
             to=room,
         )
+
+    send(
+        {
+            "type": 'RENAME-ME',
+            "to": to_name,
+        },
+        to=sid,
+    )
 
 
 @socketio.on('join')
