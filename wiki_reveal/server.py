@@ -42,7 +42,7 @@ def root_or_none() -> Optional[str]:
 app = Flask('Wiki-Reveal')
 app.config['SECRET_KEY'] = token_urlsafe(16)
 
-socketio = SocketIO(app, path=root_or_none())
+socketio = SocketIO(app)
 
 
 def get_or(data: dict[str, Any], key: str, default: Any) -> Any:
