@@ -15,6 +15,7 @@ interface GuessInputProps {
   freeWords: string[] | undefined;
   onAddGuess: (word: string) => void;
   onAddHint: () => void;
+  isCoop: boolean;
   compact?: boolean;
 }
 
@@ -28,7 +29,7 @@ function labelText(isFreeWord: boolean | undefined, hasIllegal: boolean): string
 
 function GuessInput({
   isLoading, isError, isDone, unmasked, hints, onAddGuess, onAddHint, freeWords,
-  compact = false,
+  isCoop, compact = false,
 }: GuessInputProps): JSX.Element {
   const [currentGuess, setCurrentGuess] = React.useState('');
   const theme = useTheme();
@@ -80,29 +81,31 @@ function GuessInput({
           </IconButton>
         )}
       </Tooltip>
-      <Tooltip title="Get a word for free that is not in the main header">
-        {isExtraLarge ? (
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={onAddHint}
-            startIcon={<FontAwesomeIcon icon={faPuzzlePiece} />}
-            disabled={isDone || unmasked}
-            size={compact ? 'small' : 'medium'}
-          >
-            {`${hints} Hint${hints === 1 ? '' : 's'}`}
-          </Button>
-        ) : (
-          <IconButton
-            onClick={onAddHint}
-            disabled={isDone || unmasked}
-            color="secondary"
-            size={compact ? 'small' : 'medium'}
-          >
-            <FontAwesomeIcon icon={faPuzzlePiece} />
-          </IconButton>
-        )}
-      </Tooltip>
+      {!isCoop && (
+        <Tooltip title="Get a word for free that is not in the main header">
+          {isExtraLarge ? (
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={onAddHint}
+              startIcon={<FontAwesomeIcon icon={faPuzzlePiece} />}
+              disabled={isDone || unmasked}
+              size={compact ? 'small' : 'medium'}
+            >
+              {`${hints} Hint${hints === 1 ? '' : 's'}`}
+            </Button>
+          ) : (
+            <IconButton
+              onClick={onAddHint}
+              disabled={isDone || unmasked}
+              color="secondary"
+              size={compact ? 'small' : 'medium'}
+            >
+              <FontAwesomeIcon icon={faPuzzlePiece} />
+            </IconButton>
+          )}
+        </Tooltip>
+      )}
     </Stack>
   );
 }

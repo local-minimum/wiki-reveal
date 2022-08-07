@@ -472,6 +472,7 @@ function WikiPage({
             onAddGuess={addGuess}
             onAddHint={addHint}
             compact={isSmall}
+            isCoop={gameMode === 'coop'}
           />
         </Grid>
       </Grid>
