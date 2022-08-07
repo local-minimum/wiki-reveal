@@ -3,6 +3,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
+  Alert,
   Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
   FormControl,
   FormControlLabel,
@@ -43,6 +44,7 @@ function CoopMode({
 }: CoopModeProps): JSX.Element {
   const { enqueueSnackbar } = useSnackbar();
   const previousConnected = usePrevious(connected);
+  const [waitedAWhile, setWaitedAWhile] = React.useState<boolean>(false);
   const [newName, setNewName] = React.useState<string>('');
   const [createType, setCreateType] = React.useState<CoopGameType>('today');
   const [expireType, setExpireType] = React.useState<ExpireType>('today');
@@ -51,6 +53,10 @@ function CoopMode({
   React.useEffect(() => {
     if (connected === false && previousConnected !== connected) onConnect();
   }, [onConnect, connected, previousConnected]);
+
+  React.useEffect(() => {
+    setTimeout(() => setWaitedAWhile(true), 10 * 1000);
+  }, []);
 
   const handleClose = () => {
     if (connected && gameMode !== 'coop') onDisconnect();
@@ -65,6 +71,13 @@ function CoopMode({
       <DialogTitle>COOP Mode</DialogTitle>
       <DialogContent>
         <DialogContentText>
+          {waitedAWhile && !connected && (
+            <Alert severity="warning">
+              It seems to be taking a while to establish a live connection.
+              If the problem persist, then you are probably running an extremely old
+              browser or something is blocking websockets.
+            </Alert>
+          )}
           {room !== null && (
             <Typography gutterBottom>
               You are in COOP room
