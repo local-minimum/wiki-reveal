@@ -196,14 +196,9 @@ function useCoop(gameMode: GameMode): Coop {
 
         case 'JOIN':
           enqueueSnackbar(
-            users === null
-              ? `Joined a game with ${message.users.length} ${pluralize('user', message.users.length)}`
-              : `${message.name} joined the game`,
+            `${message.name} joined the game`,
             { variant: 'info' },
           );
-          if (message.name !== username) {
-            setUsername(message.name);
-          }
           setUsers(message.users);
           break;
 

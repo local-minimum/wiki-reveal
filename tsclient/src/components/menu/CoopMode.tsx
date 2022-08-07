@@ -19,6 +19,7 @@ import * as React from 'react';
 import { GameMode } from '../../api/page';
 import { CoopGameType, ExpireType } from '../../hooks/useCoop';
 import usePrevious from '../../hooks/usePrevious';
+import { usersToText } from './usersToText';
 
 interface CoopModeProps {
   onClose: () => void;
@@ -32,11 +33,6 @@ interface CoopModeProps {
   room: string | null;
   users: string[];
   onJoin: (room: string) => void;
-}
-
-function usersToText(users: string[]): string {
-  if (users.length === 0) return 'noone';
-  return `${users.slice(0, users.length - 1).join(', ')} & ${users[users.length - 1]}`;
 }
 
 function CoopMode({

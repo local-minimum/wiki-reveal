@@ -119,15 +119,15 @@ function WikiPage({
     );
   }, [enqueueSnackbar]);
 
-  const [guesses, setGuesses] = useStoredValue<Array<Guess>>(`guesses-${gameId}`, []);
-  const [victory, setVictory] = useStoredValue<VictoryType | null>(`victory-${gameId}`, null);
-  const [playStart, setPlayStart] = useStoredValue<string| null>(`start-${gameId}`, null);
+  const [guesses, setGuesses] = useStoredValue<Array<Guess>>(`guesses-${gameMode}-${gameId}`, []);
+  const [victory, setVictory] = useStoredValue<VictoryType | null>(`victory-${gameMode}-${gameId}`, null);
+  const [playStart, setPlayStart] = useStoredValue<string| null>(`start-${gameMode}-${gameId}`, null);
   const [firstVisit, setFirstVisit] = useStoredValue<boolean>('first-visit', true);
   const [victoryVisible, setVictoryVisible] = React.useState<boolean>(true);
   const [playerResults, setPlayerResults] = useStoredValue<Array<[number, VictoryType]>>('player-results', []);
   const [achievements, setAchievements] = useStoredValue<AchievementsType>('achievements', {});
 
-  useClearStoredValues(gameId, CASH_KEYS, gameMode === 'coop', 2);
+  useClearStoredValues(gameId, CASH_KEYS, gameMode, 2);
 
   React.useEffect(
     () => {
@@ -175,22 +175,56 @@ function WikiPage({
     () => unmaskPage(
       page ?? { title: [], summary: [], sections: [] },
       (activeGuesses).map(([word]) => word),
-      prevGameMode === gameMode && unmasked === gameId,
+      unmasked === gameId,
     ),
-    [activeGuesses, gameId, gameMode, page, prevGameMode, unmasked],
+    [activeGuesses, gameId, page, unmasked],
   );
 
   React.useEffect(() => {
     if (prevGameMode !== gameMode && (gameMode === 'coop' || prevGameMode === 'coop')) {
-      setGuesses([]);
-      setVictory(null);
       setVictoryVisible(true);
+      setUnmasked(-1);
     }
   }, [gameMode, prevGameMode, setGuesses, setVictory]);
 
   const hints = React.useMemo(
     () => activeGuesses.reduce((acc, [_, isHint]) => (isHint ? acc + 1 : acc), 0),
     [activeGuesses],
+  );
+
+  React.useEffect(
+    () => {
+      if (gameMode !== 'coop' || pageName === undefined) return;
+      const { title: originalTile } = page ?? { title: [] };
+      const tLexes = originalTile
+        .filter(([_, isHidden]) => isHidden)
+        .map(([_, __, lex]) => lex);
+      const found = tLexes.map(() => false);
+      let victoryGuess = -1;
+      coopGuesses.forEach(([guessLex], guessIdx) => {
+        if (victoryGuess >= 0) return;
+        tLexes.forEach((titleLex, titleIdx) => {
+          if (titleLex === guessLex) {
+            found[titleIdx] = true;
+          }
+        });
+        if (tLexes.every((v) => v)) {
+          victoryGuess = guessIdx;
+        }
+      });
+      if (victoryGuess >= 0) {
+        const newVictory = {
+          guesses: victoryGuess + 1,
+          hints,
+          accuracy: calculateAccuracy(lexicon, coopGuesses),
+          revealed: calculateProgress(lexicon, freeWords, coopGuesses),
+          pageName,
+        };
+
+        setVictory(newVictory);
+      }
+    },
+    [coopGuesses, freeWords, gameMode, hints, lexicon, page, pageName, setVictory, title],
   );
 
   const addGuess = React.useCallback((currentGuess: string): void => {
@@ -404,7 +438,7 @@ function WikiPage({
         achievements={achievements}
         onSetAchievements={setAchievements}
         gameId={gameId}
-        hideFound={hideFound && prevGameMode === gameMode}
+        hideFound={hideFound}
         onHideFound={setHideFound}
         end={end}
         gameMode={gameMode}
@@ -471,7 +505,12 @@ function WikiPage({
             height: isSmall ? '25vh' : '100vh',
           }}
         >
-          <GuessHeader guesses={activeGuesses.length} accuracy={accuracy} />
+          <GuessHeader
+            guesses={activeGuesses.length}
+            accuracy={accuracy}
+            isCoop={gameMode === 'coop'}
+            coopUsers={coopUsers}
+          />
           <Box
             sx={{
               // Header height 0px / 32px

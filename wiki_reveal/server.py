@@ -185,6 +185,14 @@ def coop_on_join(data: dict[str, Any]):
             },
             to=sid,
         )
+        if username != data.get('username'):
+            send(
+                {
+                    "type": 'RENAME-ME',
+                    "to": username,
+                },
+                to=sid,
+            )
 
 
 @socketio.on('leave')

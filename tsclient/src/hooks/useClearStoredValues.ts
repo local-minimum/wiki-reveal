@@ -1,34 +1,38 @@
 import { useEffect } from 'react';
+import { GameMode } from '../api/page';
 import useStoredValue from './useStoredValue';
 
 function useClearStoredValues(
   gameId: number | undefined,
   keysToClear: string[],
-  isCoop = false,
+  gameMode: GameMode,
   cacheSize = 2,
 ) {
-  const [stored, setStored] = useStoredValue<number[]>('storage-cache', []);
+  const [storedSingle, setStoredSingle] = useStoredValue<number[]>('storage-cache', []);
   const [storedCoop, setStoredCoop] = useStoredValue<number[]>('storage-cache-coop', []);
 
-  useEffect(() => {
-    if (gameId === undefined || stored.includes(gameId)) return;
+  useEffect(
+    () => {
+      const stored = gameMode === 'coop' ? storedCoop : storedSingle;
+      const setStored = gameMode === 'coop' ? setStoredCoop : setStoredSingle;
+      if (gameId === undefined || stored.includes(gameId)) return;
 
-    if (!isCoop) {
-      const startIndex = Math.max(0, stored.indexOf(gameId) - cacheSize);
+      const keepFrom = Math.max(0, stored.length - Math.min(cacheSize, stored.length));
       stored
-        .slice(0, startIndex)
-        .forEach((storedGameId) => keysToClear.forEach((key) => localStorage.removeItem(`${key}-${storedGameId}`)));
-      const remaining = [...stored.slice(startIndex), gameId];
+        .slice(0, keepFrom)
+        .forEach((storedGameId) => keysToClear.forEach((key) => {
+          localStorage.removeItem(`${key}-${gameMode}-${storedGameId}`);
+          // Clean up old style
+          localStorage.removeItem(`${key}-${storedGameId}`);
+        }));
+      const remaining = [...stored.slice(keepFrom), gameId];
       setStored(remaining);
-    } else {
-      const startIndex = Math.max(0, storedCoop.indexOf(gameId) - cacheSize);
-      storedCoop
-        .slice(0, startIndex)
-        .forEach((storedGameId) => keysToClear.forEach((key) => localStorage.removeItem(`${key}-${storedGameId}`)));
-      const remaining = [...storedCoop.slice(startIndex), gameId];
-      setStoredCoop(remaining);
-    }
-  }, [cacheSize, gameId, isCoop, keysToClear, setStored, setStoredCoop, stored, storedCoop]);
+    },
+    [
+      cacheSize, gameId, gameMode, keysToClear, setStoredCoop, setStoredSingle, storedCoop,
+      storedSingle,
+    ],
+  );
 }
 
 export default useClearStoredValues;
