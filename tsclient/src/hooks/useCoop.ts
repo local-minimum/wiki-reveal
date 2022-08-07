@@ -131,10 +131,15 @@ function useCoop(gameMode: GameMode): Coop {
       return;
     }
 
-    const path = `${window.location.href.replace(/\/$/, '')}/socket.io`;
+    const fullPath = `${window.location.href.replace(/\/$/, '')}/socket.io`;
+    const host = fullPath.slice(
+      0,
+      fullPath.indexOf(window.location.host) + window.location.host.length,
+    );
+    const path = fullPath.slice(host.length);
     // eslint-disable-next-line no-console
-    console.log('Attempting websocket at', path);
-    const newSocket = io(path);
+    console.log('Attempting WS at', host, path);
+    const newSocket = io(host, { path });
     setSocket(newSocket);
 
     newSocket.on('connect', () => {
