@@ -39,11 +39,17 @@ interface MessageGuess {
   index: number;
 }
 
+interface MessageGuesses {
+  type: 'GUESSES',
+  backlog: Guess[],
+}
+
 type Message = MessageCreate
   | MessageJoinLeave
   | MessageRename
   | MessageJoinFail
-  | MessageGuess;
+  | MessageGuess
+  | MessageGuesses;
 
 interface Coop {
   connected: boolean;
@@ -219,6 +225,9 @@ function useCoop(gameMode: GameMode): Coop {
                   : (guesses[idx] ?? ['', false, null])
               )),
           );
+          break;
+        case 'GUESSES':
+          setGuesses(message.backlog);
           break;
         default:
           // eslint-disable-next-line no-console

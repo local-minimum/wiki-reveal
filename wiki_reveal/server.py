@@ -159,14 +159,22 @@ def coop_on_join(data: dict[str, Any]):
             to=sid,
         )
     else:
+        users, backlog = add_coop_user(room, sid, username)
         join_room(room)
         send(
             {
                 "type": 'JOIN',
                 "name": username,
-                "users": add_coop_user(room, sid, username),
+                "users": users,
             },
             to=room,
+        )
+        send(
+            {
+                "type": 'GUESSES',
+                "backlog": backlog,
+            },
+            to=sid,
         )
 
 

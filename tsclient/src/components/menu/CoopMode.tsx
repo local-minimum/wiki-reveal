@@ -1,5 +1,5 @@
 import {
-  faBroom, faClose, faCopy, faPaw, faSave, faSquarePlus,
+  faBroom, faClose, faCopy, faPaw, faSave, faSquarePlus, faHandshake,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -31,6 +31,7 @@ interface CoopModeProps {
   gameMode: GameMode;
   room: string | null;
   users: string[];
+  onJoin: (room: string) => void;
 }
 
 function usersToText(users: string[]): string {
@@ -40,7 +41,7 @@ function usersToText(users: string[]): string {
 
 function CoopMode({
   onClose, username, onChangeUsername, connected, onCreateGame, gameMode,
-  onConnect, onDisconnect, room, users,
+  onConnect, onDisconnect, room, users, onJoin,
 }: CoopModeProps): JSX.Element {
   const { enqueueSnackbar } = useSnackbar();
   const previousConnected = usePrevious(connected);
@@ -49,6 +50,7 @@ function CoopMode({
   const [createType, setCreateType] = React.useState<CoopGameType>('today');
   const [expireType, setExpireType] = React.useState<ExpireType>('today');
   const [expire, setExpire] = React.useState<number>(24);
+  const [joinRoom, setJoinRoom] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     if (connected === false && previousConnected !== connected) onConnect();
@@ -78,7 +80,7 @@ function CoopMode({
               browser or something is blocking websockets.
             </Alert>
           )}
-          {room !== null && (
+          {room !== null && gameMode === 'coop' && (
             <Typography gutterBottom>
               You are in COOP room
               {' '}
@@ -186,7 +188,29 @@ function CoopMode({
           >
             Create
           </Button>
-
+          <Typography variant="h6" sx={{ marginTop: 2 }}>
+            Join existing COOP room
+          </Typography>
+          <Stack direction="row" gap={1}>
+            <TextField
+              sx={{ flex: 1 }}
+              variant="outlined"
+              value={joinRoom ?? room ?? ''}
+              label="Room ID"
+              onChange={({ target: { value } }) => setJoinRoom(value ?? '')}
+            />
+            <Button
+              disabled={(joinRoom ?? room ?? '').trim().length === 0}
+              variant="contained"
+              onClick={() => {
+                onJoin((joinRoom ?? room ?? '').trim());
+                handleClose();
+              }}
+              startIcon={<FontAwesomeIcon icon={faHandshake} />}
+            >
+              Join
+            </Button>
+          </Stack>
         </DialogContentText>
       </DialogContent>
       <DialogActions>

@@ -16,6 +16,7 @@ function WikiPageContainer(): JSX.Element {
 
   const {
     room, connected, connect, createGame, username, renameMe, disconnect, users, guess, guesses,
+    join,
 
   } = useCoop(gameMode);
 
@@ -34,6 +35,20 @@ function WikiPageContainer(): JSX.Element {
       setGameMode('coop');
     }
   }, [connected, createGame, enqueueSnackbar, setGameMode]);
+
+  const handleJoinCoopGame = React.useCallback((
+    roomId: string,
+  ) => {
+    if (connected !== true) {
+      enqueueSnackbar(
+        'Could not create room because you are not live-connected',
+        { variant: 'error' },
+      );
+    } else {
+      join(roomId);
+      setGameMode('coop');
+    }
+  }, [connected, enqueueSnackbar, join, setGameMode]);
 
   const handleChangeGameMode = React.useCallback((newGameMode: GameMode) => {
     if (gameMode === 'coop' && newGameMode !== 'coop') {
@@ -150,6 +165,7 @@ function WikiPageContainer(): JSX.Element {
       coopRoom={room}
       onCoopGuess={guess}
       coopGuesses={guesses}
+      onJoinCoopGame={handleJoinCoopGame}
     />
   );
 }

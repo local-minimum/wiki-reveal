@@ -41,7 +41,7 @@ def coop_game_exists(room: str) -> boolean:
 
 def coop_game_is_full(room: str) -> boolean:
     _, __, ___, users, ____ = ROOMS[room]
-    return len(users) < 16
+    return len(users) >= 16
 
 
 def add_coop_game(
@@ -66,14 +66,24 @@ def add_coop_game(
     )
 
 
-def add_coop_user(room: str, sid: SID, username: str) -> list[str]:
+def add_coop_user(
+    room: str,
+    sid: SID,
+    username: str,
+) -> tuple[list[str], list[GUESS]]:
     if not coop_game_exists(room):
         logging.error('Attempted to add user to a non-existing rom')
-        return []
+        return [], []
 
-    _, __, ___, users, ____ = ROOMS[room]
+    _, __, ___, users, guesses = ROOMS[room]
+
+    # Remove others with same name
+    for key in list(users.keys()):
+        if users[key] == username:
+            del users[key]
+
     users[sid] = username
-    return list(users.values())
+    return list(users.values()), guesses
 
 
 def remove_coop_user(room: str, sid: SID) -> tuple[Optional[str], list[str]]:
