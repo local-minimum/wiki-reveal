@@ -55,14 +55,18 @@ function transformPage({ title, summary, sections }: ResponsePage): Page {
 
 export type GameMode = 'today' | 'yesterday' | 'coop';
 
-function gameModeToPath(gameMode: GameMode): string {
+function gameModeToPath(gameMode: GameMode, room: null | string): string {
   if (gameMode === 'today') return 'api/page';
   if (gameMode === 'yesterday') return 'api/yesterday';
+  if (gameMode === 'coop') {
+    if (room === null) throw new Error('No room given for coop game');
+    return `api/coop/${room}`;
+  }
   throw new Error('Game mode not implemented');
 }
 
-export function getPage(gameMode: GameMode) {
-  return fetch(gameModeToPath(gameMode))
+export function getPage(gameMode: GameMode, room: string | null) {
+  return fetch(gameModeToPath(gameMode, room))
     .then(((result): Promise<ResponseJSON> => {
       if (result.ok) return result.json();
       throw new Error('Failed to download page');

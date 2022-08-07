@@ -19,3 +19,13 @@ def get_start_and_end(game_id: int) -> tuple[str, str]:
         start.isoformat().replace(' ', 'T'),
         end.isoformat().replace(' ', 'T')
     )
+
+
+def get_start_of_current() -> datetime:
+    game_id = get_game_id()
+    epoch = datetime.fromisoformat(START_DATE)
+    return epoch + timedelta(days=game_id)
+
+
+def get_end_of_current() -> datetime:
+    return get_start_of_current() + timedelta(days=1)

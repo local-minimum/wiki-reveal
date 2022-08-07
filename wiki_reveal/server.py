@@ -1,20 +1,23 @@
+from datetime import datetime
 from functools import lru_cache
 from http import HTTPStatus
 import logging
 import os
 from random import randint
-import re
 from secrets import token_urlsafe
 from flask_socketio import (  # type: ignore
     SocketIO, join_room, leave_room, send, rooms,
 )
-from typing import Any
+from typing import Any, Optional, cast
 from flask import Flask, Response, abort, jsonify, request
-from wiki_reveal.exceptions import WikiError
-from wiki_reveal.game_id import get_game_id, get_start_and_end
+from wiki_reveal.exceptions import CoopGameDoesNotExistError, WikiError
+from wiki_reveal.game_id import (
+    get_game_id, get_start_and_end, get_start_of_current,
+)
 from wiki_reveal.generate_name import generate_name
 from wiki_reveal.rooms import (
-    add_coop_game, add_coop_user, clear_old_coop_games, coop_game_exists, remove_coop_user, rename_user,
+    add_coop_game, add_coop_user, clear_old_coop_games,
+    coop_game_exists, get_room_data, remove_coop_user, rename_user,
 )
 
 from wiki_reveal.wiki import (
@@ -38,21 +41,31 @@ def get_or(data: dict[str, Any], key: str, default: Any) -> Any:
     return value
 
 
+def get_sid(r: Any) -> str:
+    if hasattr(r, 'sid'):
+        return cast(str, r.sid)
+    raise ValueError
+
+
 @socketio.on('create game')
 def coop_on_create(data: dict[str, Any]):
     clear_old_coop_games()
     room = get_or(data, 'room', token_urlsafe(16))
     username = get_or(data, 'username', generate_name())
+    isToday = data['gameType'] == 'today'
+    endsToday = data['expireType'] == 'today'
     game_id = (
         get_game_id()
-        if data.get('random', False)
+        if isToday
         else randint(0, get_number_of_options())
     )
-
+    start: Optional[datetime] = get_start_of_current() if isToday else None
+    duration = None if endsToday else data['expire']
+    sid = get_sid(request)
     join_room(room)
-    add_coop_game(room, game_id, request.sid, username)
+    add_coop_game(room, game_id, sid, username, start, duration)
 
-    logging.info(f'Created a game with id {room} ({game_id}) for {request.sid}')
+    logging.info(f'Created a game with id {room} ({game_id}) for {sid}')
 
     send(
         {
@@ -70,6 +83,7 @@ def coop_on_rename(data: dict[str, Any]):
     from_name = data['from']
     to_name = get_or(data, 'to', generate_name())
     room = data['room']
+    sid = get_sid(request)
 
     if room is None:
         send(
@@ -78,10 +92,10 @@ def coop_on_rename(data: dict[str, Any]):
                 "from": from_name,
                 "to": to_name,
             },
-            to=request.sid,
+            to=sid,
         )
     else:
-        rename_user(room, request.sid, to_name)
+        rename_user(room, sid, to_name)
         send(
             {
                 "type": 'RENAME',
@@ -96,13 +110,15 @@ def coop_on_rename(data: dict[str, Any]):
 def coop_on_join(data: dict[str, Any]):
     username = get_or(data, 'username', generate_name())
     room = data['room']
+    sid = get_sid(request)
+
     if not coop_game_exists(room):
         send(
             {
                 "type": 'JOIN-FAIL',
                 "reason": 'Room does not exist',
             },
-            to=request.sid,
+            to=sid,
         )
     else:
         join_room(room)
@@ -110,7 +126,7 @@ def coop_on_join(data: dict[str, Any]):
             {
                 "type": 'JOIN',
                 "name": username,
-                "users": add_coop_user(room, request.sid, username),
+                "users": add_coop_user(room, sid, username),
             },
             to=room,
         )
@@ -120,12 +136,14 @@ def coop_on_join(data: dict[str, Any]):
 def coop_on_leave(data: dict[str, Any]):
     username = data.get('username', None)
     room = data['room']
+    sid = get_sid(request)
+
     if (username):
         send(
             {
                 "type": 'LEAVE',
                 "name": username,
-                "users": remove_coop_user(room, request.sid, username),
+                "users": remove_coop_user(room, sid),
             },
             to=room,
         )
@@ -134,8 +152,10 @@ def coop_on_leave(data: dict[str, Any]):
 
 @socketio.on('disconnect')
 def coop_on_disconnect():
-    for room in rooms(request.sid):
-        username, users = remove_coop_user(room, request.sid)
+    sid = get_sid(request)
+
+    for room in rooms(sid):
+        username, users = remove_coop_user(room, sid)
         send(
             {
                 "type": 'LEAVE',
@@ -145,8 +165,6 @@ def coop_on_disconnect():
             to=room,
         )
         leave_room(room)
-
-
 
 
 @app.get('/api/test.txt')
@@ -212,5 +230,20 @@ def page(language: str = 'en'):
         response_data['yesterdaysTitle'] = tuple(
             tokenize(yesterday.replace('_', ' ')),
         )
+
+    return jsonify(response_data)
+
+
+@app.get('/api/coop/<room>')
+def coop_room(room: str):
+    try:
+        start, override_end, game_id = get_room_data(room)
+    except CoopGameDoesNotExistError:
+        abort(HTTPStatus.BAD_REQUEST)
+
+    response_data = get_page_payload('en', game_id)
+    response_data['start'] = start.isoformat().replace(' ', 'T')
+    if override_end is not None:
+        response_data['end'] = override_end.isoformat().replace(' ', 'T')
 
     return jsonify(response_data)

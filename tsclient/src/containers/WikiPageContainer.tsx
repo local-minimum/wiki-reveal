@@ -42,8 +42,8 @@ function WikiPageContainer(): JSX.Element {
   }, [disconnect, gameMode, setGameMode]);
 
   const { isLoading, isError, data } = useQuery(
-    ['page', gameMode],
-    () => getPage(gameMode),
+    ['page', gameMode === 'coop' ? `coop-${room ?? ''}` : gameMode],
+    () => getPage(gameMode, room),
     {
       staleTime,
       onSuccess: ({ end: endTime }) => {
@@ -52,6 +52,7 @@ function WikiPageContainer(): JSX.Element {
         // Allows for a certain achievement
         setStaleTime(remaining + 1000 + Math.random() * 2000);
       },
+      retry: gameMode !== 'coop' && room !== null,
     },
   );
 

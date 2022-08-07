@@ -112,7 +112,7 @@ function WikiPage({
   const [playerResults, setPlayerResults] = useStoredValue<Array<[number, VictoryType]>>('player-results', []);
   const [achievements, setAchievements] = useStoredValue<AchievementsType>('achievements', {});
 
-  useClearStoredValues(gameId, CASH_KEYS, 2);
+  useClearStoredValues(gameId, CASH_KEYS, gameMode === 'coop', 2);
 
   React.useEffect(
     () => {

@@ -1,10 +1,15 @@
 import { useEffect } from 'react';
 import useStoredValue from './useStoredValue';
 
-function useClearStoredValues(gameId: number | undefined, keysToClear: string[], cacheSize = 2) {
+function useClearStoredValues(
+  gameId: number | undefined,
+  keysToClear: string[],
+  isCoop = false,
+  cacheSize = 2,
+) {
   const [stored, setStored] = useStoredValue<number[]>('storage-cache', []);
   useEffect(() => {
-    if (gameId === undefined || stored.includes(gameId)) return;
+    if (isCoop === false || gameId === undefined || stored.includes(gameId)) return;
 
     const startIndex = Math.max(0, stored.indexOf(gameId) - cacheSize);
     stored
@@ -13,7 +18,7 @@ function useClearStoredValues(gameId: number | undefined, keysToClear: string[],
 
     const remaining = [...stored.slice(startIndex), gameId];
     setStored(remaining);
-  }, [cacheSize, gameId, keysToClear, setStored, stored]);
+  }, [cacheSize, gameId, isCoop, keysToClear, setStored, stored]);
 }
 
 export default useClearStoredValues;

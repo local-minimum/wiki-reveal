@@ -12,3 +12,7 @@ class NoSuchPageError(WikiError):
 
 class FailedToSelectPageError(WikiError):
     pass
+
+
+class CoopGameDoesNotExistError(WikiError):
+    pass
