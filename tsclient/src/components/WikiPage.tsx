@@ -226,7 +226,7 @@ function WikiPage({
         };
 
         setVictory(newVictory);
-      } else if (victory !== null && victoryGuess >= 0) {
+      } else if (victory !== null && victoryGuess < 0) {
         setVictory(null);
       }
     },
