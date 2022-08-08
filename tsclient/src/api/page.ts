@@ -76,8 +76,10 @@ export function getPage(gameMode: GameMode, room: string | null) {
       page.sections = trimSections(page.sections);
       const lexicon = createLexicon(page);
       const freeWords = allowedWords[data.language] ?? [];
+      const freeWordsLookup: Record<string, true> = Object
+        .fromEntries(freeWords.map((lex) => [lex, true]));
       return {
-        page: unmaskPage(page, freeWords),
+        page: unmaskPage(page, freeWordsLookup),
         lexicon,
         freeWords,
         gameId: data.gameId,
@@ -87,7 +89,7 @@ export function getPage(gameMode: GameMode, room: string | null) {
         end: new Date(data.end),
         yesterdaysTitle: data.yesterdaysTitle === undefined ? undefined : unmaskTokens(
           data.yesterdaysTitle.map(lexicalizeToken),
-          freeWords,
+          freeWordsLookup,
           false,
         ),
       };

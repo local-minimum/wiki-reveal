@@ -14,7 +14,7 @@ import {
   AchievementsType, achievementToTitle, checkAchievementsPercent, checkRankAchievements,
   checkRevealAchievements, checkVictoryAchievements, updateAchievements,
 } from '../utils/achievements';
-import { unmaskPage, wordAsLexicalEntry } from '../utils/wiki';
+import { wordAsLexicalEntry } from '../utils/wiki';
 import GuessHeader from './GuessHeader';
 import GuessInput from './GuessInput';
 import GuessTable from './GuessTable';
@@ -27,6 +27,7 @@ import Victory from './Victory';
 import { VictoryType } from './VictoryType';
 import { CoopGameType, ExpireType } from '../hooks/useCoop';
 import usePrevious from '../hooks/usePrevious';
+import useRevealedPage from '../hooks/useRevealedPage';
 
 function randomEntry<T>(arr: T[]): T {
   return arr[Math.min(Math.floor(Math.random() * arr.length), arr.length - 1)];
@@ -173,14 +174,7 @@ function WikiPage({
     setUnmasked(gameId ?? -1);
   }, [gameId]);
 
-  const { title, summary, sections } = React.useMemo(
-    () => unmaskPage(
-      page ?? { title: [], summary: [], sections: [] },
-      (activeGuesses).map(([word]) => word),
-      unmasked === gameId,
-    ),
-    [activeGuesses, gameId, page, unmasked],
-  );
+  const { title, summary, sections } = useRevealedPage(page, activeGuesses, unmasked === gameId);
 
   React.useEffect(() => {
     if (prevGameMode !== gameMode && (gameMode === 'coop' || prevGameMode === 'coop')) {

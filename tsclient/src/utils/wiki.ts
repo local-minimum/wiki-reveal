@@ -20,21 +20,20 @@ export function wordAsLexicalEntry(word: string): string {
 
 export function unmaskTokens(
   tokens: LexicalizedToken[],
-  words: string[],
+  words: Record<string, true>,
   unmasked: boolean,
 ): LexicalizedToken[] {
   return tokens.map(([token, isHidden, lex]) => (
     isHidden
     && (
-      unmasked
-      || words.some((word) => word === lex)
+      unmasked || words[lex]
     ) ? [token, false, lex] : [token, isHidden, lex]
   ));
 }
 
 function unMaskSection({
   title, depth, paragraphs, sections,
-}: Section, words: string[], unmasked: boolean): Section {
+}: Section, words: Record<string, true>, unmasked: boolean): Section {
   return {
     title: unmaskTokens(title, words, unmasked),
     depth,
@@ -45,7 +44,7 @@ function unMaskSection({
 
 export function unmaskPage(
   { title, summary, sections }: Page,
-  words: string[],
+  words: Record<string, true>,
   unmasked = false,
 ): Page {
   return {
