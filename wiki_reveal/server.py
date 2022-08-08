@@ -34,7 +34,7 @@ logging.basicConfig(
 def root_or_none() -> Optional[str]:
     root = os.environ.get('WR_ROOT')
     if root:
-        return root
+        return f"{root.strip('/')}/socket.io"
     logging.info(f'Will adjust where websockets answer to {root}')
     return None
 
