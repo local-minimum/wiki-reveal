@@ -128,7 +128,7 @@ def coop_on_guess(data: dict[str, Any]):
 def coop_on_rename(data: dict[str, Any]):
     from_name = data['from']
     to_name = get_or(data, 'to', generate_name())
-    room = data['room']
+    room = data.get('room')
     sid = get_sid(request)
 
     if room is not None:
@@ -175,7 +175,6 @@ def coop_on_join(data: dict[str, Any]):
         )
     else:
         users, backlog = add_coop_user(room, sid, username)
-        join_room(room)
         send(
             {
                 "type": 'JOIN',
@@ -184,6 +183,9 @@ def coop_on_join(data: dict[str, Any]):
             },
             to=room,
         )
+
+        join_room(room)
+
         send(
             {
                 "type": 'GUESSES',
@@ -200,12 +202,23 @@ def coop_on_join(data: dict[str, Any]):
                 to=sid,
             )
 
+        send(
+            {
+                "type": "JOIN-ME",
+                "room": room,
+                "users": users,
+            },
+            to=sid
+        )
+
 
 @socketio.on('leave')
 def coop_on_leave(data: dict[str, Any]):
     username = data.get('username', None)
     room = data['room']
     sid = get_sid(request)
+
+    leave_room(room)
 
     if (username):
         send(
@@ -216,7 +229,8 @@ def coop_on_leave(data: dict[str, Any]):
             },
             to=room,
         )
-    leave_room(room)
+
+    send({"type": "LEAVE-ME"}, to=sid)
 
 
 @socketio.on('disconnect')

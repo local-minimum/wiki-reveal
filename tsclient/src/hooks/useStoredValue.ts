@@ -1,17 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
+import { loadStored } from './loadStored';
 import usePrevious from './usePrevious';
 
-function loadStored<T>(key: string, defaultValue: T | undefined): T | undefined {
-  const stored = localStorage.getItem(key);
-  if (stored === null) return defaultValue;
-  return JSON.parse(stored);
-}
-
-function useStoredValue<T>(key: string, defaultValue: T): [T, (newValue: T) => void]
+function useStoredValue<T>(key: string, defaultValue: T): readonly [T, (newValue: T) => void]
 function useStoredValue<T>(
   key: string,
   defaultValue: T | undefined = undefined,
-):[T | undefined, (newValue: T) => void] {
+):readonly [T | undefined, (newValue: T) => void] {
   const [value, setValue] = useState(() => loadStored(key, defaultValue));
   const previousKey = usePrevious(key);
 

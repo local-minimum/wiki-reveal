@@ -31,13 +31,14 @@ interface CoopModeProps {
   onDisconnect: () => void;
   gameMode: GameMode;
   room: string | null;
+  inRoom: boolean;
   users: string[];
   onJoin: (room: string) => void;
 }
 
 function CoopMode({
   onClose, username, onChangeUsername, connected, onCreateGame, gameMode,
-  onConnect, onDisconnect, room, users, onJoin,
+  onConnect, onDisconnect, room, users, onJoin, inRoom,
 }: CoopModeProps): JSX.Element {
   const theme = useTheme();
   const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
@@ -78,7 +79,7 @@ function CoopMode({
               browser or something is blocking websockets.
             </Alert>
           )}
-          {room !== null && gameMode === 'coop' && (
+          {room !== null && inRoom && gameMode === 'coop' && (
             <Typography gutterBottom>
               You are in the COOP game
               {' '}

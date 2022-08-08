@@ -59,6 +59,7 @@ interface WikiPageProps {
   onConnect: () => void;
   onDisconnect: () => void;
   coopRoom: string | null;
+  coopInRoom: boolean;
   coopUsers: string[];
   onCoopGuess: (lex: string) => void;
   coopGuesses: Guess[];
@@ -103,6 +104,7 @@ function WikiPage({
   titleLexes, headingLexes, yesterdaysTitle, start, end, gameMode, onChangeGameMode,
   rankings, summaryToReveal, username, onChangeUsername, onCreateCoopGame, connected,
   onConnect, onDisconnect, coopRoom, coopUsers, coopGuesses, onCoopGuess, onJoinCoopGame,
+  coopInRoom,
 }: WikiPageProps): JSX.Element {
   const prevGameMode = usePrevious(gameMode);
   const { enqueueSnackbar } = useSnackbar();
@@ -456,6 +458,7 @@ function WikiPage({
         onConnect={onConnect}
         onDisconnect={onDisconnect}
         coopRoom={coopRoom}
+        coopInRoom={coopInRoom}
         coopUsers={coopUsers}
         onJoinCoopGame={onJoinCoopGame}
       />

@@ -39,6 +39,7 @@ interface SiteMenuProps {
   onConnect: () => void;
   onDisconnect: () => void;
   coopRoom: string | null;
+  coopInRoom: boolean;
   coopUsers: string[];
   onJoinCoopGame: (room: string) => void;
 }
@@ -46,7 +47,7 @@ interface SiteMenuProps {
 function SiteMenu({
   yesterdaysTitle, onShowVictory, achievements, onSetAchievements, gameId, hideFound, onHideFound,
   end, gameMode, onChangeGameMode, username, onChangeUsername, onCreateCoopGame, connected,
-  onConnect, onDisconnect, coopRoom, coopUsers, onJoinCoopGame,
+  onConnect, onDisconnect, coopRoom, coopUsers, onJoinCoopGame, coopInRoom,
 }: SiteMenuProps): JSX.Element {
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null);
   const open = Boolean(anchorEl);
@@ -212,6 +213,7 @@ function SiteMenu({
           onDisconnect={onDisconnect}
           users={coopUsers}
           room={coopRoom}
+          inRoom={coopInRoom}
           onJoin={onJoinCoopGame}
         />
       )}

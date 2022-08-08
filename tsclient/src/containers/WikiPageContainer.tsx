@@ -16,8 +16,7 @@ function WikiPageContainer(): JSX.Element {
 
   const {
     room, connected, connect, createGame, username, renameMe, disconnect, users, guess, guesses,
-    join,
-
+    join, inRoom,
   } = useCoop(gameMode);
 
   const handleCreateCoopGame = React.useCallback((
@@ -163,6 +162,7 @@ function WikiPageContainer(): JSX.Element {
       onDisconnect={disconnect}
       coopUsers={users}
       coopRoom={room}
+      coopInRoom={inRoom}
       onCoopGuess={guess}
       coopGuesses={guesses}
       onJoinCoopGame={handleJoinCoopGame}
