@@ -2,7 +2,7 @@ from collections.abc import Iterator
 from functools import lru_cache
 import json
 import os
-from typing import Union
+from typing import Optional, Union
 from dataclasses import asdict, dataclass
 import re
 import logging
@@ -125,9 +125,10 @@ def get_number_of_options() -> int:
 
 
 @lru_cache(maxsize=256)
-def get_game_page_name(game_id: int) -> str:
+def get_game_page_name(game_id: int, rng_seed:  Optional[int] = None) -> str:
     names = load_page_name_options()
-    page = get_option(names, game_id)
+
+    page = get_option(names, game_id, rng_seed)
     if page is None:
         raise FailedToSelectPageError
 

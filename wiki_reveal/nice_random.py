@@ -27,8 +27,17 @@ def select_page(rng: Random, options: list[str], uses: list[str]) -> str:
     return rng.choice(remaining)
 
 
-def get_option(options: dict[str, list[str]], game_id: int) -> Optional[str]:
-    rng = get_seeded_random()
+def get_option(
+    options: dict[str, list[str]],
+    game_id: int,
+    custom_seed: Optional[int] = None,
+) -> Optional[str]:
+    """Gets the page name for the game_id
+
+    Using `custom_seed` overrides the re-weighted randomness
+    and just picks the first article for that seed always.
+    """
+    rng = Random(custom_seed) if custom_seed else get_seeded_random()
 
     counts = {k: len(v) for k, v in options.items()}
 
@@ -47,5 +56,7 @@ def get_option(options: dict[str, list[str]], game_id: int) -> Optional[str]:
         page = select_page(rng, options[category], uses[category])
         uses[category].append(page)
         i += 1
+        if custom_seed is not None:
+            break
 
     return page

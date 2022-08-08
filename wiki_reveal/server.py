@@ -38,6 +38,7 @@ def root_or_none() -> Optional[str]:
     logging.info(f'Will adjust where websockets answer to {root}')
     return None
 
+
 def coors_or_none() -> Optional[str]:
     coors = os.environ.get('WR_WS_COORS')
     if coors:
@@ -80,7 +81,7 @@ def coop_on_create(data: dict[str, Any]):
     duration = None if endsToday else data['expire']
     sid = get_sid(request)
     join_room(room)
-    add_coop_game(room, game_id, sid, username, start, duration)
+    add_coop_game(room, game_id, not isToday, sid, username, start, duration)
 
     logging.info(f'Created a game with id {room} ({game_id}) for {sid}')
 
@@ -256,10 +257,14 @@ def root():
 
 
 @lru_cache(maxsize=256)
-def get_page_payload(language: str, game_id: int) -> dict[str, Any]:
+def get_page_payload(
+    language: str,
+    game_id: int,
+    rng_seed: Optional[int] = None,
+) -> dict[str, Any]:
     start, end = get_start_and_end(game_id)
     try:
-        page_name = get_game_page_name(game_id)
+        page_name = get_game_page_name(game_id, rng_seed)
     except WikiError:
         logging.exception('Could not load game page')
         abort(HTTPStatus.INTERNAL_SERVER_ERROR)
@@ -320,11 +325,11 @@ def page(language: str = 'en'):
 @app.get('/api/coop/<room>')
 def coop_room(room: str):
     try:
-        start, override_end, game_id = get_room_data(room)
+        start, override_end, game_id, rng_seed = get_room_data(room)
     except CoopGameDoesNotExistError:
         abort(HTTPStatus.BAD_REQUEST)
 
-    response_data = get_page_payload('en', game_id)
+    response_data = get_page_payload('en', game_id, rng_seed)
     response_data['start'] = start.isoformat().replace(' ', 'T')
     if override_end is not None:
         response_data['end'] = override_end.isoformat().replace(' ', 'T')

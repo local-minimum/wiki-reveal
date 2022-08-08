@@ -1,12 +1,11 @@
 import { useSnackbar } from 'notistack';
 import {
-  useCallback, useEffect, useRef, useState,
+  useCallback, useEffect, useRef,
 } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { GameMode } from '../api/page';
 import { Guess } from '../components/Guess';
 import useStoredRef from './useStoredRef';
-import useStoredValue from './useStoredValue';
 import useTransaction from './useTransaction';
 
 export type ExpireType = 'today' | 'custom';
