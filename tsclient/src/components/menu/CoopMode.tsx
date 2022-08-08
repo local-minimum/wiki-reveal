@@ -12,7 +12,7 @@ import {
   InputAdornment,
   Radio,
   RadioGroup,
-  Stack, Switch, TextField, Typography,
+  Stack, Switch, TextField, Typography, useMediaQuery, useTheme,
 } from '@mui/material';
 import { useSnackbar } from 'notistack';
 import * as React from 'react';
@@ -39,6 +39,8 @@ function CoopMode({
   onClose, username, onChangeUsername, connected, onCreateGame, gameMode,
   onConnect, onDisconnect, room, users, onJoin,
 }: CoopModeProps): JSX.Element {
+  const theme = useTheme();
+  const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
   const { enqueueSnackbar } = useSnackbar();
   const previousConnected = usePrevious(connected);
   const [waitedAWhile, setWaitedAWhile] = React.useState<boolean>(false);
@@ -78,7 +80,7 @@ function CoopMode({
           )}
           {room !== null && gameMode === 'coop' && (
             <Typography gutterBottom>
-              You are in COOP room
+              You are in the COOP game
               {' '}
               <strong>{room}</strong>
               <IconButton
@@ -101,10 +103,10 @@ function CoopMode({
           <Typography gutterBottom>
             {
               username == null
-                ? 'You currently don\'t have a user name, one will be generated for you unless you create one first.'
+                ? 'You don\'t have a user name, one will be generated for you unless you create one first.'
                 : (
                   <>
-                    You are currently known as
+                    You are known as
                     {' '}
                     <strong>{username}</strong>
                   </>
@@ -117,23 +119,39 @@ function CoopMode({
               variant="outlined"
               value={newName}
               label="User name"
+              size={isSmall ? 'small' : 'medium'}
               onChange={({ target: { value } }) => setNewName(value ?? '')}
             />
-            <Button
-              disabled={newName.trim().length === 0}
-              variant="contained"
-              onClick={() => { onChangeUsername(newName.trim()); setNewName(''); }}
-              startIcon={<FontAwesomeIcon icon={faSave} />}
-            >
-              Save Name
-            </Button>
-            <Button
-              variant="contained"
-              onClick={() => onChangeUsername(null)}
-              startIcon={<FontAwesomeIcon icon={connected ? faPaw : faBroom} />}
-            >
-              {connected ? 'Generate' : 'Clear Name' }
-            </Button>
+            {isSmall ? (
+              <IconButton
+                disabled={newName.trim().length === 0}
+                onClick={() => { onChangeUsername(newName.trim()); setNewName(''); }}
+              >
+                <FontAwesomeIcon icon={faSave} />
+              </IconButton>
+            ) : (
+              <Button
+                disabled={newName.trim().length === 0}
+                variant="contained"
+                onClick={() => { onChangeUsername(newName.trim()); setNewName(''); }}
+                startIcon={<FontAwesomeIcon icon={faSave} />}
+              >
+                Save Name
+              </Button>
+            )}
+            {isSmall ? (
+              <IconButton onClick={() => onChangeUsername(null)}>
+                <FontAwesomeIcon icon={connected ? faPaw : faBroom} />
+              </IconButton>
+            ) : (
+              <Button
+                variant="contained"
+                onClick={() => onChangeUsername(null)}
+                startIcon={<FontAwesomeIcon icon={connected ? faPaw : faBroom} />}
+              >
+                {connected ? 'Generate' : 'Clear Name' }
+              </Button>
+            )}
           </Stack>
           <Typography variant="h6" sx={{ marginTop: 2 }}>
             Create COOP room
@@ -148,7 +166,7 @@ function CoopMode({
               <FormControlLabel value="random" control={<Radio />} label="Random" />
             </RadioGroup>
           </FormControl>
-          <Stack direction="row" gap={1}>
+          <Stack direction={isSmall ? 'column' : 'row'} gap={1}>
             <FormGroup>
               <FormControlLabel
                 checked={expireType === 'today'}
@@ -177,10 +195,11 @@ function CoopMode({
             startIcon={<FontAwesomeIcon icon={faSquarePlus} />}
             onClick={() => onCreateGame(createType, expireType, expire)}
             disabled={connected !== true}
+            sx={{ marginTop: 1 }}
           >
             Create
           </Button>
-          <Typography variant="h6" sx={{ marginTop: 2 }}>
+          <Typography variant="h6" sx={{ marginTop: 2, marginBottom: 1 }}>
             Join existing COOP room
           </Typography>
           <Stack direction="row" gap={1}>
@@ -189,19 +208,32 @@ function CoopMode({
               variant="outlined"
               value={joinRoom ?? room ?? ''}
               label="Room ID"
+              size={isSmall ? 'small' : 'medium'}
               onChange={({ target: { value } }) => setJoinRoom(value ?? '')}
             />
-            <Button
-              disabled={connected !== true || (joinRoom ?? room ?? '').trim().length === 0}
-              variant="contained"
-              onClick={() => {
-                onJoin((joinRoom ?? room ?? '').trim());
-                onClose();
-              }}
-              startIcon={<FontAwesomeIcon icon={faHandshake} />}
-            >
-              Join
-            </Button>
+            {isSmall ? (
+              <Button
+                disabled={connected !== true || (joinRoom ?? room ?? '').trim().length === 0}
+                onClick={() => {
+                  onJoin((joinRoom ?? room ?? '').trim());
+                  onClose();
+                }}
+              >
+                <FontAwesomeIcon icon={faHandshake} />
+              </Button>
+            ) : (
+              <Button
+                disabled={connected !== true || (joinRoom ?? room ?? '').trim().length === 0}
+                variant="contained"
+                onClick={() => {
+                  onJoin((joinRoom ?? room ?? '').trim());
+                  onClose();
+                }}
+                startIcon={<FontAwesomeIcon icon={faHandshake} />}
+              >
+                Join
+              </Button>
+            )}
           </Stack>
         </DialogContentText>
       </DialogContent>

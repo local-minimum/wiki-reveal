@@ -194,9 +194,11 @@ function WikiPage({
 
   React.useEffect(
     () => {
-      if (gameMode !== 'coop' || pageName === undefined || victory !== null || page === undefined) return;
+      if (gameMode !== 'coop' || pageName === undefined || page === undefined) return;
+
       const { title: originalTile } = page;
       if (originalTile === []) return;
+
       const tLexes = originalTile
         .filter(([_, isHidden]) => isHidden)
         .map(([_, __, lex]) => lex);
@@ -213,7 +215,8 @@ function WikiPage({
           victoryGuess = guessIdx;
         }
       });
-      if (victoryGuess >= 0) {
+
+      if (victory === null && victoryGuess >= 0) {
         const newVictory = {
           guesses: victoryGuess + 1,
           hints,
@@ -223,6 +226,8 @@ function WikiPage({
         };
 
         setVictory(newVictory);
+      } else if (victory !== null && victoryGuess >= 0) {
+        setVictory(null);
       }
     },
     [coopGuesses, freeWords, gameMode, hints, lexicon, page, pageName, setVictory, title, victory],
@@ -415,7 +420,7 @@ function WikiPage({
         overflow: 'hidden',
       }}
     >
-      {isError && <LoadFail />}
+      {isError && <LoadFail gameMode={gameMode} />}
       {firstVisit && <HowTo onClose={closeHowTo} />}
       {victory !== null && (
         <Victory
@@ -426,7 +431,7 @@ function WikiPage({
           revealed={victory.revealed}
           onRevealAll={revealAll}
           gameId={gameId}
-          visible={victoryVisible}
+          visible={victoryVisible && !isLoading && activeGuesses.length > 0}
           onSetVisible={setVictoryVisible}
           achievements={achievements}
         />
