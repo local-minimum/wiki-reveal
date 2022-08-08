@@ -1,5 +1,5 @@
 import {
-  faBroom, faClose, faCopy, faPaw, faSave, faSquarePlus, faHandshake,
+  faBroom, faClose, faCopy, faPaw, faSave, faSquarePlus, faHandshake, faPersonWalkingLuggage,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -34,11 +34,12 @@ interface CoopModeProps {
   inRoom: boolean;
   users: string[];
   onJoin: (room: string) => void;
+  onQuitCoop: () => void;
 }
 
 function CoopMode({
   onClose, username, onChangeUsername, connected, onCreateGame, gameMode,
-  onConnect, onDisconnect, room, users, onJoin, inRoom,
+  onConnect, onDisconnect, room, users, onJoin, inRoom, onQuitCoop,
 }: CoopModeProps): JSX.Element {
   const theme = useTheme();
   const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
@@ -239,6 +240,17 @@ function CoopMode({
         </DialogContentText>
       </DialogContent>
       <DialogActions>
+        <Button
+          variant="outlined"
+          disabled={gameMode !== 'coop'}
+          onClick={() => {
+            handleClose();
+            onQuitCoop();
+          }}
+          startIcon={<FontAwesomeIcon icon={faPersonWalkingLuggage} />}
+        >
+          Exit Coop-Mode
+        </Button>
         <Button
           variant="outlined"
           onClick={handleClose}

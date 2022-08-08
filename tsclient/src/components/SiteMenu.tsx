@@ -215,6 +215,7 @@ function SiteMenu({
           room={coopRoom}
           inRoom={coopInRoom}
           onJoin={onJoinCoopGame}
+          onQuitCoop={() => onChangeGameMode('today')}
         />
       )}
     </>
