@@ -24,6 +24,7 @@ services:
       - WR_SEED
       - WR_EPOCH
       - WR_ROOT
+      - WR_WS_COORS
 
   wiki_reveal_frontend:
     build: ./tsclient
