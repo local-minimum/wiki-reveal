@@ -38,11 +38,17 @@ def root_or_none() -> Optional[str]:
     logging.info(f'Will adjust where websockets answer to {root}')
     return None
 
+def coors_or_none() -> Optional[str]:
+    coors = os.environ.get('WR_WS_COORS')
+    if coors:
+        return coors
+    return None
+
 
 app = Flask('Wiki-Reveal')
 app.config['SECRET_KEY'] = token_urlsafe(16)
 
-socketio = SocketIO(app)
+socketio = SocketIO(app, cors_allowed_origins=coors_or_none())
 
 
 def get_or(data: dict[str, Any], key: str, default: Any) -> Any:
