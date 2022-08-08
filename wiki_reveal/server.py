@@ -187,13 +187,6 @@ def coop_on_join(data: dict[str, Any]):
 
         join_room(room)
 
-        send(
-            {
-                "type": 'GUESSES',
-                "backlog": backlog,
-            },
-            to=sid,
-        )
         if username != data.get('username'):
             send(
                 {
@@ -208,6 +201,7 @@ def coop_on_join(data: dict[str, Any]):
                 "type": "JOIN-ME",
                 "room": room,
                 "users": users,
+                "backlog": backlog,
             },
             to=sid
         )

@@ -42,6 +42,7 @@ interface MessageJoinMe {
   type: 'JOIN-ME';
   room: string;
   users: string[];
+  backlog: Array<[string, string]>,
 }
 
 interface MessageJoinFail {
@@ -56,11 +57,6 @@ interface MessageGuess {
   index: number;
 }
 
-interface MessageGuesses {
-  type: 'GUESSES',
-  backlog: Array<[string, string]>,
-}
-
 type Message = MessageCreate
   | MessageJoinLeave
   | MessageJoinFail
@@ -68,8 +64,7 @@ type Message = MessageCreate
   | MessageJoinMe
   | MessageRename
   | MessageRenameMe
-  | MessageGuess
-  | MessageGuesses;
+  | MessageGuess;
 
 interface Coop {
   connected: boolean;
@@ -288,6 +283,7 @@ function useCoop(gameMode: GameMode): Coop {
           setRoom(message.room);
           usersRef.current = message.users;
           inRoomRef.current = true;
+          guessesRef.current = message.backlog.map(([lex, user]) => [lex, false, user]);
           endTransaction();
           break;
 
@@ -311,10 +307,12 @@ function useCoop(gameMode: GameMode): Coop {
             endTransaction();
           }
           break;
+
         case 'RENAME-ME':
           setUsername(message.to);
           endTransaction();
           break;
+
         case 'GUESS':
           guessesRef.current = [
             ...new Array(Math.max(message.index + 1, guessesRef.current.length)).keys(),
@@ -325,10 +323,7 @@ function useCoop(gameMode: GameMode): Coop {
           ));
           endTransaction();
           break;
-        case 'GUESSES':
-          guessesRef.current = message.backlog.map(([lex, user]) => [lex, false, user]);
-          endTransaction();
-          break;
+
         default:
           // eslint-disable-next-line no-console
           console.warn('unhandled coop-message', message);
