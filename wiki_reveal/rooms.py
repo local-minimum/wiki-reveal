@@ -115,7 +115,13 @@ def remove_coop_user(room: str, sid: SID) -> tuple[Optional[str], list[str]]:
 
     users = ROOMS[room].users
     username = users.get(sid)
-    del users[sid]
+    try:
+        del users[sid]
+    except KeyError:
+        logging.warning(
+            f'Attempted to remove a user that didn\'t exist from room {room}',
+        )
+
     return username, list(users.values())
 
 
