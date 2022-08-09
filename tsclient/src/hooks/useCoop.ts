@@ -1,6 +1,6 @@
 import { useSnackbar } from 'notistack';
 import {
-  useCallback, useEffect, useRef,
+  useCallback, useEffect, useRef, useState,
 } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { GameMode } from '../api/page';
@@ -83,15 +83,15 @@ interface Coop {
 }
 
 function useCoop(gameMode: GameMode): Coop {
-  const { resetTransactions, endTransaction } = useTransaction();
+  const { endTransaction } = useTransaction();
   const { enqueueSnackbar } = useSnackbar();
 
   const inRoomRef = useRef(false);
-  const socketRef = useRef<Socket | null>(null);
   const usersRef = useRef<string[] | null>(null);
   const guessesRef = useRef<Guess[]>([]);
   const connectedRef = useRef<boolean>(false);
   const [usernameRef, setUsername] = useStoredRef<string | null>('coop-name', null);
+  const [socket, setSocket] = useState<Socket | null>(null);
   const [roomRef, setRoom] = useStoredRef<string | null>('coop-room', null);
 
   const createGame = useCallback((
@@ -99,7 +99,7 @@ function useCoop(gameMode: GameMode): Coop {
     expireType: ExpireType,
     expire: number,
   ) => {
-    socketRef.current?.emit(
+    socket?.emit(
       'create game',
       {
         username: usernameRef.current,
@@ -110,29 +110,29 @@ function useCoop(gameMode: GameMode): Coop {
     );
   // usernameRef are invariant
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [socket]);
 
   const guess = useCallback((lex: string) => {
-    socketRef.current?.emit(
+    socket?.emit(
       'guess',
       { room: roomRef.current, username: usernameRef.current, lex },
     );
   // roomRef, usernameRef are invariant
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [socket]);
 
   const renameMe = useCallback((newName: string | null) => {
-    if (socketRef.current === null) {
+    if (socket === null) {
       setUsername(newName);
       endTransaction();
     } else if (roomRef.current !== null || newName === null) {
       if (inRoomRef.current) {
-        socketRef.current.emit(
+        socket.emit(
           'rename',
           { room: roomRef.current, from: usernameRef.current, to: newName },
         );
       } else {
-        socketRef.current.emit(
+        socket.emit(
           'rename',
           { from: usernameRef.current, to: newName },
         );
@@ -143,20 +143,20 @@ function useCoop(gameMode: GameMode): Coop {
     }
   // endTransaction, usernameRef, roomRef are invariant
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setUsername]);
+  }, [setUsername, socket]);
 
   const join = useCallback((newRoom: string) => {
     usersRef.current = null;
     setRoom(newRoom);
     guessesRef.current = [];
-    socketRef.current?.emit(
+    socket?.emit(
       'join',
       { username: usernameRef.current, room: newRoom },
     );
     endTransaction();
   // endTransaction, usernameRef are invariant
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setRoom]);
+  }, [setRoom, socket]);
 
   const leave = useCallback((silentFail = false): void => {
     if (roomRef.current === null) {
@@ -166,28 +166,30 @@ function useCoop(gameMode: GameMode): Coop {
       return;
     }
 
-    socketRef.current?.emit(
+    socket?.emit(
       'leave',
       { username: usernameRef.current, room: roomRef.current },
     );
 
   // roomRef, usernameRef are invariant
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enqueueSnackbar]);
+  }, [enqueueSnackbar, socket]);
 
   const disconnect = useCallback((): void => {
-    socketRef.current?.disconnect();
+    socket?.disconnect();
     usersRef.current = null;
     inRoomRef.current = false;
     endTransaction();
 
   // endTransaction are invariant
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [socket]);
 
   const connect = useCallback((reconnect = false): void => {
-    if (socketRef.current !== null) {
-      socketRef.current.connect();
+    if (socket !== null) {
+      if (!socket.connected) {
+        socket.connect();
+      }
       return;
     }
 
@@ -200,7 +202,7 @@ function useCoop(gameMode: GameMode): Coop {
     // eslint-disable-next-line no-console
     console.log('Attempting WS at', host, path);
     const newSocket = io(host, { path });
-    socketRef.current = newSocket;
+    setSocket(newSocket);
 
     newSocket.on('connect', () => {
       enqueueSnackbar('You are live-connected', { variant: 'info' });
@@ -220,13 +222,12 @@ function useCoop(gameMode: GameMode): Coop {
       endTransaction();
     });
 
-    resetTransactions();
-  // endTransaction, resetTransactions, roomRef, usernameRef are invariant
+  // endTransaction, roomRef, usernameRef are invariant
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enqueueSnackbar]);
+  }, [enqueueSnackbar, socket]);
 
   useEffect((): void => {
-    if (socketRef.current === null) return;
+    if (socket === null) return;
 
     const messageHandler = (message: Message) => {
       switch (message.type) {
@@ -331,17 +332,16 @@ function useCoop(gameMode: GameMode): Coop {
       }
     };
 
-    socketRef.current.off('message');
-    socketRef.current.on('message', messageHandler);
+    socket.off('message');
+    socket.on('message', messageHandler);
 
   // endTransaction, usernameRef are invariant
-  // socketRef.current changes are coupled with things that rerenders
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enqueueSnackbar, setRoom, setUsername, socketRef.current]);
+  }, [enqueueSnackbar, setRoom, setUsername, socket]);
 
   useEffect(() => () => {
-    socketRef.current?.disconnect();
-  }, []);
+    socket?.disconnect();
+  }, [socket]);
 
   useEffect(
     () => {
