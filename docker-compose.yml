@@ -3,7 +3,7 @@ version: '3.3'
 
 services:
   wiki_reveal_gateway:
-    build: ./gateway
+    image: nginx
     ports: ["8088:80"]
     restart: unless-stopped
     volumes:

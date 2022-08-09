@@ -12,7 +12,9 @@ from wiki_reveal.game_id import SECONDS_PER_DAY, get_end_of_current
 
 SID = str
 GUESS = list[str]
-ROOM_ATTRIBUTE = Literal['start', 'end', 'game_id', 'rng_seed', 'users', 'guesses']
+ROOM_ATTRIBUTE = Literal[
+    'start', 'end', 'game_id', 'rng_seed', 'users', 'guesses',
+]
 
 
 @dataclass
@@ -28,8 +30,11 @@ class RoomData:
 ROOMS: dict[str, RoomData] = {}
 
 
-def dest(room_data: RoomData, *attrs: ROOM_ATTRIBUTE) -> Union[Tuple[Any], Any]:
-    """Just returns the single attribute if one is requested, or all as a tuple"""
+def dest(
+    room_data: RoomData,
+    *attrs: ROOM_ATTRIBUTE,
+) -> Union[Tuple[Any], Any]:
+    """Returns the single attribute if one is requested, or all as a tuple"""
     return attrgetter(*attrs)(room_data)
 
 
@@ -74,7 +79,7 @@ def add_coop_game(
     rng_seed = None if not use_rng_seed else Random(time()).randint(0, 100000)
     ROOMS[room] = RoomData(
         start=start,
-        end = (
+        end=(
             get_end_of_current()
             if duration is None
             else start + timedelta(hours=duration)
@@ -143,7 +148,9 @@ def rename_user(room: str, sid: SID, username: str):
                 guess[1] = username
 
 
-def get_room_data(room: str) -> tuple[datetime, Optional[datetime], int, Optional[int]]:
+def get_room_data(
+    room: str,
+) -> tuple[datetime, Optional[datetime], int, Optional[int]]:
     if not coop_game_exists(room):
         raise CoopGameDoesNotExistError
 

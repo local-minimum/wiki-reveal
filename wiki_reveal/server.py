@@ -46,10 +46,16 @@ def coors_or_none() -> Optional[str]:
     return None
 
 
+debug_ws = os.environ.get('WR_WS_DEBUG') is not None
 app = Flask('Wiki-Reveal')
 app.config['SECRET_KEY'] = token_urlsafe(16)
 
-socketio = SocketIO(app, cors_allowed_origins=coors_or_none())
+socketio = SocketIO(
+    app,
+    cors_allowed_origins=coors_or_none(),
+    engineio_logger=debug_ws,
+    logger=debug_ws,
+)
 
 
 def get_or(data: dict[str, Any], key: str, default: Any) -> Any:
