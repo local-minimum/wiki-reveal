@@ -196,7 +196,7 @@ function WikiPageContainer(): JSX.Element {
           onRevealAll={revealAll}
           onUnrevealAll={() => setUnmasked(-1)}
           unmasked={unmasked === gameId}
-          gameId={gameId}
+          game={gameMode === 'coop' ? (room ?? undefined) : gameId}
           visible={victoryVisible && !isLoading && activeGuesses.length > 0}
           onSetVisible={setVictoryVisible}
           achievements={achievements}
@@ -244,6 +244,7 @@ function WikiPageContainer(): JSX.Element {
         gameMode={gameMode}
         username={username}
         coopUsers={users}
+        coopRoom={room}
         onCoopGuess={guess}
         coopGuesses={coopGuesses}
         victory={victory}

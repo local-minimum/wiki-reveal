@@ -2,14 +2,24 @@ import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import {
   faAlignJustify,
   faAward,
+  faBed,
   faBrain, faCalendarCheck, faCalendarDays, faCat, faCow,
   faCrow, faCrown, faDna, faDraftingCompass, faEye,
-  faFaceRollingEyes, faGlobe, faHandsHoldingChild, faMagnifyingGlass, faMedal,
-  faPerson, faPersonPraying, faTrophy, faUserGraduate,
+  faFaceRollingEyes, faGlobe, faGrinWink, faHandsHoldingChild, faMagnifyingGlass, faMedal,
+  faPeopleCarryBox,
+  faPeopleGroup,
+  faPeoplePulling,
+  faPerson, faPersonDigging, faPersonDrowning, faPersonPraying, faRankingStar,
+  faShuttleSpace, faTrophy, faUserGraduate, faUsersBetweenLines,
 } from '@fortawesome/free-solid-svg-icons';
 import { GameMode } from '../api/page';
 import { Guess } from '../components/Guess';
 import { VictoryType } from '../components/VictoryType';
+import { relIndexed } from './array';
+import {
+  avg, larger, smaller, within,
+} from './math';
+import { isDefined } from './typeGates';
 
 export enum Achievement {
   FirstWin = 'first-win',
@@ -65,10 +75,23 @@ export enum Achievement {
   Achieve50 = 'achievements-50', // Percent
   Achieve100 = 'achievements-100',
   CheckYesterdaysSolution = 'check-yesterdays',
+  // Coop
+  CoopWin = 'coop-win',
+  CoopSolo = 'coop-solo',
+  CoopGuessEqual = 'coop-guess-equal',
+  CoopGuessFew = 'coop-guess-few',
+  CoopGuessMany = 'coop-guess-many',
+  CoopAccuracyLow = 'coop-accuracy-low',
+  CoopAccuracyHigh = 'coop-accuracy-high',
+  CoopTitleShare = 'coop-title-share',
+  CoopTitleLast = 'coop-title-last',
+  CoopTitleSolo = 'coop-title-solo'
 }
 
-type GameId = number;
-export type AchievementsType = Partial<Record<Achievement, GameId>>
+export type GameId = number;
+export type RoomId = string;
+export type Game = RoomId | GameId;
+export type AchievementsType = Partial<Record<Achievement, Game>>
 
 export function achievementToIcon(achievement: Achievement): IconProp {
   if ([
@@ -157,6 +180,17 @@ export function achievementToIcon(achievement: Achievement): IconProp {
     Achievement.SpeedOneHour,
   ].includes(achievement)) return faCat;
 
+  if (achievement === Achievement.CoopSolo) return faPersonDrowning;
+  if (achievement === Achievement.CoopTitleShare) return faPeopleCarryBox;
+  if (achievement === Achievement.CoopGuessMany) return faPeoplePulling;
+  if (achievement === Achievement.CoopGuessEqual) return faUsersBetweenLines;
+  if (achievement === Achievement.CoopAccuracyLow) return faPersonDigging;
+  if (achievement === Achievement.CoopGuessFew) return faBed;
+  if (achievement === Achievement.CoopAccuracyHigh) return faShuttleSpace;
+  if (achievement === Achievement.CoopTitleSolo) return faGrinWink;
+  if (achievement === Achievement.CoopTitleLast) return faRankingStar;
+  if (achievement === Achievement.CoopWin) return faPeopleGroup;
+
   return faAward;
 }
 
@@ -176,6 +210,9 @@ const SILVER: Achievement[] = [
   Achievement.Guess42,
   Achievement.RevealAllHeaders,
   Achievement.RevealSummary90,
+  Achievement.CoopGuessFew,
+  Achievement.CoopGuessMany,
+  Achievement.CoopTitleSolo,
 ];
 
 const GOLD: Achievement[] = [
@@ -192,6 +229,8 @@ const GOLD: Achievement[] = [
   Achievement.Reveal100,
   Achievement.RankTop50,
   Achievement.RankTop100,
+  Achievement.CoopAccuracyHigh,
+  Achievement.CoopAccuracyLow,
 ];
 
 export function achievementToColor(achievement: Achievement): string {
@@ -302,6 +341,26 @@ export function achievementToTitle(achievement: Achievement): [string, string] {
       return ['All-knowing', 'At any time, unlock all achievements'];
     case Achievement.CheckYesterdaysSolution:
       return ['Curious', 'Check yesterday\'s solution'];
+    case Achievement.CoopSolo:
+      return ['Abandoned', 'Solve a coop game without anyone else joining'];
+    case Achievement.CoopWin:
+      return ['Team building', 'Solve a coop game as a team'];
+    case Achievement.CoopGuessFew:
+      return ['Freeloader', 'Make less than one fourth as many guesses than the second least frequent guesser'];
+    case Achievement.CoopGuessEqual:
+      return ['Sharing is caring', 'Everyone makes within 10% amount of guesses'];
+    case Achievement.CoopGuessMany:
+      return ['Atlas', 'Make four times as many guesses as the second most frequent guesser'];
+    case Achievement.CoopAccuracyLow:
+      return ['Free thinker', 'Have less than half the accuracy of the second least accurate guesser'];
+    case Achievement.CoopAccuracyHigh:
+      return ['Sharp', 'Have more than twice the accuracy of the second most accurate guesser'];
+    case Achievement.CoopTitleShare:
+      return ['Holding hands', 'Every guesser contridubes to the title'];
+    case Achievement.CoopTitleLast:
+      return ['The one', 'Reveal the last word of the title'];
+    case Achievement.CoopTitleSolo:
+      return ['Selfish', 'For an article with multiple words, find all title words alone'];
     default:
       return ['Unknown', 'This achievement doesn\'t exist'];
   }
@@ -583,10 +642,117 @@ export function checkAchievementsPercent(
   return ret;
 }
 
+const COOP_GUESS_COUNT_ACHIVEMENTS: Array<[
+  (
+    guesses: Record<string, number>,
+    user: string,
+    nGuessers: number
+  ) => boolean, Achievement
+]> = [
+  [
+    (guesses, user, nGuessers) => guesses[user] > 0 && nGuessers > 1,
+    Achievement.CoopWin,
+  ],
+  [
+    (guesses, user, nGuessers) => guesses[user] > 0 && nGuessers === 1,
+    Achievement.CoopSolo,
+  ],
+  [
+    (guesses, user, nGuessers) => guesses[user] > 0 && nGuessers > 1
+      && Object.values(guesses).every((value, _, arr) => within(avg(arr), value, 0.1)),
+    Achievement.CoopGuessEqual,
+  ],
+  [
+    (guesses, user, nGuessers) => nGuessers > 1
+      && smaller(Object.values(guesses).sort()[1], guesses[user], 0.25),
+    Achievement.CoopGuessFew,
+  ],
+  [
+    (guesses, user, nGuessers) => nGuessers > 1
+      && larger(relIndexed(Object.values(guesses).sort(), -2), guesses[user], 4),
+    Achievement.CoopGuessMany,
+  ],
+];
+
+const COOP_GUESS_ACCURACY_ACHIVEMENTS: Array<[
+  (
+    accuracies: Record<string, number>,
+    user: string,
+    nGuessers: number,
+  ) => boolean, Achievement
+]> = [
+  [
+    (accuracies, user, nGuessers) => nGuessers > 1
+      && smaller(Object.values(accuracies).sort()[1], accuracies[user], 0.5),
+    Achievement.CoopGuessFew,
+  ],
+  [
+    (accuracies, user, nGuessers) => nGuessers > 1 && larger(
+      relIndexed(Object.values(accuracies).sort(), -2),
+      accuracies[user],
+      2,
+    ),
+    Achievement.CoopGuessMany,
+  ],
+];
+
+export function checkCoopVictoryAchievements(
+  username: string,
+  guesses: Guess[],
+  lexicon: Record<string, number>,
+  titleLexes: string[],
+): Achievement[] {
+  const userGuesses = guesses
+    .reduce<Record<string, number>>((acc, [_, __, user]) => {
+      if (user === null) return acc;
+      acc[user] = (acc[user] ?? 0) + 1;
+      return acc;
+    }, {});
+  const hitGuesses = guesses
+    .reduce<Record<string, number>>((acc, [lex, _, user]) => {
+      if (user === null || (lexicon[lex] ?? 0) === 0) return acc;
+      acc[user] = (acc[user] ?? 0) + 1;
+      return acc;
+    }, {});
+  const accuracies = Object.fromEntries(
+    Object
+      .entries(userGuesses)
+      .map(([user, count]) => [user, (hitGuesses[user] ?? 0) / count]),
+  );
+  const titleGuesses = guesses
+    .reduce<Record<string, true>>((acc, [lex, _, user]) => {
+      if (user === null || !titleLexes.some((titleLex) => lex === titleLex)) return acc;
+      acc[user] = true;
+      return acc;
+    }, {});
+
+  const nGuessers = Object.keys(guesses).length;
+  const nTitleGuessers = Object.keys(titleGuesses).length;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_, __, solver] = relIndexed(
+    guesses
+      .filter(([lex]) => titleLexes.includes(lex)),
+    -1,
+    ['', false, null],
+  );
+
+  return [
+    ...COOP_GUESS_COUNT_ACHIVEMENTS
+      .filter(([check]) => check(userGuesses, username, nGuessers))
+      .map(([, achievement]) => achievement),
+    ...COOP_GUESS_ACCURACY_ACHIVEMENTS
+      .filter(([check]) => check(accuracies, username, nGuessers))
+      .map(([, achievement]) => achievement),
+    nGuessers > 1 && nGuessers === nTitleGuessers ? Achievement.CoopTitleShare : null,
+    nGuessers > 1 && nTitleGuessers === 1 ? Achievement.CoopTitleSolo : null,
+    nGuessers > 1 && solver === username ? Achievement.CoopTitleLast : null,
+  ].filter(isDefined);
+}
+
 export function updateAchievements(
   achievements: AchievementsType,
   newAchievements: Achievement[],
-  gameId: GameId,
+  gameId: Game,
 ): AchievementsType {
   return {
     ...achievements,

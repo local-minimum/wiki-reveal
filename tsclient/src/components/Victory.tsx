@@ -9,7 +9,7 @@ import { useSnackbar } from 'notistack';
 import * as React from 'react';
 import { GameMode } from '../api/page';
 import {
-  Achievement, AchievementsType, achievementToColor, achievementToIcon, achievementToTitle,
+  Achievement, AchievementsType, achievementToColor, achievementToIcon, achievementToTitle, Game,
 } from '../utils/achievements';
 import { pluralize } from '../utils/plural';
 import { SingleAchievement } from './menu/SingleAchievement';
@@ -19,7 +19,7 @@ interface VictoryProps {
   guesses: number;
   accuracy: number;
   revealed: number;
-  gameId: number | undefined;
+  game: Game | undefined;
   onRevealAll: () => void;
   onUnrevealAll: () => void;
   unmasked: boolean;
@@ -43,20 +43,20 @@ function gameModeToText(gameMode: GameMode): string {
 }
 
 function Victory({
-  hints, guesses, gameId, onRevealAll, accuracy, revealed, visible, onSetVisible,
+  hints, guesses, game, onRevealAll, accuracy, revealed, visible, onSetVisible,
   achievements, gameMode, unmasked, onUnrevealAll,
 }: VictoryProps): JSX.Element {
   const { enqueueSnackbar } = useSnackbar();
   const newAchievements = Object
     .values(Achievement)
-    .filter((achievement) => achievements[achievement] === gameId);
+    .filter((achievement) => achievements[achievement] === game);
 
   const total = guesses + hints;
 
   const handleShare = () => {
     const nAchieve = newAchievements.length;
     const hasAchievements = nAchieve === 0 ? '' : ` earning me ${nAchieve} new ${pluralize('achievement', nAchieve)}`;
-    const msg = `I solved ${gameModeToText(gameMode)} Wiki-Reveal #${gameId} in ${total} ${pluralize('guess', total)} using ${hints} ${pluralize('hint', hints)}!
+    const msg = `I solved ${gameModeToText(gameMode)} Wiki-Reveal ${String(game).slice(0, 6)} in ${total} ${pluralize('guess', total)} using ${hints} ${pluralize('hint', hints)}!
 My accuracy was ${accuracy.toFixed(1)}% revealing ${revealed.toFixed(1)}% of the article${hasAchievements}.`;
     navigator.clipboard.writeText(msg);
     enqueueSnackbar('Copied message to clipboard', { variant: 'info' });
@@ -78,7 +78,7 @@ My accuracy was ${accuracy.toFixed(1)}% revealing ${revealed.toFixed(1)}% of the
             {gameModeToText(gameMode)}
             {' '}
             challenge (#
-            {gameId ?? '??'}
+            {game ?? '??'}
             ) in
             {` ${total} ${pluralize('guess', total)}`}
             {` using ${hints} ${pluralize('hint', hints)}!`}
@@ -102,7 +102,7 @@ My accuracy was ${accuracy.toFixed(1)}% revealing ${revealed.toFixed(1)}% of the
               return (
                 <Grid key={achievement} item lg={3} md={4} xs={6}>
                   <SingleAchievement
-                    gameId={achievements[achievement]}
+                    game={achievements[achievement]}
                     icon={achievementToIcon(achievement)}
                     title={title}
                     description={description}

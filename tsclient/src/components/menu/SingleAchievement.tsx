@@ -5,9 +5,10 @@ import {
   Card, CardContent, IconButton, Tooltip, Typography, useMediaQuery, useTheme,
 } from '@mui/material';
 import * as React from 'react';
+import { Game } from '../../utils/achievements';
 
 interface SingleAchievementProps {
-  gameId: number | undefined;
+  game: Game | undefined;
   icon: IconProp;
   color: string;
   title: string;
@@ -35,7 +36,7 @@ function HiddenAchievement(): JSX.Element {
 }
 
 export function SingleAchievement({
-  gameId, icon, color, title, description,
+  game, icon, color, title, description,
 }: SingleAchievementProps): JSX.Element {
   const theme = useTheme();
   const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
@@ -43,7 +44,7 @@ export function SingleAchievement({
   const handleOpenTooltip = React.useCallback(() => setOpenTooltip(true), []);
   const handleCloseTooltip = React.useCallback(() => setOpenTooltip(false), []);
 
-  if (gameId === undefined) {
+  if (game === undefined) {
     return <HiddenAchievement />;
   }
 
@@ -73,8 +74,8 @@ export function SingleAchievement({
           </Typography>
           <Typography variant="body2" sx={{ fontSize: '50%' }}>
             <em>
-              Game #
-              {gameId}
+              {typeof game === 'string' ? 'Coop Game ' : 'Game '}
+              {String(game).slice(0, 6)}
             </em>
           </Typography>
         </CardContent>

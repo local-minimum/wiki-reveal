@@ -11,8 +11,9 @@ import useStoredValue from '../hooks/useStoredValue';
 import { LexicalizedToken, Page } from '../types/wiki';
 import {
   Achievement,
-  AchievementsType, achievementToTitle, checkAchievementsPercent, checkRankAchievements,
-  checkRevealAchievements, checkVictoryAchievements, updateAchievements,
+  AchievementsType, achievementToTitle, checkAchievementsPercent,
+  checkCoopVictoryAchievements, checkRankAchievements,
+  checkRevealAchievements, checkVictoryAchievements, RoomId, updateAchievements,
 } from '../utils/achievements';
 import { wordAsLexicalEntry } from '../utils/wiki';
 import GuessHeader from './GuessHeader';
@@ -49,6 +50,7 @@ interface WikiPageProps {
   coopUsers: string[];
   onCoopGuess: (lex: string) => void;
   coopGuesses: Guess[];
+  coopRoom: RoomId | null;
   victory: VictoryType | null;
   onSetVictory: (victory: VictoryType | null) => void;
   achievements: AchievementsType;
@@ -96,7 +98,7 @@ function WikiPage({
   isLoading, isError, freeWords, lexicon, gameId, language, pageName, page,
   titleLexes, headingLexes, start, end, gameMode,
   rankings, summaryToReveal, username,
-  coopUsers, coopGuesses, onCoopGuess, unmasked,
+  coopUsers, coopGuesses, onCoopGuess, unmasked, coopRoom,
   victory, onSetVictory,
   achievements, onSetAchievements, activeGuesses, onSetSoloGuesses, hideWords,
 }: WikiPageProps): JSX.Element {
@@ -190,13 +192,30 @@ function WikiPage({
         };
 
         onSetVictory(newVictory);
+
+        if (username !== null && coopRoom !== null) {
+          const newCoopAchievements = checkCoopVictoryAchievements(
+            username,
+            coopGuesses,
+            lexicon,
+            titleLexes,
+          ).filter((achievement) => achievements[achievement] === undefined);
+          onSetAchievements(
+            updateAchievements(
+              achievements,
+              newCoopAchievements,
+              coopRoom,
+            ),
+          );
+        }
       } else if (victory !== null && victoryGuess < 0) {
         onSetVictory(null);
       }
     },
     [
       coopGuesses, freeWords, gameMode, hints, lexicon, page, pageName,
-      onSetVictory, title, victory,
+      onSetVictory, title, victory, username, titleLexes, achievements,
+      onSetAchievements, coopRoom,
     ],
   );
 
@@ -221,7 +240,25 @@ function WikiPage({
 
       if (gameMode === 'coop') {
         onCoopGuess(entry);
-        if (justWon) onSetVictory(newVictory);
+        if (justWon) {
+          onSetVictory(newVictory);
+
+          if (username !== null && coopRoom !== null) {
+            const newCoopAchievements = checkCoopVictoryAchievements(
+              username,
+              coopGuesses,
+              lexicon,
+              titleLexes,
+            ).filter((achievement) => achievements[achievement] === undefined);
+            onSetAchievements(
+              updateAchievements(
+                achievements,
+                newCoopAchievements,
+                coopRoom,
+              ),
+            );
+          }
+        }
         return;
       }
       onSetSoloGuesses(nextGuesses);
@@ -283,7 +320,7 @@ function WikiPage({
     onSetSoloGuesses, setPlayerResults, onSetVictory, title, pageName, achievements,
     onSetAchievements,
     titleLexes, headingLexes, victory, playStart, start, end, reportAchievement, gameMode,
-    rankings, username, onCoopGuess,
+    rankings, username, onCoopGuess, coopRoom, coopGuesses,
   ]);
 
   const addHint = React.useCallback((): void => {

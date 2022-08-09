@@ -5,6 +5,7 @@ import {
 import { io, Socket } from 'socket.io-client';
 import { GameMode } from '../api/page';
 import { Guess } from '../components/Guess';
+import { RoomId } from '../utils/achievements';
 import useStoredRef from './useStoredRef';
 import useTransaction from './useTransaction';
 
@@ -68,7 +69,7 @@ type Message = MessageCreate
 
 interface Coop {
   connected: boolean;
-  room: string | null;
+  room: RoomId | null;
   connect: () => void;
   disconnect: () => void;
   createGame: (gameType: CoopGameType, expireType: ExpireType, expire: number) => void;
@@ -92,7 +93,7 @@ function useCoop(gameMode: GameMode): Coop {
   const connectedRef = useRef<boolean>(false);
   const [usernameRef, setUsername] = useStoredRef<string | null>('coop-name', null);
   const [socket, setSocket] = useState<Socket | null>(null);
-  const [roomRef, setRoom] = useStoredRef<string | null>('coop-room', null);
+  const [roomRef, setRoom] = useStoredRef<RoomId | null>('coop-room', null);
 
   const createGame = useCallback((
     gameType: CoopGameType,

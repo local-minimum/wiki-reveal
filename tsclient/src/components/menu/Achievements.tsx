@@ -33,7 +33,7 @@ function Achievements({ onClose, achievements }: AchievementsProps): JSX.Element
               return (
                 <Grid key={achievement} item lg={2} md={3} sm={4} xs={6}>
                   <SingleAchievement
-                    gameId={achievements[achievement]}
+                    game={achievements[achievement]}
                     icon={achievementToIcon(achievement)}
                     title={title}
                     description={description}
