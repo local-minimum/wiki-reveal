@@ -14,7 +14,6 @@ function useArrDiff(current: Guess[]): Guess[] {
 function useRevealedPage(
   page: Page | undefined,
   guesses: Guess[],
-  unmasked: boolean,
 ): Page {
   const prevPage = usePrevious(page);
   const pageChange = prevPage !== page && prevPage !== undefined;
@@ -26,15 +25,14 @@ function useRevealedPage(
   }, [page]);
 
   useEffect(() => {
-    if (pageChange || (newGuesses.length === 0 && !unmasked)) return;
+    if (pageChange || (newGuesses.length === 0)) return;
 
     const updated = unmaskPage(
       revealed,
       Object.fromEntries(newGuesses.map(([lex]) => [lex, true])),
-      unmasked,
     );
     setRevealed(updated);
-  }, [newGuesses, pageChange, revealed, unmasked]);
+  }, [newGuesses, pageChange, revealed]);
 
   return revealed;
 }

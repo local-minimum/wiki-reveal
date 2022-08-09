@@ -76,10 +76,11 @@ interface WikiParagraphProps {
   focusWord: string | null;
   scrollToCheck: () => boolean;
   hideWords?: string[];
+  masked?: boolean;
 }
 
 function WikiParagraph({
-  text, focusWord, scrollToCheck, hideWords = [],
+  text, focusWord, scrollToCheck, hideWords = [], masked = true,
 }: WikiParagraphProps): JSX.Element | null {
   if (text === undefined) return null;
 
@@ -98,7 +99,7 @@ function WikiParagraph({
             );
           }
           return (
-            isHidden
+            isHidden && masked
               // eslint-disable-next-line react/no-array-index-key
               ? <WordBlock word={token} key={idx} />
               : (

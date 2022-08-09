@@ -194,6 +194,8 @@ function WikiPageContainer(): JSX.Element {
           accuracy={victory.accuracy}
           revealed={victory.revealed}
           onRevealAll={revealAll}
+          onUnrevealAll={() => setUnmasked(-1)}
+          unmasked={unmasked === gameId}
           gameId={gameId}
           visible={victoryVisible && !isLoading && activeGuesses.length > 0}
           onSetVisible={setVictoryVisible}
@@ -249,10 +251,9 @@ function WikiPageContainer(): JSX.Element {
         achievements={achievements}
         onSetAchievements={setAchievements}
         onSetSoloGuesses={setSoloGuesses}
-        hideFound={hideFound}
         hideWords={hideWords}
         activeGuesses={activeGuesses}
-        unmasked={unmasked}
+        unmasked={unmasked === gameId}
       />
     </>
   );

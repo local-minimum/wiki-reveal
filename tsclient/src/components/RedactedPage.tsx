@@ -20,6 +20,7 @@ interface RedactedPageProps {
   focusWord: string | null;
   containerNode: Node | undefined;
   hideWords: string[];
+  masked: boolean;
 }
 
 const commonSX: SxProps<Theme> = {
@@ -44,13 +45,14 @@ const summarySX: SxProps<Theme> = {
 
 function RedactedPage({
   title, summary, sections, isSolved, language, pageName, scrollToFocusWordCheck, focusWord,
-  containerNode, hideWords,
+  containerNode, hideWords, masked,
 }: RedactedPageProps): JSX.Element {
   const titleId = 'redacted-article-title';
   return (
     <>
       <Typography variant="h1" sx={titleSX} id={titleId}>
         <WikiParagraph
+          masked={masked}
           text={title}
           focusWord={focusWord}
           scrollToCheck={scrollToFocusWordCheck}
@@ -78,6 +80,7 @@ function RedactedPage({
               focusWord={focusWord}
               scrollToCheck={scrollToFocusWordCheck}
               hideWords={hideWords}
+              masked={masked}
             />
           </Typography>
         ))
@@ -91,6 +94,7 @@ function RedactedPage({
             // eslint-disable-next-line react/no-array-index-key
             key={idx}
             hideWords={hideWords}
+            masked={masked}
           />
         ))
       }

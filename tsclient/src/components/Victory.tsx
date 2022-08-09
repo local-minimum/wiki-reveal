@@ -1,4 +1,6 @@
-import { faEye, faShare, faX } from '@fortawesome/free-solid-svg-icons';
+import {
+  faEye, faEyeSlash, faShare, faX,
+} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Grid, Typography,
@@ -19,6 +21,8 @@ interface VictoryProps {
   revealed: number;
   gameId: number | undefined;
   onRevealAll: () => void;
+  onUnrevealAll: () => void;
+  unmasked: boolean;
   visible: boolean;
   onSetVisible: (visible: boolean) => void;
   achievements: AchievementsType;
@@ -40,7 +44,7 @@ function gameModeToText(gameMode: GameMode): string {
 
 function Victory({
   hints, guesses, gameId, onRevealAll, accuracy, revealed, visible, onSetVisible,
-  achievements, gameMode,
+  achievements, gameMode, unmasked, onUnrevealAll,
 }: VictoryProps): JSX.Element {
   const { enqueueSnackbar } = useSnackbar();
   const newAchievements = Object
@@ -120,11 +124,16 @@ My accuracy was ${accuracy.toFixed(1)}% revealing ${revealed.toFixed(1)}% of the
         <Button
           variant="outlined"
           onClick={() => {
-            onRevealAll();
+            if (unmasked) {
+              onUnrevealAll();
+            } else {
+              onRevealAll();
+            }
             onSetVisible(false);
           }}
-          startIcon={<FontAwesomeIcon icon={faEye} />}
+          startIcon={<FontAwesomeIcon icon={unmasked ? faEyeSlash : faEye} />}
         >
+          {unmasked ? 'Un-' : ''}
           Reveal
         </Button>
         <Button

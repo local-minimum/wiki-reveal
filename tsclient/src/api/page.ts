@@ -90,7 +90,6 @@ export function getPage(gameMode: GameMode, room: string | null) {
         yesterdaysTitle: data.yesterdaysTitle === undefined ? undefined : unmaskTokens(
           data.yesterdaysTitle.map(lexicalizeToken),
           freeWordsLookup,
-          false,
         ),
       };
     });

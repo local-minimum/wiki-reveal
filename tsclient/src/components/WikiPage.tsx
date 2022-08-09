@@ -55,9 +55,8 @@ interface WikiPageProps {
   onSetAchievements: (achievements: AchievementsType) => void;
   activeGuesses: Guess[];
   onSetSoloGuesses: (guesses: Guess[]) => void;
-  hideFound: boolean;
   hideWords: string[];
-  unmasked: number;
+  unmasked: boolean;
 }
 
 function calculateProgress(
@@ -99,7 +98,7 @@ function WikiPage({
   rankings, summaryToReveal, username,
   coopUsers, coopGuesses, onCoopGuess, unmasked,
   victory, onSetVictory,
-  achievements, onSetAchievements, activeGuesses, onSetSoloGuesses, hideFound, hideWords,
+  achievements, onSetAchievements, activeGuesses, onSetSoloGuesses, hideWords,
 }: WikiPageProps): JSX.Element {
   const { enqueueSnackbar } = useSnackbar();
   const reportAchievement = React.useCallback((achievement: Achievement): void => {
@@ -150,7 +149,7 @@ function WikiPage({
     return isMe;
   }, []);
 
-  const { title, summary, sections } = useRevealedPage(page, activeGuesses, unmasked === gameId);
+  const { title, summary, sections } = useRevealedPage(page, activeGuesses);
 
   const hints = React.useMemo(
     () => activeGuesses.reduce((acc, [_, isHint]) => (isHint ? acc + 1 : acc), 0),
@@ -402,6 +401,7 @@ function WikiPage({
             </Tooltip>
             <RedactedPage
               hideWords={hideWords}
+              masked={!unmasked}
               isSolved={victory !== null && language !== undefined && pageName !== undefined}
               title={title}
               summary={summary}
@@ -459,7 +459,7 @@ function WikiPage({
             isLoading={isLoading}
             isError={isError}
             isDone={progress === 100}
-            unmasked={unmasked === gameId}
+            unmasked={unmasked}
             hints={hints}
             freeWords={freeWords}
             onAddGuess={addGuess}

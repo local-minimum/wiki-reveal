@@ -21,36 +21,32 @@ export function wordAsLexicalEntry(word: string): string {
 export function unmaskTokens(
   tokens: LexicalizedToken[],
   words: Record<string, true>,
-  unmasked: boolean,
 ): LexicalizedToken[] {
   return tokens.map(([token, isHidden, lex]) => (
-    isHidden
-    && (
-      unmasked || words[lex]
-    ) ? [token, false, lex] : [token, isHidden, lex]
+    isHidden && words[lex]
+      ? [token, false, lex] : [token, isHidden, lex]
   ));
 }
 
 function unMaskSection({
   title, depth, paragraphs, sections,
-}: Section, words: Record<string, true>, unmasked: boolean): Section {
+}: Section, words: Record<string, true>): Section {
   return {
-    title: unmaskTokens(title, words, unmasked),
+    title: unmaskTokens(title, words),
     depth,
-    paragraphs: paragraphs.map((paragraph) => unmaskTokens(paragraph, words, unmasked)),
-    sections: sections.map((section) => unMaskSection(section, words, unmasked)),
+    paragraphs: paragraphs.map((paragraph) => unmaskTokens(paragraph, words)),
+    sections: sections.map((section) => unMaskSection(section, words)),
   };
 }
 
 export function unmaskPage(
   { title, summary, sections }: Page,
   words: Record<string, true>,
-  unmasked = false,
 ): Page {
   return {
-    title: unmaskTokens(title, words, unmasked),
-    summary: summary.map((paragraph) => unmaskTokens(paragraph, words, unmasked)),
-    sections: sections.map((section) => unMaskSection(section, words, unmasked)),
+    title: unmaskTokens(title, words),
+    summary: summary.map((paragraph) => unmaskTokens(paragraph, words)),
+    sections: sections.map((section) => unMaskSection(section, words)),
   };
 }
 
