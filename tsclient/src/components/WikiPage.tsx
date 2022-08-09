@@ -20,9 +20,7 @@ import GuessInput from './GuessInput';
 import GuessTable from './GuessTable';
 import { Guess } from './Guess';
 import RedactedPage from './RedactedPage';
-import Victory from './Victory';
 import { VictoryType } from './VictoryType';
-import usePrevious from '../hooks/usePrevious';
 import useRevealedPage from '../hooks/useRevealedPage';
 
 function randomEntry<T>(arr: T[]): T {
@@ -53,14 +51,13 @@ interface WikiPageProps {
   coopGuesses: Guess[];
   victory: VictoryType | null;
   onSetVictory: (victory: VictoryType | null) => void;
-  victoryVisible: boolean;
-  onSetVictoryVisible: (visible: boolean) => void;
   achievements: AchievementsType;
   onSetAchievements: (achievements: AchievementsType) => void;
   activeGuesses: Guess[];
   onSetSoloGuesses: (guesses: Guess[]) => void;
   hideFound: boolean;
   hideWords: string[];
+  unmasked: number;
 }
 
 function calculateProgress(
@@ -100,11 +97,10 @@ function WikiPage({
   isLoading, isError, freeWords, lexicon, gameId, language, pageName, page,
   titleLexes, headingLexes, start, end, gameMode,
   rankings, summaryToReveal, username,
-  coopUsers, coopGuesses, onCoopGuess,
-  victory, onSetVictory, victoryVisible, onSetVictoryVisible,
+  coopUsers, coopGuesses, onCoopGuess, unmasked,
+  victory, onSetVictory,
   achievements, onSetAchievements, activeGuesses, onSetSoloGuesses, hideFound, hideWords,
 }: WikiPageProps): JSX.Element {
-  const prevGameMode = usePrevious(gameMode);
   const { enqueueSnackbar } = useSnackbar();
   const reportAchievement = React.useCallback((achievement: Achievement): void => {
     enqueueSnackbar(
@@ -132,7 +128,6 @@ function WikiPage({
     [gameId, setPlayStart],
   );
 
-  const [unmasked, setUnmasked] = React.useState<number>(-1);
   const [[focusWord, focusWordIndex], setFocusWord] = React
     .useState<[word: string | null, index: number]>([null, 0]);
 
@@ -155,18 +150,7 @@ function WikiPage({
     return isMe;
   }, []);
 
-  const revealAll = React.useCallback((): void => {
-    setUnmasked(gameId ?? -1);
-  }, [gameId]);
-
   const { title, summary, sections } = useRevealedPage(page, activeGuesses, unmasked === gameId);
-
-  React.useEffect(() => {
-    if (prevGameMode !== gameMode && (gameMode === 'coop' || prevGameMode === 'coop')) {
-      onSetVictoryVisible(true);
-      setUnmasked(-1);
-    }
-  }, [gameMode, prevGameMode, onSetSoloGuesses, onSetVictory, onSetVictoryVisible]);
 
   const hints = React.useMemo(
     () => activeGuesses.reduce((acc, [_, isHint]) => (isHint ? acc + 1 : acc), 0),
@@ -392,20 +376,6 @@ function WikiPage({
         overflow: 'hidden',
       }}
     >
-      {victory !== null && (
-        <Victory
-          gameMode={gameMode}
-          guesses={victory.guesses}
-          hints={victory.hints}
-          accuracy={victory.accuracy}
-          revealed={victory.revealed}
-          onRevealAll={revealAll}
-          gameId={gameId}
-          visible={victoryVisible && !isLoading && activeGuesses.length > 0}
-          onSetVisible={onSetVictoryVisible}
-          achievements={achievements}
-        />
-      )}
       <Grid
         container
         spacing={0}

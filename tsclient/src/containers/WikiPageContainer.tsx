@@ -14,10 +14,13 @@ import { Guess } from '../components/Guess';
 import SiteMenu from '../components/SiteMenu';
 import LoadFail from '../components/LoadFail';
 import HowTo from '../components/menu/HowTo';
+import Victory from '../components/Victory';
+import usePrevious from '../hooks/usePrevious';
 
 function WikiPageContainer(): JSX.Element {
   const { enqueueSnackbar } = useSnackbar();
   const [gameMode, setGameMode] = useStoredValue<GameMode>('game-mode', 'today');
+  const prevGameMode = usePrevious(gameMode);
   const [staleTime, setStaleTime] = React.useState<number>(Infinity);
 
   const {
@@ -168,10 +171,35 @@ function WikiPageContainer(): JSX.Element {
   const [firstVisit, setFirstVisit] = useStoredValue<boolean>('first-visit', true);
   const closeHowTo = React.useCallback(() => setFirstVisit(false), [setFirstVisit]);
 
+  const [unmasked, setUnmasked] = React.useState<number>(-1);
+  const revealAll = React.useCallback((): void => {
+    setUnmasked(gameId ?? -1);
+  }, [gameId]);
+  React.useEffect(() => {
+    if (prevGameMode !== gameMode && (gameMode === 'coop' || prevGameMode === 'coop')) {
+      setVictoryVisible(true);
+      setUnmasked(-1);
+    }
+  }, [gameMode, prevGameMode, setVictoryVisible]);
+
   return (
     <>
       {isError && <LoadFail gameMode={gameMode} />}
       {firstVisit && <HowTo onClose={closeHowTo} />}
+      {victory !== null && (
+        <Victory
+          gameMode={gameMode}
+          guesses={victory.guesses}
+          hints={victory.hints}
+          accuracy={victory.accuracy}
+          revealed={victory.revealed}
+          onRevealAll={revealAll}
+          gameId={gameId}
+          visible={victoryVisible && !isLoading && activeGuesses.length > 0}
+          onSetVisible={setVictoryVisible}
+          achievements={achievements}
+        />
+      )}
       <SiteMenu
         yesterdaysTitle={yesterdaysTitle}
         onShowVictory={
@@ -218,14 +246,13 @@ function WikiPageContainer(): JSX.Element {
         coopGuesses={coopGuesses}
         victory={victory}
         onSetVictory={setVictory}
-        victoryVisible={victoryVisible}
-        onSetVictoryVisible={setVictoryVisible}
         achievements={achievements}
         onSetAchievements={setAchievements}
         onSetSoloGuesses={setSoloGuesses}
         hideFound={hideFound}
         hideWords={hideWords}
         activeGuesses={activeGuesses}
+        unmasked={unmasked}
       />
     </>
   );
