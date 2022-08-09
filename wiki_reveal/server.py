@@ -237,14 +237,15 @@ def coop_on_disconnect():
 
     for room in rooms(sid):
         username, users = remove_coop_user(room, sid)
-        send(
-            {
-                "type": 'LEAVE',
-                "name": username,
-                "users": users,
-            },
-            to=room,
-        )
+        if username is not None:
+            send(
+                {
+                    "type": 'LEAVE',
+                    "name": username,
+                    "users": users,
+                },
+                to=room,
+            )
         leave_room(room)
 
 
