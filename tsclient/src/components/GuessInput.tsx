@@ -17,6 +17,7 @@ interface GuessInputProps {
   onAddHint: () => void;
   isCoop: boolean;
   compact?: boolean;
+  latteralPad?: boolean;
 }
 
 const INVALID = [' ', '-', '\'', '"', '_', '.', ':', ';', '\n', '\t', '\r'];
@@ -29,7 +30,7 @@ function labelText(isFreeWord: boolean | undefined, hasIllegal: boolean): string
 
 function GuessInput({
   isLoading, isError, isDone, unmasked, hints, onAddGuess, onAddHint, freeWords,
-  isCoop, compact = false,
+  isCoop, compact = false, latteralPad = false,
 }: GuessInputProps): JSX.Element {
   const [currentGuess, setCurrentGuess] = React.useState('');
   const theme = useTheme();
@@ -38,7 +39,7 @@ function GuessInput({
   const isFreeWord = currentGuess !== '' && freeWords?.includes(lex);
   const hasIllegal = INVALID.some((sub) => lex.includes(sub));
   return (
-    <Stack direction="row" gap={1}>
+    <Stack direction="row" gap={1} sx={latteralPad ? { marginLeft: 0.5, marginRight: 0.5 } : undefined}>
       <Tooltip title="Enter guess">
         <TextField
           sx={{ flex: 1 }}

@@ -9,10 +9,12 @@ interface ScrollToTopProps {
   visibilityThreshold?: number;
   margin?: number;
   size?: 1 | 2 | 3;
+  yOffset?: string;
 }
 
 function ScrollToTop({
   target, visibilityThreshold = 100, topId, margin = 16, size = 3,
+  yOffset,
 }: ScrollToTopProps): JSX.Element {
   const trigger = useScrollTrigger({
     target,
@@ -36,7 +38,7 @@ function ScrollToTop({
         role="presentation"
         sx={{
           position: 'sticky',
-          bottom: margin,
+          bottom: yOffset === undefined ? margin : `calc(${yOffset} + ${margin}px)`,
           float: 'right',
           marginRight: `${margin}px`,
           zIndex: 100,

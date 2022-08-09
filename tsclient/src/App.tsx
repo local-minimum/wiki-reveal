@@ -7,7 +7,7 @@ import WikiPageContainer from './containers/WikiPageContainer';
 const queryClient = new QueryClient();
 
 function fitHeight(): void {
-  document.body.style.height = `${window.innerHeight}px`;
+  // document.body.style.height = `${window.innerHeight}px`;
 }
 
 function App() {

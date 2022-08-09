@@ -367,6 +367,78 @@ function WikiPage({
   const theme = useTheme();
   const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
 
+  if (isSmall) {
+    return (
+      <>
+        <Box
+          sx={{
+            backgroundColor: '#EFD9CE',
+            overflow: 'scroll',
+          }}
+        >
+          <Tooltip title={`${progress.toFixed(1)}% of article revealed.`}>
+            <LinearProgress
+              variant={isLoading ? undefined : 'determinate'}
+              value={isLoading ? undefined : progress}
+              sx={{ position: 'sticky', top: 0, zIndex: 100 }}
+            />
+          </Tooltip>
+          <RedactedPage
+            hideWords={hideWords}
+            masked={!unmasked}
+            isSolved={victory !== null && language !== undefined && pageName !== undefined}
+            title={title}
+            summary={summary}
+            sections={sections}
+            language={language}
+            pageName={pageName}
+            focusWord={focusWord}
+            scrollToFocusWordCheck={focusedWordScrollToCheck}
+            scrollButtonYOffset="25vh"
+          />
+          <Box sx={{ height: '28vh' }} />
+        </Box>
+        <Box
+          sx={{
+            height: '25vh',
+            position: 'fixed',
+            bottom: 0,
+            width: '100%',
+            marginLeft: 0.5,
+            marginRight: 0.5,
+            background: 'white',
+          }}
+        >
+          <Box sx={{ height: 'calc(25vh - 50px)' }}>
+            <GuessTable
+              focusWord={focusWord}
+              guesses={activeGuesses}
+              lexicon={lexicon}
+              onSetFocusWord={handleSetFocusWord}
+              titleLexes={titleLexes}
+              headingLexes={headingLexes}
+              rankings={rankings}
+              gameMode={gameMode}
+            />
+          </Box>
+          <GuessInput
+            isLoading={isLoading}
+            isError={isError}
+            isDone={progress === 100}
+            unmasked={unmasked}
+            hints={hints}
+            freeWords={freeWords}
+            onAddGuess={addGuess}
+            onAddHint={addHint}
+            compact
+            isCoop={gameMode === 'coop'}
+            latteralPad
+          />
+        </Box>
+      </>
+    );
+  }
+
   return (
     <Box
       sx={{
@@ -386,7 +458,7 @@ function WikiPage({
           sm={7}
           md={8}
           sx={{
-            height: isSmall ? '75vh' : '100vh',
+            height: '100vh',
             overflow: 'hidden',
             backgroundColor: '#EFD9CE',
           }}
@@ -416,16 +488,15 @@ function WikiPage({
         </Grid>
         <Grid
           item
-          xs={12}
           sm={5}
           md={4}
           flexDirection="column"
           gap={1}
           sx={{
-            p: isSmall ? 0.5 : 2,
+            p: 2,
             overflow: 'hidden',
             display: 'flex',
-            height: isSmall ? '25vh' : '100vh',
+            height: '100vh',
           }}
         >
           <GuessHeader
@@ -441,7 +512,7 @@ function WikiPage({
               // Gap 8px
               // Padding 4px
               // And some extra?
-              height: `calc(${isSmall ? 25 : 100}vh - ${isSmall ? 60 : 130}px)`,
+              height: 'calc(100vh - 130px)',
             }}
           >
             <GuessTable
@@ -464,7 +535,6 @@ function WikiPage({
             freeWords={freeWords}
             onAddGuess={addGuess}
             onAddHint={addHint}
-            compact={isSmall}
             isCoop={gameMode === 'coop'}
           />
         </Grid>

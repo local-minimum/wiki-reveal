@@ -1,21 +1,26 @@
-html {
-  height: 100%;
+/* html {
+  /* height: 100%;
   height: -moz-available;          /* WebKit-based browsers will ignore this. */
-  height: -webkit-fill-available;  /* Mozilla-based browsers will ignore this. */
+  /* height: -webkit-fill-available;  /* Mozilla-based browsers will ignore this. */
+  /*
   height: fill-available;
   overflow: hidden;
 }
+*/
 
 body {
   margin: 0;
+  padding: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  height: -moz-available;          /* WebKit-based browsers will ignore this. */
-  height: -webkit-fill-available;  /* Mozilla-based browsers will ignore this. */
-  height: fill-available;
+  /* height: -moz-available;          /* WebKit-based browsers will ignore this. */
+  /* height: -webkit-fill-available;  /* Mozilla-based browsers will ignore this. */
+  /* height: fill-available; */
 }
 
+/*
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+*/

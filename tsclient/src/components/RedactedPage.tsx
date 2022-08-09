@@ -17,8 +17,9 @@ interface RedactedPageProps {
   language: string | undefined;
   pageName: string | undefined;
   scrollToFocusWordCheck: () => boolean;
+  scrollButtonYOffset?: string;
   focusWord: string | null;
-  containerNode: Node | undefined;
+  containerNode?: Node;
   hideWords: string[];
   masked: boolean;
 }
@@ -45,7 +46,7 @@ const summarySX: SxProps<Theme> = {
 
 function RedactedPage({
   title, summary, sections, isSolved, language, pageName, scrollToFocusWordCheck, focusWord,
-  containerNode, hideWords, masked,
+  containerNode, hideWords, masked, scrollButtonYOffset,
 }: RedactedPageProps): JSX.Element {
   const titleId = 'redacted-article-title';
   return (
@@ -98,7 +99,7 @@ function RedactedPage({
           />
         ))
       }
-      <ScrollToTop topId={titleId} target={containerNode} />
+      <ScrollToTop topId={titleId} target={containerNode} yOffset={scrollButtonYOffset} />
     </>
   );
 }
