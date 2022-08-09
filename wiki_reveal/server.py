@@ -31,9 +31,11 @@ logging.basicConfig(
 )
 
 
-def coors_or_none() -> Optional[str]:
+def coors_or_none() -> Optional[list[str]]:
     coors = os.environ.get('WR_WS_COORS')
     if coors:
+        coors = [c.strip() for c in coors.split('|')]
+        logging.info(f'Allowing websockets from {coors}')
         return coors
     return None
 
