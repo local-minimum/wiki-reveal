@@ -194,7 +194,7 @@ function useCoop(gameMode: GameMode): Coop {
       return;
     }
 
-    const fullPath = `${window.location.href.replace(/\/$/, '')}/socket.io`;
+    const fullPath = `${window.location.href.split('?')[0].replace(/\/$/, '')}/socket.io`;
     const host = fullPath.slice(
       0,
       fullPath.indexOf(window.location.host) + window.location.host.length,

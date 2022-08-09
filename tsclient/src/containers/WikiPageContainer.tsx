@@ -182,6 +182,18 @@ function WikiPageContainer(): JSX.Element {
     }
   }, [gameMode, prevGameMode, setVictoryVisible]);
 
+  React.useEffect(() => {
+    const searchRoom = new URLSearchParams(window.location.search).get('coop');
+    if (searchRoom != null) {
+      if (!connected) {
+        handleChangeGameMode('coop');
+      } else if (connected) {
+        handleJoinCoopGame(searchRoom);
+        window.history.replaceState(null, '', window.location.href.split('?')[0]);
+      }
+    }
+  }, [connect, connected, handleChangeGameMode, handleJoinCoopGame]);
+
   return (
     <>
       {isError && <LoadFail gameMode={gameMode} />}

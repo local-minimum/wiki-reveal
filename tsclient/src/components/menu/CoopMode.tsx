@@ -89,7 +89,8 @@ function CoopMode({
                 title="Copy room ID to clipboard."
                 onClick={() => {
                   enqueueSnackbar('Room ID copied to clipboard', { variant: 'info' });
-                  navigator.clipboard.writeText(room);
+                  const url = `${window.location.href.split('?')[0]}?coop=${room}`;
+                  navigator.clipboard.writeText(`Join my Coop Wiki Reveal game: ${url}`);
                 }}
                 size="small"
               >

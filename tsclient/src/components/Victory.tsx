@@ -77,9 +77,9 @@ My accuracy was ${accuracy.toFixed(1)}% revealing ${revealed.toFixed(1)}% of the
             {' '}
             {gameModeToText(gameMode)}
             {' '}
-            challenge (#
-            {game ?? '??'}
-            ) in
+            challenge
+            {` ${String(game).slice(0, 6) ?? '??'} `}
+            in
             {` ${total} ${pluralize('guess', total)}`}
             {` using ${hints} ${pluralize('hint', hints)}!`}
           </Typography>
