@@ -8,6 +8,12 @@ import { Section } from '../types/wiki';
 import uniq from '../utils/uniq';
 import useStoredValue from '../hooks/useStoredValue';
 import useCoop, { CoopGameType, ExpireType } from '../hooks/useCoop';
+import { VictoryType } from '../components/VictoryType';
+import { AchievementsType } from '../utils/achievements';
+import { Guess } from '../components/Guess';
+import SiteMenu from '../components/SiteMenu';
+import LoadFail from '../components/LoadFail';
+import HowTo from '../components/menu/HowTo';
 
 function WikiPageContainer(): JSX.Element {
   const { enqueueSnackbar } = useSnackbar();
@@ -15,7 +21,8 @@ function WikiPageContainer(): JSX.Element {
   const [staleTime, setStaleTime] = React.useState<number>(Infinity);
 
   const {
-    room, connected, connect, createGame, username, renameMe, disconnect, users, guess, guesses,
+    room, connected, connect, createGame, username, renameMe, disconnect, users, guess,
+    guesses: coopGuesses,
     join, inRoom,
   } = useCoop(gameMode);
 
@@ -135,38 +142,92 @@ function WikiPageContainer(): JSX.Element {
     [freeWords, page?.summary],
   );
 
+  const [victory, setVictory] = useStoredValue<VictoryType | null>(`victory-${gameMode}-${gameId}`, null);
+  const [victoryVisible, setVictoryVisible] = React.useState<boolean>(true);
+  const [achievements, setAchievements] = useStoredValue<AchievementsType>('achievements', {});
+  const [soloGuesses, setSoloGuesses] = useStoredValue<Guess[]>(`guesses-${gameMode}-${gameId}`, []);
+
+  const activeGuesses = gameMode === 'coop' ? coopGuesses : soloGuesses;
+  const [hideFound, setHideFound] = React.useState<boolean>(false);
+  const hideWords = React.useMemo(
+    () => (hideFound ? activeGuesses.map(([word]) => word) : []),
+    [activeGuesses, hideFound],
+  );
+
+  const handleChangeUsername = React.useCallback((newName: string | null) => {
+    if (gameMode !== 'coop') {
+      setSoloGuesses(activeGuesses.map(([lex, isHint]) => [
+        lex,
+        isHint,
+        !isHint ? newName : null,
+      ]));
+    }
+    renameMe(newName);
+  }, [gameMode, renameMe, setSoloGuesses, activeGuesses]);
+
+  const [firstVisit, setFirstVisit] = useStoredValue<boolean>('first-visit', true);
+  const closeHowTo = React.useCallback(() => setFirstVisit(false), [setFirstVisit]);
+
   return (
-    <WikiPage
-      isLoading={isLoading}
-      isError={isError}
-      freeWords={freeWords}
-      lexicon={lexicon}
-      rankings={rankings}
-      gameId={gameId}
-      language={language}
-      pageName={pageName}
-      page={page}
-      titleLexes={titleLexes}
-      headingLexes={headingLexes}
-      summaryToReveal={summaryToReveal}
-      yesterdaysTitle={yesterdaysTitle}
-      start={start}
-      end={end}
-      gameMode={gameMode}
-      onChangeGameMode={handleChangeGameMode}
-      username={username}
-      onChangeUsername={renameMe}
-      connected={connected}
-      onCreateCoopGame={handleCreateCoopGame}
-      onConnect={connect}
-      onDisconnect={disconnect}
-      coopUsers={users}
-      coopRoom={room}
-      coopInRoom={inRoom}
-      onCoopGuess={guess}
-      coopGuesses={guesses}
-      onJoinCoopGame={handleJoinCoopGame}
-    />
+    <>
+      {isError && <LoadFail gameMode={gameMode} />}
+      {firstVisit && <HowTo onClose={closeHowTo} />}
+      <SiteMenu
+        yesterdaysTitle={yesterdaysTitle}
+        onShowVictory={
+          victory !== null && !victoryVisible ? () => setVictoryVisible(true) : undefined
+        }
+        achievements={achievements}
+        onSetAchievements={setAchievements}
+        gameId={gameId}
+        hideFound={hideFound}
+        onHideFound={setHideFound}
+        end={end}
+        gameMode={gameMode}
+        onChangeGameMode={handleChangeGameMode}
+        username={username}
+        onChangeUsername={handleChangeUsername}
+        connected={connected}
+        onCreateCoopGame={handleCreateCoopGame}
+        onConnect={connect}
+        onDisconnect={disconnect}
+        coopRoom={room}
+        coopInRoom={inRoom}
+        coopUsers={users}
+        onJoinCoopGame={handleJoinCoopGame}
+      />
+      <WikiPage
+        isLoading={isLoading}
+        isError={isError}
+        freeWords={freeWords}
+        lexicon={lexicon}
+        rankings={rankings}
+        gameId={gameId}
+        language={language}
+        pageName={pageName}
+        page={page}
+        titleLexes={titleLexes}
+        headingLexes={headingLexes}
+        summaryToReveal={summaryToReveal}
+        start={start}
+        end={end}
+        gameMode={gameMode}
+        username={username}
+        coopUsers={users}
+        onCoopGuess={guess}
+        coopGuesses={coopGuesses}
+        victory={victory}
+        onSetVictory={setVictory}
+        victoryVisible={victoryVisible}
+        onSetVictoryVisible={setVictoryVisible}
+        achievements={achievements}
+        onSetAchievements={setAchievements}
+        onSetSoloGuesses={setSoloGuesses}
+        hideFound={hideFound}
+        hideWords={hideWords}
+        activeGuesses={activeGuesses}
+      />
+    </>
   );
 }
 

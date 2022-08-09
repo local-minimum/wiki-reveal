@@ -19,13 +19,9 @@ import GuessHeader from './GuessHeader';
 import GuessInput from './GuessInput';
 import GuessTable from './GuessTable';
 import { Guess } from './Guess';
-import LoadFail from './LoadFail';
-import HowTo from './menu/HowTo';
 import RedactedPage from './RedactedPage';
-import SiteMenu from './SiteMenu';
 import Victory from './Victory';
 import { VictoryType } from './VictoryType';
-import { CoopGameType, ExpireType } from '../hooks/useCoop';
 import usePrevious from '../hooks/usePrevious';
 import useRevealedPage from '../hooks/useRevealedPage';
 
@@ -48,23 +44,23 @@ interface WikiPageProps {
   titleLexes: string[];
   headingLexes: string[];
   summaryToReveal: Record<string, number> | undefined;
-  yesterdaysTitle: LexicalizedToken[] | undefined;
   start: Date | undefined;
   end: Date | undefined;
   gameMode: GameMode;
-  onChangeGameMode: (mode: GameMode) => void;
   username: string | null;
-  onChangeUsername: (newName: string | null) => void;
-  onCreateCoopGame: (gameType: CoopGameType, expireType: ExpireType, expire: number) => void;
-  connected: boolean;
-  onConnect: () => void;
-  onDisconnect: () => void;
-  coopRoom: string | null;
-  coopInRoom: boolean;
   coopUsers: string[];
   onCoopGuess: (lex: string) => void;
   coopGuesses: Guess[];
-  onJoinCoopGame: (room: string) => void;
+  victory: VictoryType | null;
+  onSetVictory: (victory: VictoryType | null) => void;
+  victoryVisible: boolean;
+  onSetVictoryVisible: (visible: boolean) => void;
+  achievements: AchievementsType;
+  onSetAchievements: (achievements: AchievementsType) => void;
+  activeGuesses: Guess[];
+  onSetSoloGuesses: (guesses: Guess[]) => void;
+  hideFound: boolean;
+  hideWords: string[];
 }
 
 function calculateProgress(
@@ -102,10 +98,11 @@ function revealedTitle(
 
 function WikiPage({
   isLoading, isError, freeWords, lexicon, gameId, language, pageName, page,
-  titleLexes, headingLexes, yesterdaysTitle, start, end, gameMode, onChangeGameMode,
-  rankings, summaryToReveal, username, onChangeUsername, onCreateCoopGame, connected,
-  onConnect, onDisconnect, coopRoom, coopUsers, coopGuesses, onCoopGuess, onJoinCoopGame,
-  coopInRoom,
+  titleLexes, headingLexes, start, end, gameMode,
+  rankings, summaryToReveal, username,
+  coopUsers, coopGuesses, onCoopGuess,
+  victory, onSetVictory, victoryVisible, onSetVictoryVisible,
+  achievements, onSetAchievements, activeGuesses, onSetSoloGuesses, hideFound, hideWords,
 }: WikiPageProps): JSX.Element {
   const prevGameMode = usePrevious(gameMode);
   const { enqueueSnackbar } = useSnackbar();
@@ -122,13 +119,8 @@ function WikiPage({
     );
   }, [enqueueSnackbar]);
 
-  const [guesses, setGuesses] = useStoredValue<Array<Guess>>(`guesses-${gameMode}-${gameId}`, []);
-  const [victory, setVictory] = useStoredValue<VictoryType | null>(`victory-${gameMode}-${gameId}`, null);
   const [playStart, setPlayStart] = useStoredValue<string| null>(`start-${gameMode}-${gameId}`, null);
-  const [firstVisit, setFirstVisit] = useStoredValue<boolean>('first-visit', true);
-  const [victoryVisible, setVictoryVisible] = React.useState<boolean>(true);
   const [playerResults, setPlayerResults] = useStoredValue<Array<[number, VictoryType]>>('player-results', []);
-  const [achievements, setAchievements] = useStoredValue<AchievementsType>('achievements', {});
 
   useClearStoredValues(gameId, CASH_KEYS, gameMode, 2);
 
@@ -140,13 +132,6 @@ function WikiPage({
     [gameId, setPlayStart],
   );
 
-  const activeGuesses = gameMode === 'coop' ? coopGuesses : guesses;
-
-  const [hideFound, setHideFound] = React.useState<boolean>(false);
-  const hideWords = useMemo(
-    () => (hideFound ? activeGuesses.map(([word]) => word) : []),
-    [activeGuesses, hideFound],
-  );
   const [unmasked, setUnmasked] = React.useState<number>(-1);
   const [[focusWord, focusWordIndex], setFocusWord] = React
     .useState<[word: string | null, index: number]>([null, 0]);
@@ -178,10 +163,10 @@ function WikiPage({
 
   React.useEffect(() => {
     if (prevGameMode !== gameMode && (gameMode === 'coop' || prevGameMode === 'coop')) {
-      setVictoryVisible(true);
+      onSetVictoryVisible(true);
       setUnmasked(-1);
     }
-  }, [gameMode, prevGameMode, setGuesses, setVictory]);
+  }, [gameMode, prevGameMode, onSetSoloGuesses, onSetVictory, onSetVictoryVisible]);
 
   const hints = React.useMemo(
     () => activeGuesses.reduce((acc, [_, isHint]) => (isHint ? acc + 1 : acc), 0),
@@ -221,12 +206,15 @@ function WikiPage({
           pageName,
         };
 
-        setVictory(newVictory);
+        onSetVictory(newVictory);
       } else if (victory !== null && victoryGuess < 0) {
-        setVictory(null);
+        onSetVictory(null);
       }
     },
-    [coopGuesses, freeWords, gameMode, hints, lexicon, page, pageName, setVictory, title, victory],
+    [
+      coopGuesses, freeWords, gameMode, hints, lexicon, page, pageName,
+      onSetVictory, title, victory,
+    ],
   );
 
   const addGuess = React.useCallback((currentGuess: string): void => {
@@ -250,10 +238,10 @@ function WikiPage({
 
       if (gameMode === 'coop') {
         onCoopGuess(entry);
-        if (justWon) setVictory(newVictory);
+        if (justWon) onSetVictory(newVictory);
         return;
       }
-      setGuesses(nextGuesses);
+      onSetSoloGuesses(nextGuesses);
 
       let newAchievements = [];
       if (victory !== null && achievements[Achievement.ContinueGuessing] === undefined) {
@@ -274,7 +262,7 @@ function WikiPage({
           - Math.floor(new Date(playStart).getTime() / 1000)
         );
 
-        setVictory(newVictory);
+        onSetVictory(newVictory);
         const newVictoryAchievements = checkVictoryAchievements(
           gameMode,
           gameId,
@@ -290,7 +278,7 @@ function WikiPage({
         )
           .filter((achievement) => achievements[achievement] === undefined);
         if (newVictoryAchievements.length) {
-          setAchievements(
+          onSetAchievements(
             updateAchievements(
               achievements,
               [...newAchievements, ...newVictoryAchievements],
@@ -302,23 +290,24 @@ function WikiPage({
         // TODO what happens if player complete yesterdays after todays?
         setPlayerResults([...playerResults, [gameId, newVictory]]);
       } else if (newAchievements.length > 0) {
-        setAchievements(updateAchievements(achievements, newAchievements, gameId));
+        onSetAchievements(updateAchievements(achievements, newAchievements, gameId));
       }
     } else {
       handleSetFocusWord(entry);
     }
   }, [
     freeWords, gameId, activeGuesses, handleSetFocusWord, hints, lexicon, playerResults,
-    setGuesses, setPlayerResults, setVictory, title, pageName, achievements, setAchievements,
+    onSetSoloGuesses, setPlayerResults, onSetVictory, title, pageName, achievements,
+    onSetAchievements,
     titleLexes, headingLexes, victory, playStart, start, end, reportAchievement, gameMode,
     rankings, username, onCoopGuess,
   ]);
 
   const addHint = React.useCallback((): void => {
-    const maxCount = guesses
+    const maxCount = activeGuesses
       .reduce((count, [word]) => Math.max(count, lexicon[word] ?? 0), 0);
     const options = [...Object.keys(lexicon)]
-      .filter((word) => !guesses.some(([w]) => w === word)
+      .filter((word) => !activeGuesses.some(([w]) => w === word)
         && !freeWords?.includes(word)
         && !title.some(([_, isHidden, lex]) => isHidden && lex === word));
 
@@ -326,14 +315,14 @@ function WikiPage({
 
     const worthy = options.filter((word) => lexicon[word] >= maxCount * 0.95);
     if (worthy.length > 0) {
-      setGuesses([...guesses, [randomEntry(worthy), true, null]]);
+      onSetSoloGuesses([...activeGuesses, [randomEntry(worthy), true, null]]);
       return;
     }
 
     const remaining = options.sort((a, b) => (lexicon[a] > lexicon[b] ? -1 : 1));
-    setGuesses(
+    onSetSoloGuesses(
       [
-        ...guesses,
+        ...activeGuesses,
         [
           randomEntry(remaining.slice(0, Math.max(10, Math.ceil(remaining.length * 0.05)))),
           true,
@@ -341,7 +330,7 @@ function WikiPage({
         ],
       ],
     );
-  }, [freeWords, guesses, lexicon, setGuesses, title]);
+  }, [freeWords, activeGuesses, lexicon, onSetSoloGuesses, title]);
 
   const progress = useMemo(
     () => calculateProgress(lexicon, freeWords, activeGuesses),
@@ -351,12 +340,12 @@ function WikiPage({
   React.useEffect(() => {
     if (gameId === undefined || gameMode === 'coop') return;
     const solvedHeaders = headingLexes
-      .filter((lex) => !guesses.some(([word, isHint]) => !isHint && lex === word))
+      .filter((lex) => !activeGuesses.some(([word, isHint]) => !isHint && lex === word))
       .length === 0;
     const [summaryFound, summaryTotal] = Object
       .entries(summaryToReveal ?? {})
       .reduce<[number, number]>(([found, total], [lex, count]) => {
-        if (guesses.some(([word, isHint]) => word === lex && !isHint)) {
+        if (activeGuesses.some(([word, isHint]) => word === lex && !isHint)) {
           return [found + count, total + count];
         }
         return [found, total + count];
@@ -368,12 +357,12 @@ function WikiPage({
     )
       .filter((a) => achievements[a] === undefined);
     if (progressAchievements.length > 0) {
-      setAchievements(updateAchievements(achievements, progressAchievements, gameId));
+      onSetAchievements(updateAchievements(achievements, progressAchievements, gameId));
       progressAchievements.map(reportAchievement);
     }
   }, [
-    achievements, gameId, guesses, headingLexes, progress,
-    reportAchievement, setAchievements, summaryToReveal, gameMode,
+    achievements, gameId, activeGuesses, headingLexes, progress,
+    reportAchievement, onSetAchievements, summaryToReveal, gameMode,
   ]);
 
   React.useEffect(() => {
@@ -381,32 +370,19 @@ function WikiPage({
     const percentAchievements = checkAchievementsPercent(achievements)
       .filter((a) => achievements[a] === undefined);
     if (percentAchievements.length > 0) {
-      setAchievements(updateAchievements(achievements, percentAchievements, gameId));
+      onSetAchievements(updateAchievements(achievements, percentAchievements, gameId));
       percentAchievements.map(reportAchievement);
     }
-  }, [achievements, gameId, reportAchievement, setAchievements]);
+  }, [achievements, gameId, reportAchievement, onSetAchievements]);
 
   const accuracy = useMemo(
     () => calculateAccuracy(lexicon, activeGuesses),
     [activeGuesses, lexicon],
   );
 
-  const closeHowTo = React.useCallback(() => setFirstVisit(false), [setFirstVisit]);
-
   const articleRef = React.useRef<HTMLDivElement | null>(null);
   const theme = useTheme();
   const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
-
-  const handleChangeUsername = React.useCallback((newName: string | null) => {
-    if (gameMode !== 'coop') {
-      setGuesses(guesses.map(([lex, isHint]) => [
-        lex,
-        isHint,
-        !isHint ? newName : null,
-      ]));
-    }
-    onChangeUsername(newName);
-  }, [gameMode, guesses, setGuesses, onChangeUsername]);
 
   return (
     <Box
@@ -416,8 +392,6 @@ function WikiPage({
         overflow: 'hidden',
       }}
     >
-      {isError && <LoadFail gameMode={gameMode} />}
-      {firstVisit && <HowTo onClose={closeHowTo} />}
       {victory !== null && (
         <Victory
           gameMode={gameMode}
@@ -428,34 +402,10 @@ function WikiPage({
           onRevealAll={revealAll}
           gameId={gameId}
           visible={victoryVisible && !isLoading && activeGuesses.length > 0}
-          onSetVisible={setVictoryVisible}
+          onSetVisible={onSetVictoryVisible}
           achievements={achievements}
         />
       )}
-      <SiteMenu
-        yesterdaysTitle={yesterdaysTitle}
-        onShowVictory={
-          victory !== null && !victoryVisible ? () => setVictoryVisible(true) : undefined
-        }
-        achievements={achievements}
-        onSetAchievements={setAchievements}
-        gameId={gameId}
-        hideFound={hideFound}
-        onHideFound={setHideFound}
-        end={end}
-        gameMode={gameMode}
-        onChangeGameMode={onChangeGameMode}
-        username={username}
-        onChangeUsername={handleChangeUsername}
-        connected={connected}
-        onCreateCoopGame={onCreateCoopGame}
-        onConnect={onConnect}
-        onDisconnect={onDisconnect}
-        coopRoom={coopRoom}
-        coopInRoom={coopInRoom}
-        coopUsers={coopUsers}
-        onJoinCoopGame={onJoinCoopGame}
-      />
       <Grid
         container
         spacing={0}
