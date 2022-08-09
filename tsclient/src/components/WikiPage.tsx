@@ -370,12 +370,7 @@ function WikiPage({
   if (isSmall) {
     return (
       <>
-        <Box
-          sx={{
-            backgroundColor: '#EFD9CE',
-            overflow: 'scroll',
-          }}
-        >
+        <Box sx={{ backgroundColor: '#EFD9CE' }}>
           <Tooltip title={`${progress.toFixed(1)}% of article revealed.`}>
             <LinearProgress
               variant={isLoading ? undefined : 'determinate'}
