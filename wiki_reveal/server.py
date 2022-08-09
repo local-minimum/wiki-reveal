@@ -31,14 +31,6 @@ logging.basicConfig(
 )
 
 
-def root_or_none() -> Optional[str]:
-    root = os.environ.get('WR_ROOT')
-    if root:
-        return f"{root.strip('/')}/socket.io"
-    logging.info(f'Will adjust where websockets answer to {root}')
-    return None
-
-
 def coors_or_none() -> Optional[str]:
     coors = os.environ.get('WR_WS_COORS')
     if coors:
@@ -47,6 +39,9 @@ def coors_or_none() -> Optional[str]:
 
 
 debug_ws = os.environ.get('WR_WS_DEBUG') is not None
+if debug_ws:
+    logging.info('Will debug log web-socket traffic')
+
 app = Flask('Wiki-Reveal')
 app.config['SECRET_KEY'] = token_urlsafe(16)
 

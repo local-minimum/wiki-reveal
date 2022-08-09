@@ -12,8 +12,6 @@ services:
     depends_on:
       - wiki_reveal_api
       - wiki_reveal_frontend
-    environment:
-      - WR_ROOT
 
   wiki_reveal_api:
     build: .
@@ -23,12 +21,10 @@ services:
       - WR_LOGLEVEL
       - WR_SEED
       - WR_EPOCH
-      - WR_ROOT
       - WR_WS_COORS
+      - WR_WS_DEBUG
 
   wiki_reveal_frontend:
     build: ./tsclient
     restart: unless-stopped
     ports: ["80"]
-    environment:
-      - WR_ROOT
