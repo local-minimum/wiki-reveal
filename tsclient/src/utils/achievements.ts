@@ -19,6 +19,7 @@ import { relIndexed } from './array';
 import {
   avg, larger, smaller, within,
 } from './math';
+import { deltaMinutes } from './time';
 import { isDefined } from './typeGates';
 
 export enum Achievement {
@@ -366,6 +367,8 @@ export function achievementToTitle(achievement: Achievement): [string, string] {
   }
 }
 
+// Achievement Checks below
+
 const TOP_GUESSES: Array<[number, Achievement]> = [
   [10, Achievement.RankTop10],
   [20, Achievement.RankTop20],
@@ -382,7 +385,7 @@ export function checkRankAchievements(
   const [, topGuesses] = guesses
     .filter(([word, isHint]) => !isHint && rankings[word] !== undefined)
     .map<[string, number]>(([word]) => [word, rankings[word]])
-    .sort(([, a], [, b]) => (a > b ? -1 : 1))
+    .sort(([, a], [, b]) => (a > b ? 1 : -1))
     .reduce<[boolean, number]>(([foundAll, count], [lex, rank], idx) => {
       if (
         !foundAll
@@ -431,11 +434,11 @@ const GUESSES_ACHIEVEMENTS: Array<[(total: number) => boolean, Achievement]> = [
   [(total) => total === 42, Achievement.Guess42],
   [(total) => total < 50 && total >= 20, Achievement.GuessLessThan50],
   [(total) => total < 100 && total >= 50, Achievement.GuessLessThan100],
-  [(total) => total > 500 && total < 1000, Achievement.GuessMoreThan500],
+  [(total) => total > 500 && total <= 1000, Achievement.GuessMoreThan500],
   [(total) => total > 1000, Achievement.GuessMoreThan1000],
 ];
 
-function checkVictoryGuessTotal(total: number): Achievement[] {
+export function checkVictoryGuessTotal(total: number): Achievement[] {
   return GUESSES_ACHIEVEMENTS
     .filter(([check]) => check(total))
     .map(([, achievement]) => achievement);
@@ -445,10 +448,10 @@ const HINT_ACHIEVEMENTS: Array<[(hints: number) => boolean, Achievement]> = [
   [(hints) => hints === 0, Achievement.HintNone],
   [(hints) => hints <= 3 && hints > 0, Achievement.HintMax3],
   [(hints) => hints <= 10 && hints > 3, Achievement.HintMax10],
-  [(hints) => hints >= 100 && hints > 10, Achievement.HintMin100],
+  [(hints) => hints >= 100, Achievement.HintMin100],
 ];
 
-function checkVictoryHints(hints: number): Achievement[] {
+export function checkVictoryHints(hints: number): Achievement[] {
   return HINT_ACHIEVEMENTS
     .filter(([check]) => check(hints))
     .map(([, achievement]) => achievement);
@@ -461,23 +464,23 @@ const ACCURACY_ACHIEVEMENTS: Array<[(accuracy: number) => boolean, Achievement]>
   [(accuracy) => accuracy < 10, Achievement.AccurateLessThan10],
 ];
 
-function checkVictoryAccuracy(accuracy: number): Achievement[] {
+export function checkVictoryAccuracy(accuracy: number): Achievement[] {
   return ACCURACY_ACHIEVEMENTS
     .filter(([check]) => check(accuracy))
     .map(([, achievement]) => achievement);
 }
 
-function checkSpecialGuessRules(
+export function checkSpecialGuessRules(
   guesses: Array<Guess>,
   titleLexes: string[],
   headingLexes: string[],
 ): Achievement[] {
   const ret: Achievement[] = [];
+  if (guesses.length === 0) return ret;
 
   if (guesses.every(([word]) => titleLexes.includes(word))) {
     ret.push(Achievement.GuessOnlyTitle);
-  }
-  if (guesses.every(([word]) => titleLexes.includes(word) || headingLexes.includes(word))) {
+  } else if (guesses.every(([word]) => titleLexes.includes(word) || headingLexes.includes(word))) {
     ret.push(Achievement.GuessOnlyHeaders);
   }
   return ret;
@@ -517,7 +520,7 @@ const STREAK_ACHIEVEMENTS: Array<[
   ],
 ];
 
-function checkStreak(
+export function checkStreak(
   gameId: GameId,
   victory: VictoryType,
   history: Array<[GameId, VictoryType]>,
@@ -531,6 +534,7 @@ const SPEED_ACHIEVEMENTS: Array<[(seconds: number) => boolean, Achievement]> = [
   [(seconds) => seconds < 60, Achievement.SpeedOneMinute],
   [(seconds) => seconds < 10 * 60 && seconds >= 60, Achievement.SpeedTenMinutes],
   [(seconds) => seconds < 60 * 60 && seconds >= 10 * 60, Achievement.SpeedOneHour],
+  [(seconds) => seconds >= 60 * 60 * 18, Achievement.ThinkOnIt],
 ];
 
 const EARLY_ACHIEVEMENTS: Array<[(minutes: number) => boolean, Achievement]> = [
@@ -543,29 +547,13 @@ const LATE_ACHIEVEMENTS: Array<[(minutes: number) => boolean, Achievement]> = [
   [(minutes) => minutes < 1 && minutes >= 0, Achievement.LateLastMinute],
 ];
 
-function deltaMinutes(
-  from: Date | undefined,
-  to: Date | undefined,
-): number {
-  if (from === undefined || to === undefined) return NaN;
-
-  return (
-    Math.floor(to.getTime() / 1000)
-    - Math.floor(from.getTime() / 1000)
-  ) / 60;
-}
-
-function checkDurationAchievements(
+export function checkDurationAchievements(
   playDurationSeconds: number | null,
   playEnd: Date,
   start: Date | undefined,
   end: Date | undefined,
 ): Achievement[] {
   if (playDurationSeconds === null) return [];
-
-  const longPlay: Achievement[] = (
-    playDurationSeconds >= 60 * 60 * 18 ? [Achievement.ThinkOnIt] : []
-  );
 
   const minutesSinceStart = deltaMinutes(start, playEnd);
   const minutesUntilEnd = deltaMinutes(playEnd, end);
@@ -574,7 +562,6 @@ function checkDurationAchievements(
     ...SPEED_ACHIEVEMENTS
       .filter(([check]) => check(playDurationSeconds))
       .map(([, achievement]) => achievement),
-    ...longPlay,
     ...EARLY_ACHIEVEMENTS
       .filter(([check]) => start !== undefined && check(minutesSinceStart))
       .map((([, achievement]) => achievement)),
@@ -589,7 +576,7 @@ const GAME_MODE_ACHIEVEMENTS: Array<[(mode: GameMode, minutes: number) => boolea
   [(gameMode, minutes) => gameMode === 'today' && minutes < 0, Achievement.LateOverdue],
 ];
 
-function gameModeSpecificAchievements(
+export function gameModeSpecificAchievements(
   gameMode: GameMode,
   playEnd: Date,
   end: Date | undefined,
@@ -684,7 +671,7 @@ const COOP_GUESS_ACCURACY_ACHIVEMENTS: Array<[
   [
     (accuracies, user, nGuessers) => nGuessers > 1
       && smaller(Object.values(accuracies).sort()[1], accuracies[user], 0.5),
-    Achievement.CoopGuessFew,
+    Achievement.CoopAccuracyLow,
   ],
   [
     (accuracies, user, nGuessers) => nGuessers > 1 && larger(
@@ -692,7 +679,7 @@ const COOP_GUESS_ACCURACY_ACHIVEMENTS: Array<[
       accuracies[user],
       2,
     ),
-    Achievement.CoopGuessMany,
+    Achievement.CoopAccuracyHigh,
   ],
 ];
 
@@ -726,7 +713,7 @@ export function checkCoopVictoryAchievements(
       return acc;
     }, {});
 
-  const nGuessers = Object.keys(guesses).length;
+  const nGuessers = Object.keys(userGuesses).length;
   const nTitleGuessers = Object.keys(titleGuesses).length;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, __, solver] = relIndexed(
@@ -745,7 +732,7 @@ export function checkCoopVictoryAchievements(
       .map(([, achievement]) => achievement),
     nGuessers > 1 && nGuessers === nTitleGuessers ? Achievement.CoopTitleShare : null,
     nGuessers > 1 && nTitleGuessers === 1 ? Achievement.CoopTitleSolo : null,
-    nGuessers > 1 && solver === username ? Achievement.CoopTitleLast : null,
+    nGuessers > 1 && solver === username && nTitleGuessers !== 1 ? Achievement.CoopTitleLast : null,
   ].filter(isDefined);
 }
 
