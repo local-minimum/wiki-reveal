@@ -4,5 +4,5 @@ export function relIndexed<T, >(
   idx: number,
   fallback?: T,
 ): T | undefined {
-  return (idx < 0 ? arr[arr.length - idx] : arr[idx]) ?? fallback;
+  return (idx < 0 ? arr[arr.length + idx] : arr[idx]) ?? fallback;
 }
