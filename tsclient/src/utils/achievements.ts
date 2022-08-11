@@ -21,6 +21,7 @@ import {
 } from './math';
 import { deltaMinutes } from './time';
 import { isDefined } from './typeGates';
+import uniq from './uniq';
 
 export enum Achievement {
   FirstWin = 'first-win',
@@ -85,7 +86,7 @@ export enum Achievement {
   CoopAccuracyLow = 'coop-accuracy-low',
   CoopAccuracyHigh = 'coop-accuracy-high',
   CoopTitleShare = 'coop-title-share',
-  CoopTitleLast = 'coop-title-last',
+  CoopTitleLast = 'coop-title-last-v2',
   CoopTitleSolo = 'coop-title-solo'
 }
 
@@ -706,21 +707,26 @@ export function checkCoopVictoryAchievements(
       .entries(userGuesses)
       .map(([user, count]) => [user, (hitGuesses[user] ?? 0) / count]),
   );
-  const titleGuesses = guesses
-    .reduce<Record<string, true>>((acc, [lex, _, user]) => {
-      if (user === null || !titleLexes.some((titleLex) => lex === titleLex)) return acc;
-      acc[user] = true;
-      return acc;
-    }, {});
 
   const nGuessers = Object.keys(userGuesses).length;
-  const nTitleGuessers = Object.keys(titleGuesses).length;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_, __, solver] = relIndexed(
-    guesses
-      .filter(([lex]) => titleLexes.includes(lex)),
-    -1,
-    ['', false, null],
+  const titleGuessers = guesses
+    .filter(([lex]) => titleLexes.includes(lex))
+    .map(([_, __, user]) => user)
+    .filter(isDefined);
+
+  const solver = relIndexed(titleGuessers, -1, null);
+  const nTitleGuessers = uniq(titleGuessers).length;
+  const share = (
+    nGuessers > 1 && nGuessers === nTitleGuessers ? Achievement.CoopTitleShare : null
+  );
+  const solo = (
+    titleLexes.length > 1
+    && nGuessers > 1
+    && nTitleGuessers === 1
+      ? Achievement.CoopTitleSolo : null
+  );
+  const last = (
+    nGuessers > 1 && solver === username && solo === null ? Achievement.CoopTitleLast : null
   );
 
   return [
@@ -730,9 +736,9 @@ export function checkCoopVictoryAchievements(
     ...COOP_GUESS_ACCURACY_ACHIVEMENTS
       .filter(([check]) => check(accuracies, username, nGuessers))
       .map(([, achievement]) => achievement),
-    nGuessers > 1 && nGuessers === nTitleGuessers ? Achievement.CoopTitleShare : null,
-    nGuessers > 1 && nTitleGuessers === 1 ? Achievement.CoopTitleSolo : null,
-    nGuessers > 1 && solver === username && nTitleGuessers !== 1 ? Achievement.CoopTitleLast : null,
+    share,
+    solo,
+    last,
   ].filter(isDefined);
 }
 

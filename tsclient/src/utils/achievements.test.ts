@@ -563,6 +563,36 @@ describe('checkCoopVictoryAchievements()', () => {
       ['b', 'a'],
       [Achievement.CoopWin, Achievement.CoopTitleSolo],
     ],
+    [
+      'me',
+      [
+        g('a', { user: 'me' }),
+        g('b', { user: 'me' }),
+        g('c', { user: 'you' }),
+        g('d', { user: 'you' }),
+        g('e', { user: 'everyone' }),
+        g('f', { user: 'everyone' }),
+        g('g', { user: 'everyone' }),
+      ],
+      {},
+      ['b'],
+      [Achievement.CoopWin, Achievement.CoopTitleLast],
+    ],
+    [
+      'you',
+      [
+        g('a', { user: 'me' }),
+        g('b', { user: 'me' }),
+        g('c', { user: 'you' }),
+        g('d', { user: 'you' }),
+        g('e', { user: 'everyone' }),
+        g('f', { user: 'everyone' }),
+        g('g', { user: 'everyone' }),
+      ],
+      {},
+      ['b'],
+      [Achievement.CoopWin],
+    ],
   ])('returns expected achievements', (username, guesses, lexicon, titleLexes, achievements) => {
     expect(checkCoopVictoryAchievements(username, guesses, lexicon, titleLexes))
       .toEqual(achievements);
