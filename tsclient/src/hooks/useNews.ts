@@ -18,6 +18,11 @@ const news: NewsItem[] = [
     title: 'Introducing user settings',
     content: 'Some basic configurations are now available in the menu. More might come...',
   },
+  {
+    id: 'mobile-space',
+    title: 'Mayhaps it works in more mobile browsers',
+    content: 'I really don\'t know much about layouting and mobile things seems to be a can of worms... But there is a new setting that may help',
+  },
 ];
 
 export default function useNews(): News {

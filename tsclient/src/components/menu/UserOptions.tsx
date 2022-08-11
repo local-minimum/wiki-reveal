@@ -8,12 +8,14 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClose } from '@fortawesome/free-solid-svg-icons';
 
 export interface UserSettings {
+  mobileExtraBottom: boolean;
   allowHints: boolean;
   autoScrollGuess: boolean;
   autoScrollGuessCoop: boolean;
 }
 
 export const defaultSettings: UserSettings = {
+  mobileExtraBottom: false,
   allowHints: true,
   autoScrollGuess: true,
   autoScrollGuessCoop: false,
@@ -28,11 +30,23 @@ interface UserOptionsProps {
 function UserOptions({
   onClose, userSettings, onChangeUserSettings,
 }: UserOptionsProps): JSX.Element {
-  const { autoScrollGuess, autoScrollGuessCoop, allowHints } = userSettings;
+  const {
+    autoScrollGuess, autoScrollGuessCoop, allowHints, mobileExtraBottom,
+  } = userSettings;
   return (
     <Dialog open onClose={onClose}>
       <DialogTitle>User Settings</DialogTitle>
       <DialogContent>
+        <FormGroup>
+          <FormControlLabel
+            checked={mobileExtraBottom}
+            label="Extra bottom padding for iPhone?"
+            control={<Switch />}
+            onChange={() => onChangeUserSettings(
+              { ...userSettings, mobileExtraBottom: !mobileExtraBottom },
+            )}
+          />
+        </FormGroup>
         <Typography variant="h6" sx={{ marginTop: 2 }}>
           Solo Games
         </Typography>

@@ -405,6 +405,7 @@ function WikiPage({
   const articleRef = React.useRef<HTMLDivElement | null>(null);
   const theme = useTheme();
   const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
+  const { mobileExtraBottom } = userSettings;
 
   if (isSmall) {
     return (
@@ -430,11 +431,11 @@ function WikiPage({
             scrollToFocusWordCheck={focusedWordScrollToCheck}
             scrollButtonYOffset="25vh"
           />
-          <Box sx={{ height: '28vh' }} />
+          <Box sx={{ height: mobileExtraBottom ? '40vh' : '28vh' }} />
         </Box>
         <Box
           sx={{
-            height: '25vh',
+            height: mobileExtraBottom ? '35vh' : '25vh',
             position: 'fixed',
             bottom: 0,
             width: '100%',
