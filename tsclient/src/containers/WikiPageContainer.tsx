@@ -146,7 +146,7 @@ function WikiPageContainer(): JSX.Element {
     [freeWords, page?.summary],
   );
 
-  const [userSettings, setUserSettings] = useStoredValue<UserSettings>('user-settings', defaultSettings);
+  const [userSettings, setUserSettings] = useStoredValue<UserSettings>('user-settings', defaultSettings, true);
   const [victory, setVictory] = useStoredValue<VictoryType | null>(`victory-${gameMode}-${gameId}`, null);
   const [victoryVisible, setVictoryVisible] = React.useState<boolean>(true);
   const [achievements, setAchievements] = useStoredValue<AchievementsType>('achievements', {});

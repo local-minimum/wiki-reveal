@@ -8,11 +8,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClose } from '@fortawesome/free-solid-svg-icons';
 
 export interface UserSettings {
+  allowHints: boolean;
   autoScrollGuess: boolean;
   autoScrollGuessCoop: boolean;
 }
 
 export const defaultSettings: UserSettings = {
+  allowHints: true,
   autoScrollGuess: true,
   autoScrollGuessCoop: false,
 };
@@ -26,7 +28,7 @@ interface UserOptionsProps {
 function UserOptions({
   onClose, userSettings, onChangeUserSettings,
 }: UserOptionsProps): JSX.Element {
-  const { autoScrollGuess, autoScrollGuessCoop } = userSettings;
+  const { autoScrollGuess, autoScrollGuessCoop, allowHints } = userSettings;
   return (
     <Dialog open onClose={onClose}>
       <DialogTitle>User Settings</DialogTitle>
@@ -34,6 +36,16 @@ function UserOptions({
         <Typography variant="h6" sx={{ marginTop: 2 }}>
           Solo Games
         </Typography>
+        <FormGroup>
+          <FormControlLabel
+            checked={allowHints}
+            label="Allow hints"
+            control={<Switch />}
+            onChange={() => onChangeUserSettings(
+              { ...userSettings, allowHints: !allowHints },
+            )}
+          />
+        </FormGroup>
         <FormGroup>
           <FormControlLabel
             checked={autoScrollGuess}

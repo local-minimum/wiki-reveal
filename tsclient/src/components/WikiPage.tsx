@@ -468,6 +468,7 @@ function WikiPage({
             compact
             isCoop={gameMode === 'coop'}
             latteralPad
+            userSettings={userSettings}
           />
         </Box>
       </>
@@ -572,6 +573,7 @@ function WikiPage({
             onAddGuess={addGuess}
             onAddHint={addHint}
             isCoop={gameMode === 'coop'}
+            userSettings={userSettings}
           />
         </Grid>
       </Grid>

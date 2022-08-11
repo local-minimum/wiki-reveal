@@ -5,6 +5,7 @@ import {
 } from '@mui/material';
 import * as React from 'react';
 import { wordAsLexicalEntry } from '../utils/wiki';
+import { UserSettings } from './menu/UserOptions';
 
 interface GuessInputProps {
   isLoading: boolean;
@@ -18,6 +19,7 @@ interface GuessInputProps {
   isCoop: boolean;
   compact?: boolean;
   latteralPad?: boolean;
+  userSettings: UserSettings;
 }
 
 const INVALID = [' ', '-', '\'', '"', '_', '.', ':', ';', '\n', '\t', '\r'];
@@ -30,8 +32,9 @@ function labelText(isFreeWord: boolean | undefined, hasIllegal: boolean): string
 
 function GuessInput({
   isLoading, isError, isDone, unmasked, hints, onAddGuess, onAddHint, freeWords,
-  isCoop, compact = false, latteralPad = false,
+  isCoop, userSettings, compact = false, latteralPad = false,
 }: GuessInputProps): JSX.Element {
+  const { allowHints } = userSettings;
   const [currentGuess, setCurrentGuess] = React.useState('');
   const theme = useTheme();
   const isExtraLarge = useMediaQuery(theme.breakpoints.up('xl'));
@@ -82,7 +85,7 @@ function GuessInput({
           </IconButton>
         )}
       </Tooltip>
-      {!isCoop && (
+      {!isCoop && allowHints && (
         <Tooltip title="Get a word for free that is not in the main header">
           {isExtraLarge ? (
             <Button
