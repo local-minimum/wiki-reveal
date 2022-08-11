@@ -1,5 +1,5 @@
 import {
-  faBars, faBroom, faEye, faEyeLowVision, faInfo, faMedal,
+  faBars, faBroom, faEye, faEyeLowVision, faGear, faInfo, faMedal,
   faPeopleGroup,
   faPersonChalkboard, faPlay, faStar, faTrophy, faUserSecret,
 } from '@fortawesome/free-solid-svg-icons';
@@ -18,6 +18,7 @@ import HowTo from './menu/HowTo';
 import InfoDialog from './menu/InfoDialog';
 import RemainingTime from './menu/RemainingTime';
 import RevealYesterday from './menu/RevealYesterday';
+import UserOptions, { UserSettings } from './menu/UserOptions';
 import VictoryHistory from './menu/VictoryHistory';
 import WipeDataDialog from './menu/WipeDataDialog';
 
@@ -42,12 +43,15 @@ interface SiteMenuProps {
   coopInRoom: boolean;
   coopUsers: string[];
   onJoinCoopGame: (room: string) => void;
+  userSettings: UserSettings;
+  onChangeUserSettings: (settings: UserSettings) => void;
 }
 
 function SiteMenu({
   yesterdaysTitle, onShowVictory, achievements, onSetAchievements, gameId, hideFound, onHideFound,
   end, gameMode, onChangeGameMode, username, onChangeUsername, onCreateCoopGame, connected,
-  onConnect, onDisconnect, coopRoom, coopUsers, onJoinCoopGame, coopInRoom,
+  onConnect, onDisconnect, coopRoom, coopUsers, onJoinCoopGame, coopInRoom, userSettings,
+  onChangeUserSettings,
 }: SiteMenuProps): JSX.Element {
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null);
   const open = Boolean(anchorEl);
@@ -62,6 +66,7 @@ function SiteMenu({
   const [showAchievements, setShowAchievements] = React.useState<boolean>(false);
   const [showYesterdays, setShowYesterdays] = React.useState<boolean>(false);
   const [showCoop, setShowCoop] = React.useState<boolean>(false);
+  const [showSettings, setShowSettings] = React.useState<boolean>(false);
 
   return (
     <>
@@ -176,6 +181,14 @@ function SiteMenu({
           </ListItemText>
         </MenuItem>
         <Divider />
+        <MenuItem onClick={() => { handleClose(); setShowSettings(true); }}>
+          <ListItemIcon>
+            <FontAwesomeIcon icon={faGear} />
+          </ListItemIcon>
+          <ListItemText>
+            Settings
+          </ListItemText>
+        </MenuItem>
         <MenuItem onClick={() => { handleClose(); setShowWipe(true); }}>
           <ListItemIcon>
             <FontAwesomeIcon icon={faBroom} />
@@ -216,6 +229,13 @@ function SiteMenu({
           inRoom={coopInRoom}
           onJoin={onJoinCoopGame}
           onQuitCoop={() => onChangeGameMode('today')}
+        />
+      )}
+      {showSettings && (
+        <UserOptions
+          onClose={() => setShowSettings(false)}
+          userSettings={userSettings}
+          onChangeUserSettings={onChangeUserSettings}
         />
       )}
     </>

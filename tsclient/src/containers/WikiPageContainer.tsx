@@ -16,6 +16,7 @@ import LoadFail from '../components/LoadFail';
 import HowTo from '../components/menu/HowTo';
 import Victory from '../components/Victory';
 import usePrevious from '../hooks/usePrevious';
+import { defaultSettings, UserSettings } from '../components/menu/UserOptions';
 
 function WikiPageContainer(): JSX.Element {
   const { enqueueSnackbar } = useSnackbar();
@@ -145,6 +146,7 @@ function WikiPageContainer(): JSX.Element {
     [freeWords, page?.summary],
   );
 
+  const [userSettings, setUserSettings] = useStoredValue<UserSettings>('user-settings', defaultSettings);
   const [victory, setVictory] = useStoredValue<VictoryType | null>(`victory-${gameMode}-${gameId}`, null);
   const [victoryVisible, setVictoryVisible] = React.useState<boolean>(true);
   const [achievements, setAchievements] = useStoredValue<AchievementsType>('achievements', {});
@@ -237,6 +239,8 @@ function WikiPageContainer(): JSX.Element {
         coopInRoom={inRoom}
         coopUsers={users}
         onJoinCoopGame={handleJoinCoopGame}
+        userSettings={userSettings}
+        onChangeUserSettings={setUserSettings}
       />
       <WikiPage
         isLoading={isLoading}
@@ -267,6 +271,7 @@ function WikiPageContainer(): JSX.Element {
         hideWords={hideWords}
         activeGuesses={activeGuesses}
         unmasked={unmasked === gameId}
+        userSettings={userSettings}
       />
     </>
   );

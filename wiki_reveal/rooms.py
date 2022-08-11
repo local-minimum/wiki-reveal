@@ -57,6 +57,11 @@ def clear_old_coop_games():
             close_room(key)
 
 
+def active_rooms() -> list[int]:
+    clear_old_coop_games()
+    return [len(r.users) for r in ROOMS.values()]
+
+
 def coop_game_exists(room: str) -> bool:
     return room in ROOMS
 

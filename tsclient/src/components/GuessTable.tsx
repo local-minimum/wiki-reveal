@@ -11,6 +11,7 @@ import usePrevious from '../hooks/usePrevious';
 import useStoredValue from '../hooks/useStoredValue';
 import { initials, stringToColor } from '../utils/avatar';
 import { Guess } from './Guess';
+import { UserSettings } from './menu/UserOptions';
 import ScrollToTop from './ScrollToTop';
 import SortIcon from './SortIcon';
 
@@ -23,6 +24,7 @@ interface GuessTableProps {
   titleLexes: string[];
   headingLexes: string[];
   gameMode: GameMode;
+  userSettings: UserSettings;
 }
 
 type SortType = 'order' | 'alphabetical' | 'count' | 'rank';
@@ -30,8 +32,10 @@ type SortVariant = 'asc' | 'desc';
 
 function GuessTable({
   guesses, lexicon, onSetFocusWord, focusWord, titleLexes, headingLexes,
-  rankings, gameMode,
+  rankings, gameMode, userSettings,
 }: GuessTableProps): JSX.Element {
+  const { autoScrollGuess, autoScrollGuessCoop } = userSettings;
+  const autoScroll = gameMode === 'coop' ? autoScrollGuessCoop : autoScrollGuess;
   const mostRecentGuess = guesses[guesses.length - 1]?.[0];
   const previousGuess = usePrevious(mostRecentGuess);
   const mostRecentGuessRef = React.useRef<HTMLTableRowElement | null>(null);
@@ -39,6 +43,7 @@ function GuessTable({
   const previousFocusWord = usePrevious(focusWord);
 
   React.useEffect(() => {
+    if (!autoScroll) return;
     if (mostRecentGuess !== previousGuess) {
       mostRecentGuessRef.current?.scrollIntoView({
         behavior: 'smooth',
@@ -50,7 +55,7 @@ function GuessTable({
         block: 'center',
       });
     }
-  }, [focusWord, mostRecentGuess, previousFocusWord, previousGuess]);
+  }, [focusWord, mostRecentGuess, previousFocusWord, previousGuess, autoScroll]);
 
   const refOrNull = (
     isMostRecent: boolean,

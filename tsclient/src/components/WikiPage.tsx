@@ -23,6 +23,7 @@ import { Guess } from './Guess';
 import RedactedPage from './RedactedPage';
 import { VictoryType } from './VictoryType';
 import useRevealedPage from '../hooks/useRevealedPage';
+import { UserSettings } from './menu/UserOptions';
 
 function randomEntry<T>(arr: T[]): T {
   return arr[Math.min(Math.floor(Math.random() * arr.length), arr.length - 1)];
@@ -59,6 +60,7 @@ interface WikiPageProps {
   onSetSoloGuesses: (guesses: Guess[]) => void;
   hideWords: string[];
   unmasked: boolean;
+  userSettings: UserSettings;
 }
 
 function calculateProgress(
@@ -99,7 +101,7 @@ function WikiPage({
   titleLexes, headingLexes, start, end, gameMode,
   rankings, summaryToReveal, username,
   coopUsers, coopGuesses, onCoopGuess, unmasked, coopRoom,
-  victory, onSetVictory,
+  victory, onSetVictory, userSettings,
   achievements, onSetAchievements, activeGuesses, onSetSoloGuesses, hideWords,
 }: WikiPageProps): JSX.Element {
   const { enqueueSnackbar } = useSnackbar();
@@ -451,6 +453,7 @@ function WikiPage({
               headingLexes={headingLexes}
               rankings={rankings}
               gameMode={gameMode}
+              userSettings={userSettings}
             />
           </Box>
           <GuessInput
@@ -556,6 +559,7 @@ function WikiPage({
               headingLexes={headingLexes}
               rankings={rankings}
               gameMode={gameMode}
+              userSettings={userSettings}
             />
           </Box>
           <GuessInput

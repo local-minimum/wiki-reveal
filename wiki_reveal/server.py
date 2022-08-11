@@ -16,7 +16,7 @@ from wiki_reveal.game_id import (
 )
 from wiki_reveal.generate_name import generate_name
 from wiki_reveal.rooms import (
-    add_coop_game, add_coop_guess, add_coop_user, clear_old_coop_games,
+    active_rooms, add_coop_game, add_coop_guess, add_coop_user, clear_old_coop_games,
     coop_game_exists, coop_game_is_full, get_room_data, remove_coop_user,
     rename_user,
 )
@@ -333,3 +333,10 @@ def coop_room(room: str):
         response_data['end'] = override_end.isoformat().replace(' ', 'T')
 
     return jsonify(response_data)
+
+
+@app.get('/api/coop')
+def coop_stats():
+    return jsonify({
+        "rooms": active_rooms()
+    })
