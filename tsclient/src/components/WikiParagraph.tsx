@@ -66,9 +66,9 @@ export function RevealedWord({ word, focused, scrollTo }: RevealedWordProps): JS
     }
   }, [scrollTo]);
 
-  if (!focused) return <span>{word}</span>;
   if (scrollTo) return <ScrolledTo ref={ref}>{word}</ScrolledTo>;
-  return <Focused>{word}</Focused>;
+  if (focused) return <Focused>{word}</Focused>;
+  return <span>{word}</span>;
 }
 
 interface WikiParagraphProps {
@@ -80,7 +80,7 @@ interface WikiParagraphProps {
 }
 
 function WikiParagraph({
-  text, focusWord, scrollToCheck, hideWords = [], masked = true,
+  text, focusWord, scrollToCheck, hideWords, masked = true,
 }: WikiParagraphProps): JSX.Element | null {
   if (text === undefined) return null;
 
@@ -89,7 +89,7 @@ function WikiParagraph({
       {
         text.map(([token, isHidden, lex], idx) => {
           const focused = lex === focusWord;
-          if (hideWords.includes(lex)) {
+          if (hideWords?.includes(lex)) {
             return (
               <WordBlockHidden
                 word={token}
