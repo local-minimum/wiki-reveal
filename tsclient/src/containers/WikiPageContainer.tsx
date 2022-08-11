@@ -199,10 +199,16 @@ function WikiPageContainer(): JSX.Element {
     }
   }, [connect, connected, handleChangeGameMode, handleJoinCoopGame]);
 
+  const onCloseFail = React.useCallback((): void => {
+    if (gameMode === 'coop') {
+      handleChangeGameMode('today');
+    }
+  }, [gameMode, handleChangeGameMode]);
+
   return (
     <>
       {firstVisit && <HowTo onClose={closeHowTo} />}
-      {!firstVisit && isError && <LoadFail gameMode={gameMode} />}
+      {!firstVisit && isError && <LoadFail gameMode={gameMode} onClose={onCloseFail} />}
       {!firstVisit && !isError && news.length > 0 && <News onClose={onReadNews} news={news} /> }
       {!firstVisit && !isError && news.length === 0 && victory !== null && (
         <Victory

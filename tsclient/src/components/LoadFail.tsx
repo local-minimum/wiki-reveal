@@ -9,14 +9,18 @@ import { GameMode } from '../api/page';
 
 interface LoadFailProps {
   gameMode: GameMode;
+  onClose: () => void;
 }
 
-function LoadFail({ gameMode }: LoadFailProps): JSX.Element {
+function LoadFail({ gameMode, onClose }: LoadFailProps): JSX.Element {
   const [open, setOpen] = React.useState<boolean>(true);
-  const onClose = () => setOpen(false);
+  const handleClose = () => {
+    setOpen(false);
+    onClose();
+  };
 
   return (
-    <Dialog open={open} onClose={onClose}>
+    <Dialog open={open} onClose={handleClose}>
       <DialogTitle>
         Failed to load
         {' '}
@@ -56,7 +60,7 @@ function LoadFail({ gameMode }: LoadFailProps): JSX.Element {
       <DialogActions>
         <Button
           variant="outlined"
-          onClick={onClose}
+          onClick={handleClose}
           startIcon={<FontAwesomeIcon icon={faClose} />}
         >
           Close
