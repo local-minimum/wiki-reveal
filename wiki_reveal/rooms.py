@@ -2,8 +2,6 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 import logging
 from operator import attrgetter
-from random import Random
-from time import time
 from typing import Any, Literal, Optional, Tuple, Union, cast
 from flask_socketio import close_room  # type: ignore
 from wiki_reveal.exceptions import CoopGameDoesNotExistError
@@ -13,7 +11,7 @@ from wiki_reveal.game_id import SECONDS_PER_DAY, get_end_of_current
 SID = str
 GUESS = list[str]
 ROOM_ATTRIBUTE = Literal[
-    'start', 'end', 'game_id', 'rng_seed', 'users', 'guesses',
+    'start', 'end', 'game_id', 'users', 'guesses',
 ]
 
 
@@ -22,7 +20,6 @@ class RoomData:
     start: datetime
     end: datetime
     game_id: int
-    rng_seed: Optional[int]
     users: dict[SID, str]
     guesses: list[GUESS]
 
@@ -81,7 +78,6 @@ def add_coop_game(
     duration: Optional[int] = None
 ):
     start = datetime.now(tz=timezone.utc) if start is None else start
-    rng_seed = None if not use_rng_seed else Random(time()).randint(0, 100000)
     ROOMS[room] = RoomData(
         start=start,
         end=(
@@ -90,7 +86,6 @@ def add_coop_game(
             else start + timedelta(hours=duration)
         ),
         game_id=game_id,
-        rng_seed=rng_seed,
         users={sid: username},
         guesses=[],
     )
@@ -155,13 +150,13 @@ def rename_user(room: str, sid: SID, username: str):
 
 def get_room_data(
     room: str,
-) -> tuple[datetime, Optional[datetime], int, Optional[int]]:
+) -> tuple[datetime, Optional[datetime], int]:
     if not coop_game_exists(room):
         raise CoopGameDoesNotExistError
 
     return cast(
-        tuple[datetime, datetime, int, Optional[int]],
-        dest(ROOMS[room], 'start', 'end', 'game_id', 'rng_seed'),
+        tuple[datetime, datetime, int],
+        dest(ROOMS[room], 'start', 'end', 'game_id'),
     )
 
 

@@ -3,8 +3,9 @@ from functools import lru_cache
 from http import HTTPStatus
 import logging
 import os
-from random import randint
+from random import Random
 from secrets import token_hex, token_urlsafe
+from time import time
 from flask_socketio import (  # type: ignore
     SocketIO, join_room, leave_room, send, rooms,
 )
@@ -80,7 +81,7 @@ def coop_on_create(data: dict[str, Any]):
     game_id = (
         get_game_id()
         if isToday
-        else randint(0, get_number_of_options())
+        else Random(time()).randint(0, get_number_of_options() - 1)
     )
     start: Optional[datetime] = get_start_of_current() if isToday else None
     duration = None if endsToday else data['expire']
@@ -260,11 +261,10 @@ def root():
 def get_page_payload(
     language: str,
     game_id: int,
-    rng_seed: Optional[int] = None,
 ) -> dict[str, Any]:
     start, end = get_start_and_end(game_id)
     try:
-        page_name = get_game_page_name(game_id, rng_seed)
+        page_name = get_game_page_name(game_id)
     except WikiError:
         logging.exception('Could not load game page')
         abort(HTTPStatus.INTERNAL_SERVER_ERROR)
@@ -325,11 +325,11 @@ def page(language: str = 'en'):
 @app.get('/api/coop/<room>')
 def coop_room(room: str):
     try:
-        start, override_end, game_id, rng_seed = get_room_data(room)
+        start, override_end, game_id = get_room_data(room)
     except CoopGameDoesNotExistError:
         abort(HTTPStatus.BAD_REQUEST)
 
-    response_data = get_page_payload('en', game_id, rng_seed)
+    response_data = get_page_payload('en', game_id)
     response_data['start'] = start.isoformat().replace(' ', 'T')
     if override_end is not None:
         response_data['end'] = override_end.isoformat().replace(' ', 'T')
