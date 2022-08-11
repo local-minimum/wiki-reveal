@@ -17,6 +17,8 @@ import HowTo from '../components/menu/HowTo';
 import Victory from '../components/Victory';
 import usePrevious from '../hooks/usePrevious';
 import { defaultSettings, UserSettings } from '../components/menu/UserOptions';
+import useNews from '../hooks/useNews';
+import News from '../components/News';
 
 function WikiPageContainer(): JSX.Element {
   const { enqueueSnackbar } = useSnackbar();
@@ -172,6 +174,7 @@ function WikiPageContainer(): JSX.Element {
 
   const [firstVisit, setFirstVisit] = useStoredValue<boolean>('first-visit', true);
   const closeHowTo = React.useCallback(() => setFirstVisit(false), [setFirstVisit]);
+  const { news, onRead: onReadNews } = useNews();
 
   const [unmasked, setUnmasked] = React.useState<number>(-1);
   const revealAll = React.useCallback((): void => {
@@ -198,9 +201,10 @@ function WikiPageContainer(): JSX.Element {
 
   return (
     <>
-      {isError && <LoadFail gameMode={gameMode} />}
       {firstVisit && <HowTo onClose={closeHowTo} />}
-      {victory !== null && (
+      {!firstVisit && isError && <LoadFail gameMode={gameMode} />}
+      {!firstVisit && !isError && news.length > 0 && <News onClose={onReadNews} news={news} /> }
+      {!firstVisit && !isError && news.length === 0 && victory !== null && (
         <Victory
           gameMode={gameMode}
           guesses={victory.guesses}
