@@ -1,8 +1,6 @@
 from collections.abc import Iterator
 from functools import lru_cache
-import json
-import os
-from typing import Optional, Union
+from typing import Union
 from dataclasses import asdict, dataclass
 import re
 import logging
@@ -14,13 +12,17 @@ from wikipediaapi import (  # type: ignore
 from wiki_reveal.exceptions import (
     FailedToSelectPageError, NoSuchPageError, ParsingFailedError,
 )
-from wiki_reveal.nice_random import get_option
+from wiki_reveal.nicer_random import randomize_titles
 
 tokenizer = re.compile(
     r'[             \t\n\r\v\f:;,.⋯…<>/\\~`\'"!?@#$%^&*°()[\]{}|=+-\-–—− _→?\‑]+',  # noqa: E501
 )
 Token = tuple[str, bool]
 Paragraph = tuple[Token, ...]
+
+logging.info('Preloading ranomized articles')
+randomize_titles()
+logging.info('Article order preloaded')
 
 
 @dataclass
@@ -108,27 +110,10 @@ def get_page(
     )
 
 
-@lru_cache(maxsize=1)
-def load_page_name_options() -> dict[str, list[str]]:
-    with open(
-        os.path.join(os.path.dirname(__file__), 'pages.json'),
-        'r',
-    ) as fh:
-        return json.load(fh)
-
-
-@lru_cache(maxsize=1)
-def get_number_of_options() -> int:
-    options = load_page_name_options()
-    counts = {k: len(v) for k, v in options.items()}
-    return sum(counts.values())
-
-
 @lru_cache(maxsize=256)
-def get_game_page_name(game_id: int, rng_seed:  Optional[int] = None) -> str:
-    names = load_page_name_options()
-
-    page = get_option(names, game_id, rng_seed)
+def get_game_page_name(game_id: int) -> str:
+    options = randomize_titles()
+    page = options[game_id % len(options)]
     if page is None:
         raise FailedToSelectPageError
 

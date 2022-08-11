@@ -15,14 +15,16 @@ from wiki_reveal.game_id import (
     get_game_id, get_start_and_end, get_start_of_current,
 )
 from wiki_reveal.generate_name import generate_name
+from wiki_reveal.page_options import get_number_of_options
 from wiki_reveal.rooms import (
-    active_rooms, add_coop_game, add_coop_guess, add_coop_user, clear_old_coop_games,
+    active_rooms, add_coop_game, add_coop_guess, add_coop_user,
+    clear_old_coop_games,
     coop_game_exists, coop_game_is_full, get_room_data, remove_coop_user,
     rename_user,
 )
 
 from wiki_reveal.wiki import (
-    get_game_page_name, get_number_of_options, get_page, tokenize,
+    get_game_page_name, get_page, tokenize,
 )
 
 logging.basicConfig(
@@ -34,9 +36,9 @@ logging.basicConfig(
 def coors_or_none() -> Optional[list[str]]:
     coors = os.environ.get('WR_WS_COORS')
     if coors:
-        coors = [c.strip() for c in coors.split('|')]
+        split = [c.strip() for c in coors.split('|')]
         logging.info(f'Allowing websockets from {coors}')
-        return coors
+        return split
     return None
 
 
