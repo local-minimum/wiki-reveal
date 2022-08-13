@@ -13,6 +13,7 @@ function useClearStoredValues(
 
   useEffect(
     () => {
+      const coopOrSolo = gameMode === 'coop' ? 'coop' : 'solo';
       const stored = gameMode === 'coop' ? storedCoop : storedSingle;
       const setStored = gameMode === 'coop' ? setStoredCoop : setStoredSingle;
       if (gameId === undefined || stored.includes(gameId)) return;
@@ -21,9 +22,10 @@ function useClearStoredValues(
       stored
         .slice(0, keepFrom)
         .forEach((storedGameId) => keysToClear.forEach((key) => {
+          // Remove per coop / solo
+          localStorage.removeItem(`${key}-${coopOrSolo}-${storedGameId}`);
+          // Remove per gameMode
           localStorage.removeItem(`${key}-${gameMode}-${storedGameId}`);
-          // Clean up old style
-          localStorage.removeItem(`${key}-${storedGameId}`);
         }));
       const remaining = [...stored.slice(keepFrom), gameId];
       setStored(remaining);

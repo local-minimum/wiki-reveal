@@ -148,11 +148,18 @@ function WikiPageContainer(): JSX.Element {
     [freeWords, page?.summary],
   );
 
+  const coopOrSolo = gameMode === 'coop' ? 'coop' : 'solo';
   const [userSettings, setUserSettings] = useStoredValue<UserSettings>('user-settings', defaultSettings, true);
-  const [victory, setVictory] = useStoredValue<VictoryType | null>(`victory-${gameMode}-${gameId}`, null);
+  const [victory, setVictory] = useStoredValue<VictoryType | null>(
+    `victory-${coopOrSolo}-${gameId}`,
+    null,
+  );
+  const [soloGuesses, setSoloGuesses] = useStoredValue<Guess[]>(
+    `guesses-${coopOrSolo}-${gameId}`,
+    [],
+  );
   const [victoryVisible, setVictoryVisible] = React.useState<boolean>(true);
   const [achievements, setAchievements] = useStoredValue<AchievementsType>('achievements', {});
-  const [soloGuesses, setSoloGuesses] = useStoredValue<Guess[]>(`guesses-${gameMode}-${gameId}`, []);
 
   const activeGuesses = gameMode === 'coop' ? coopGuesses : soloGuesses;
   const [hideFound, setHideFound] = React.useState<boolean>(false);
