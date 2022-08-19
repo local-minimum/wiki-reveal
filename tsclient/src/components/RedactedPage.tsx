@@ -16,7 +16,7 @@ interface RedactedPageProps {
   isSolved: boolean;
   language: string | undefined;
   pageName: string | undefined;
-  scrollToFocusWordCheck: () => boolean;
+  scrollToFocusWordCheck: (isHeader: boolean) => boolean;
   scrollButtonYOffset?: string;
   focusWord: string | null;
   containerNode?: Node;
@@ -58,6 +58,7 @@ function RedactedPage({
           focusWord={focusWord}
           scrollToCheck={scrollToFocusWordCheck}
           hideWords={hideWords}
+          isHeader
         />
         {isSolved && (
         <Link

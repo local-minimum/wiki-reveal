@@ -74,13 +74,14 @@ export function RevealedWord({ word, focused, scrollTo }: RevealedWordProps): JS
 interface WikiParagraphProps {
   text: LexicalizedToken[] | undefined;
   focusWord: string | null;
-  scrollToCheck: () => boolean;
+  scrollToCheck: (isHeader: boolean) => boolean;
   hideWords?: string[];
   masked?: boolean;
+  isHeader?: boolean;
 }
 
 function WikiParagraph({
-  text, focusWord, scrollToCheck, hideWords, masked = true,
+  text, focusWord, scrollToCheck, hideWords, masked = true, isHeader = false,
 }: WikiParagraphProps): JSX.Element | null {
   if (text === undefined) return null;
 
@@ -108,7 +109,7 @@ function WikiParagraph({
                   // eslint-disable-next-line react/no-array-index-key
                   key={idx}
                   focused={focused}
-                  scrollTo={focused && scrollToCheck()}
+                  scrollTo={focused && scrollToCheck(isHeader)}
                 />
               )
           );

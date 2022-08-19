@@ -18,7 +18,7 @@ import WikiParagraph from './WikiParagraph';
 interface WikiSectionProps {
   section: Section;
   focusWord: string | null;
-  scrollToCheck: () => boolean;
+  scrollToCheck: (isHeader: boolean) => boolean;
   hideWords: string[];
   masked: boolean;
 }
@@ -85,6 +85,7 @@ function WikiSection({
           scrollToCheck={scrollToCheck}
           hideWords={hideWords}
           masked={masked}
+          isHeader
         />
       </Typography>
       {paragraphs.map((paragraph, idx) => (

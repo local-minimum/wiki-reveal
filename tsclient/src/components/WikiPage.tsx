@@ -131,27 +131,38 @@ function WikiPage({
     [gameId, setPlayStart],
   );
 
-  const [[focusWord, focusWordIndex], setFocusWord] = React
-    .useState<[word: string | null, index: number]>([null, 0]);
+  const [[focusWord, focusWordIndex, headerRequired], setFocusWord] = React
+    .useState<[word: string | null, index: number, header: boolean]>([null, 0, false]);
 
   const focusedWordCounter = React.useRef(0);
+  const focusedWordRequireHeader = React.useRef(false);
 
   focusedWordCounter.current = focusWordIndex;
+  focusedWordRequireHeader.current = headerRequired;
 
-  const handleSetFocusWord = React.useCallback((word: string): void => {
-    if (word !== focusWord) {
+  const handleSetFocusWord = React.useCallback((word: string, requireHeader: boolean): void => {
+    if (word !== focusWord || focusedWordRequireHeader.current !== requireHeader) {
       focusedWordCounter.current = 0;
-      setFocusWord([word, 0]);
+      focusedWordRequireHeader.current = requireHeader;
+      setFocusWord([word, 0, requireHeader]);
     } else {
-      setFocusWord([word, (focusWordIndex + 1) % (lexicon[word] ?? 1)]);
+      setFocusWord([word, (focusWordIndex + 1) % (lexicon[word] ?? 1), requireHeader]);
     }
   }, [focusWord, focusWordIndex, lexicon]);
 
-  const focusedWordScrollToCheck = React.useCallback((): boolean => {
+  const focusedWordScrollToCheck = React.useCallback((isHeader: boolean): boolean => {
+    if (focusedWordRequireHeader.current && !isHeader) {
+      return false;
+    }
     const isMe = focusedWordCounter.current === 0;
     focusedWordCounter.current -= 1;
     return isMe;
   }, []);
+
+  React.useEffect(() => {
+    if (focusedWordCounter.current < 0) return;
+    setFocusWord([focusWord, 0, headerRequired]);
+  }, [focusWord, focusWordIndex, headerRequired]);
 
   const { title, summary, sections } = useRevealedPage(page, activeGuesses);
 
@@ -315,7 +326,7 @@ function WikiPage({
         onSetAchievements(updateAchievements(achievements, newAchievements, gameId));
       }
     } else {
-      handleSetFocusWord(entry);
+      handleSetFocusWord(entry, false);
     }
   }, [
     freeWords, gameId, activeGuesses, handleSetFocusWord, hints, lexicon, playerResults,

@@ -2,7 +2,7 @@ import { faHeading, faPuzzlePiece, faStar } from '@fortawesome/free-solid-svg-ic
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   Avatar,
-  Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip,
+  Box, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip,
   useMediaQuery, useTheme,
 } from '@mui/material';
 import * as React from 'react';
@@ -19,7 +19,7 @@ interface GuessTableProps {
   guesses: Array<Guess>;
   lexicon: Record<string, number>;
   rankings: Record<string, number>;
-  onSetFocusWord: (word: string) => void;
+  onSetFocusWord: (word: string, requireHeader: boolean) => void;
   focusWord: string | null;
   titleLexes: string[];
   headingLexes: string[];
@@ -192,7 +192,7 @@ function GuessTable({
                   backgroundColor: focused ? '#CEA2AC' : undefined,
                   cursor: 'pointer',
                 }}
-                onClick={() => onSetFocusWord(word)}
+                onClick={() => onSetFocusWord(word, false)}
                 ref={refOrNull(mostRecent, focused)}
               >
                 <TableCell>{ordinal}</TableCell>
@@ -211,9 +211,21 @@ function GuessTable({
                       </Tooltip>
                     )}
                     {headingLexes.includes(word) && (
-                      <Tooltip title="Word part of sub-heading">
+                      <IconButton
+                        title="Word part of sub-heading"
+                        onClick={(evt) => {
+                          onSetFocusWord(word, true);
+                          evt.stopPropagation();
+                        }}
+                        sx={{
+                          lineHeight: 1.43,
+                          fontSize: '0.875rem',
+                          padding: 0,
+                          color: 'rgba(0, 0, 0, 0.87)',
+                        }}
+                      >
                         <FontAwesomeIcon icon={faHeading} />
-                      </Tooltip>
+                      </IconButton>
                     )}
                     {isHint && (
                       <Tooltip title="Word gotten as a hint">
