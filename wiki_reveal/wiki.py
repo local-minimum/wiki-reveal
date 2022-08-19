@@ -13,6 +13,7 @@ from wiki_reveal.exceptions import (
     FailedToSelectPageError, NoSuchPageError, ParsingFailedError,
 )
 from wiki_reveal.nicer_random import randomize_titles
+from wiki_reveal.parser import clean_lines
 
 tokenizer = re.compile(
     r'[             \t\n\r\v\f:;,.⋯…<>/\\~`\'"!?@#$%^&*°()[\]{}|=+-\-–—− _→?\‑]+',  # noqa: E501
@@ -47,6 +48,7 @@ class Page:
 
 
 def tokenize(data: str) -> Iterator[Token]:
+    data = clean_lines(data)
     non_words = tokenizer.findall(data)
     i = 0
     non_words_count = len(non_words)
