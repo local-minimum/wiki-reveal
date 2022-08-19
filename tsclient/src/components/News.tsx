@@ -1,7 +1,7 @@
 import { faClose } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  Button, Card, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, Typography,
+  Button, Card, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, Stack, Typography,
 } from '@mui/material';
 import * as React from 'react';
 import { NewsItem } from '../hooks/useNews';
@@ -16,14 +16,16 @@ function News({ onClose, news }: NewsProps): JSX.Element {
     <Dialog open onClose={onClose}>
       <DialogTitle>News</DialogTitle>
       <DialogContent>
-        {news.map(({ id, title, content }) => (
-          <Card key={id}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>{title}</Typography>
-              {content}
-            </CardContent>
-          </Card>
-        ))}
+        <Stack gap={2}>
+          {news.map(({ id, title, content }) => (
+            <Card key={id}>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>{title}</Typography>
+                {content}
+              </CardContent>
+            </Card>
+          ))}
+        </Stack>
       </DialogContent>
       <DialogActions>
         <Button

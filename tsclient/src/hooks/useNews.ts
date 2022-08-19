@@ -21,7 +21,12 @@ const news: NewsItem[] = [
   {
     id: 'mobile-space',
     title: 'Mayhaps it works in more mobile browsers',
-    content: 'I really don\'t know much about layouting and mobile things seems to be a can of worms... But there is a new setting that may help',
+    content: 'I really don\'t know much about layouting and mobile things seems to be a can of worms... But there is a new setting that may help.',
+  },
+  {
+    id: 'header-matches',
+    title: 'Quick scroll to header matches',
+    content: 'When guesses show the "H" header match icon, it can now be clicked to scroll through those header matches only.',
   },
 ];
 
