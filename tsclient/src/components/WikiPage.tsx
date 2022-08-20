@@ -24,6 +24,7 @@ import RedactedPage from './RedactedPage';
 import { VictoryType } from './VictoryType';
 import useRevealedPage from '../hooks/useRevealedPage';
 import { UserSettings } from './menu/UserOptions';
+import { BORING_HINTS } from '../utils/hints';
 
 function randomEntry<T>(arr: T[]): T {
   return arr[Math.min(Math.floor(Math.random() * arr.length), arr.length - 1)];
@@ -338,6 +339,7 @@ function WikiPage({
 
   const addHint = React.useCallback((): void => {
     const maxCount = activeGuesses
+      .filter(([word, isHint]) => !isHint && !BORING_HINTS.includes(word))
       .reduce((count, [word]) => Math.max(count, lexicon[word] ?? 0), 0);
     const options = [...Object.keys(lexicon)]
       .filter((word) => !activeGuesses.some(([w]) => w === word)
@@ -346,18 +348,47 @@ function WikiPage({
 
     if (options.length === 0) return;
 
-    const worthy = options.filter((word) => lexicon[word] >= maxCount * 0.95);
+    const worthy = options
+      .filter(
+        (word) => !BORING_HINTS.includes(word) && lexicon[word] >= maxCount,
+      )
+      .sort((a, b) => (lexicon[a] > lexicon[b] ? 1 : -1));
     if (worthy.length > 0) {
-      onSetSoloGuesses([...activeGuesses, [randomEntry(worthy), true, null]]);
+      onSetSoloGuesses([
+        ...activeGuesses,
+        [
+          randomEntry(worthy.slice(0, 10)),
+          true,
+          null,
+        ],
+      ]);
       return;
     }
 
-    const remaining = options.sort((a, b) => (lexicon[a] > lexicon[b] ? -1 : 1));
+    const remainingGood = options
+      .filter((word) => !BORING_HINTS.includes(word))
+      .sort((a, b) => (lexicon[a] > lexicon[b] ? -1 : 1));
+
+    if (remainingGood.length > 0) {
+      onSetSoloGuesses(
+        [
+          ...activeGuesses,
+          [
+            randomEntry(remainingGood.slice(0, 10)),
+            true,
+            null,
+          ],
+        ],
+      );
+      return;
+    }
+
+    const boring = options.sort((a, b) => (lexicon[a] > lexicon[b] ? -1 : 1));
     onSetSoloGuesses(
       [
         ...activeGuesses,
         [
-          randomEntry(remaining.slice(0, Math.max(10, Math.ceil(remaining.length * 0.05)))),
+          boring[0],
           true,
           null,
         ],

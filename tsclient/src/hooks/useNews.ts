@@ -14,9 +14,14 @@ interface News {
 
 const news: NewsItem[] = [
   {
-    id: 'user-settings',
-    title: 'Introducing user settings',
-    content: 'Some basic configurations are now available in the menu. More might come...',
+    id: 'better-hints',
+    title: 'Better hints',
+    content: 'The system will avoid using boring words like "are" as hints and make sure the hints given are closer in rank to the user\'s best guess.',
+  },
+  {
+    id: 'header-matches',
+    title: 'Quick scroll to header matches',
+    content: 'When guesses show the "H" header match icon, it can now be clicked to scroll through those header matches only.',
   },
   {
     id: 'mobile-space',
@@ -24,16 +29,19 @@ const news: NewsItem[] = [
     content: 'I really don\'t know much about layouting and mobile things seems to be a can of worms... But there is a new setting that may help.',
   },
   {
-    id: 'header-matches',
-    title: 'Quick scroll to header matches',
-    content: 'When guesses show the "H" header match icon, it can now be clicked to scroll through those header matches only.',
+    id: 'user-settings',
+    title: 'Introducing user settings',
+    content: 'Some basic configurations are now available in the menu. More might come...',
   },
 ];
 
 export default function useNews(): News {
   const [read, setRead] = useStoredValue<string[]>('read-news', []);
 
-  const unreadNews = useMemo(() => news.filter(({ id }) => !read.includes(id)), [read]);
+  const unreadNews = useMemo(
+    () => news.filter(({ id }) => !read.includes(id)),
+    [read],
+  );
   const handleRead = useCallback(() => {
     setRead(news.map(({ id }) => id));
   }, [setRead]);
