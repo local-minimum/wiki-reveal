@@ -24,6 +24,7 @@ import WipeDataDialog from './menu/WipeDataDialog';
 
 interface SiteMenuProps {
   yesterdaysTitle: LexicalizedToken[] | undefined;
+  yesterdaysPage: string | undefined;
   onShowVictory: (() => void) | undefined;
   achievements: AchievementsType;
   onSetAchievements: (achievements: AchievementsType) => void;
@@ -45,13 +46,14 @@ interface SiteMenuProps {
   onJoinCoopGame: (room: string) => void;
   userSettings: UserSettings;
   onChangeUserSettings: (settings: UserSettings) => void;
+  language: string | undefined;
 }
 
 function SiteMenu({
   yesterdaysTitle, onShowVictory, achievements, onSetAchievements, gameId, hideFound, onHideFound,
   end, gameMode, onChangeGameMode, username, onChangeUsername, onCreateCoopGame, connected,
   onConnect, onDisconnect, coopRoom, coopUsers, onJoinCoopGame, coopInRoom, userSettings,
-  onChangeUserSettings,
+  onChangeUserSettings, yesterdaysPage, language,
 }: SiteMenuProps): JSX.Element {
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null);
   const open = Boolean(anchorEl);
@@ -209,6 +211,8 @@ function SiteMenu({
         <RevealYesterday
           onClose={() => setShowYesterdays(false)}
           title={yesterdaysTitle}
+          page={yesterdaysPage}
+          language={language}
           achievements={achievements}
           onSetAchievements={onSetAchievements}
           gameId={gameId}

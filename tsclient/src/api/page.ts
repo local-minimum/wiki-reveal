@@ -28,6 +28,7 @@ interface ResponseJSON {
   start: string;
   end: string;
   yesterdaysTitle: Token[] | undefined;
+  yesterdaysPage: string | undefined;
 }
 
 function lexicalizeToken([word, isHidden]: Token): LexicalizedToken {
@@ -91,6 +92,7 @@ export function getPage(gameMode: GameMode, room: string | null) {
           data.yesterdaysTitle.map(lexicalizeToken),
           freeWordsLookup,
         ),
+        yesterdaysPage: data.yesterdaysPage,
       };
     });
 }

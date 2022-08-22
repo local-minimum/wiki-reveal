@@ -96,7 +96,7 @@ function WikiPageContainer(): JSX.Element {
 
   const {
     page, freeWords, lexicon, gameId, language, pageName, yesterdaysTitle,
-    start, end,
+    yesterdaysPage, start, end,
   } = data ?? { lexicon: {} as Record<string, number> };
 
   const rankings = React.useMemo(() => {
@@ -235,6 +235,7 @@ function WikiPageContainer(): JSX.Element {
       )}
       <SiteMenu
         yesterdaysTitle={yesterdaysTitle}
+        yesterdaysPage={yesterdaysPage}
         onShowVictory={
           victory !== null && !victoryVisible ? () => setVictoryVisible(true) : undefined
         }
@@ -258,6 +259,7 @@ function WikiPageContainer(): JSX.Element {
         onJoinCoopGame={handleJoinCoopGame}
         userSettings={userSettings}
         onChangeUserSettings={setUserSettings}
+        language={language}
       />
       <WikiPage
         isLoading={isLoading}

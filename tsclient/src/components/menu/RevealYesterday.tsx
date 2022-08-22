@@ -1,9 +1,9 @@
-import { faClose } from '@fortawesome/free-solid-svg-icons';
+import { faClose, faLink } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   Box,
   Button,
-  Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography,
+  Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Link, Typography,
 } from '@mui/material';
 import { useSnackbar } from 'notistack';
 import * as React from 'react';
@@ -16,13 +16,15 @@ import { RevealedWord, WordBlock } from '../WikiParagraph';
 interface RevealYesterdayProps {
   onClose: () => void;
   title: LexicalizedToken[] | undefined;
+  page: string | undefined;
   gameId: number | undefined;
   achievements: AchievementsType;
+  language: string | undefined;
   onSetAchievements: (achievements: AchievementsType) => void;
 }
 
 function RevealYesterday({
-  onClose, title, gameId, achievements, onSetAchievements,
+  onClose, title, gameId, achievements, onSetAchievements, page, language = 'en',
 }: RevealYesterdayProps): JSX.Element {
   const { enqueueSnackbar } = useSnackbar();
   const [revealed, setRevealed] = React.useState<boolean[]>(
@@ -61,6 +63,11 @@ function RevealYesterday({
     }
     return setRevealed(newRevealed);
   };
+
+  const allRevealed = revealed.every((v) => v)
+    && revealed.length > 0
+    && page !== undefined
+    && page.length > 0;
 
   return (
     <Dialog open onClose={onClose}>
@@ -104,6 +111,14 @@ function RevealYesterday({
                         );
                       })
                     }
+                    {allRevealed && (
+                    <Link
+                      href={`https://${language}.wikipedia.org/wiki/${page}`}
+                      sx={{ marginLeft: 1 }}
+                    >
+                      <FontAwesomeIcon icon={faLink} />
+                    </Link>
+                    )}
                   </Typography>
                   <Typography variant="caption">
                     Click on blocked out word(s) to reveal them.
