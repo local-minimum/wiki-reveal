@@ -161,7 +161,7 @@ function WikiPage({
   }, []);
 
   React.useEffect(() => {
-    if (focusedWordCounter.current > 0) return;
+    if (focusedWordCounter.current < 0) return;
     setFocusWord([focusWord, 0, headerRequired]);
   }, [focusWord, focusWordIndex, headerRequired]);
 
