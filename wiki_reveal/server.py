@@ -315,6 +315,7 @@ def page(language: str = 'en'):
 
     if current_id > 0:
         yesterday = get_game_page_name(current_id - 1)
+        response_data['yesterdaysPage'] = yesterday
         response_data['yesterdaysTitle'] = tuple(
             tokenize(yesterday.replace('_', ' ')),
         )
