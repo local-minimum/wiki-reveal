@@ -19,6 +19,8 @@ import * as React from 'react';
 import { GameMode } from '../../api/page';
 import { CoopGameType, ExpireType } from '../../hooks/useCoop';
 import usePrevious from '../../hooks/usePrevious';
+import useStoredValue from '../../hooks/useStoredValue';
+import { Guess } from '../Guess';
 import { usersToText } from './usersToText';
 
 interface CoopModeProps {
@@ -26,10 +28,16 @@ interface CoopModeProps {
   username: string | null;
   onChangeUsername: (newName: string | null) => void;
   connected: boolean;
-  onCreateGame: (gameType: CoopGameType, expireType: ExpireType, expire: number) => void;
+  onCreateGame: (
+    gameType: CoopGameType,
+    expireType: ExpireType,
+    expire: number,
+    guesses: string[],
+  ) => void;
   onConnect: () => void;
   onDisconnect: () => void;
   gameMode: GameMode;
+  gameId: number | undefined;
   room: string | null;
   inRoom: boolean;
   users: string[];
@@ -50,9 +58,20 @@ function gameModeAsString(coopGameType: CoopGameType): string {
   }
 }
 
+function remapGameId(
+  gameId: number | undefined,
+  gameMode: GameMode,
+  wantedCoopMode: CoopGameType,
+): number | undefined {
+  if (gameId === undefined) return undefined;
+  if (gameMode === 'today' && wantedCoopMode === 'yesterday') return gameId - 1;
+  if (gameMode === 'yesterday' && wantedCoopMode === 'today') return gameId + 1;
+  return gameId;
+}
+
 function CoopMode({
   onClose, username, onChangeUsername, connected, onCreateGame, gameMode,
-  onConnect, onDisconnect, room, users, onJoin, inRoom, onQuitCoop,
+  onConnect, onDisconnect, room, users, onJoin, inRoom, onQuitCoop, gameId,
 }: CoopModeProps): JSX.Element {
   const theme = useTheme();
   const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
@@ -64,6 +83,11 @@ function CoopMode({
   const [expireType, setExpireType] = React.useState<ExpireType>('today');
   const [expire, setExpire] = React.useState<number>(24);
   const [joinRoom, setJoinRoom] = React.useState<string | null>(null);
+  const [transferGuesses, setTransferGuesses] = React.useState<boolean>(false);
+  const [soloGuesses] = useStoredValue<Guess[]>(
+    `guesses-solo-${remapGameId(gameId, gameMode, createType)}`,
+    [],
+  );
 
   React.useEffect(() => {
     if (connected === false && previousConnected !== connected) onConnect();
@@ -186,11 +210,25 @@ function CoopMode({
               label="Expire in"
             />
           </Stack>
+          <FormGroup>
+            <FormControlLabel
+              checked={createType !== 'random' && transferGuesses}
+              label="Transfer your guesses to the coop game"
+              disabled={createType === 'random'}
+              control={<Switch />}
+              onChange={(_, checked) => setTransferGuesses(checked)}
+            />
+          </FormGroup>
           <Stack direction="row" sx={{ marginTop: 1 }} gap={1}>
             <Button
               variant="contained"
               startIcon={<FontAwesomeIcon icon={faSquarePlus} />}
-              onClick={() => onCreateGame(createType, expireType, expire)}
+              onClick={() => onCreateGame(
+                createType,
+                expireType,
+                expire,
+                createType === 'random' || !transferGuesses ? [] : soloGuesses.map(([lex]) => lex),
+              )}
               disabled={connected !== true}
             >
               Create

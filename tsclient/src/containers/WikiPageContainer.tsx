@@ -36,6 +36,7 @@ function WikiPageContainer(): JSX.Element {
     gameType: CoopGameType,
     expireType: ExpireType,
     expire: number,
+    guesses: string[],
   ) => {
     if (connected !== true) {
       enqueueSnackbar(
@@ -43,7 +44,7 @@ function WikiPageContainer(): JSX.Element {
         { variant: 'error' },
       );
     } else {
-      createGame(gameType, expireType, expire);
+      createGame(gameType, expireType, expire, guesses);
       setGameMode('coop');
     }
   }, [connected, createGame, enqueueSnackbar, setGameMode]);

@@ -27,6 +27,7 @@ interface MessageCreate {
   type: 'CREATE';
   room: string;
   username: string;
+  backlog: Array<[string, string]>,
 }
 
 interface MessageJoinLeave {
@@ -72,7 +73,12 @@ interface Coop {
   room: RoomId | null;
   connect: () => void;
   disconnect: () => void;
-  createGame: (gameType: CoopGameType, expireType: ExpireType, expire: number) => void;
+  createGame: (
+    gameType: CoopGameType,
+    expireType: ExpireType,
+    expire: number,
+    guesses: string[],
+  ) => void;
   join: (room: string) => void;
   leave: () => void;
   username: string | null;
@@ -99,6 +105,7 @@ function useCoop(gameMode: GameMode): Coop {
     gameType: CoopGameType,
     expireType: ExpireType,
     expire: number,
+    guesses: string[],
   ) => {
     socket?.emit(
       'create game',
@@ -107,6 +114,7 @@ function useCoop(gameMode: GameMode): Coop {
         gameType,
         expireType,
         expire,
+        guesses,
       },
     );
   // usernameRef are invariant
@@ -245,6 +253,7 @@ function useCoop(gameMode: GameMode): Coop {
             setUsername(message.username);
           }
           inRoomRef.current = true;
+          guessesRef.current = message.backlog.map(([lex, user]) => [lex, false, user]);
           endTransaction();
           break;
 

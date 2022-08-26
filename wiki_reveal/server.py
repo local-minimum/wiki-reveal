@@ -79,6 +79,7 @@ def coop_on_create(data: dict[str, Any]):
     is_random = data['gameType'] == 'random'
     is_yesterdays = data['gameType'] == 'yesterday'
     ends_today = data['expireType'] == 'today'
+    guesses = data.get('guesses', [])
     game_id = (
         Random(time()).randint(0, get_number_of_options() - 1)
         if is_random
@@ -88,7 +89,7 @@ def coop_on_create(data: dict[str, Any]):
     duration = None if ends_today else data['expire']
     sid = get_sid(request)
     join_room(room)
-    add_coop_game(room, game_id, is_random, sid, username, start, duration)
+    backlog = add_coop_game(room, game_id, sid, username, start, duration, guesses)
 
     logging.info(f'Created a game with id {room} ({game_id}) for {sid}')
 
@@ -97,6 +98,7 @@ def coop_on_create(data: dict[str, Any]):
             "type": 'CREATE',
             "room": room,
             "username": username,
+            "backlog": backlog,
         },
         to=room,
 

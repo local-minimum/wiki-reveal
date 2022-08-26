@@ -36,7 +36,12 @@ interface SiteMenuProps {
   onChangeGameMode: (mode: GameMode) => void;
   username: string | null;
   onChangeUsername: (newName: string | null) => void;
-  onCreateCoopGame: (gameType: CoopGameType, expireType: ExpireType, expire: number) => void;
+  onCreateCoopGame: (
+    gameType: CoopGameType,
+    expireType: ExpireType,
+    expire: number,
+    guesses: string[],
+  ) => void;
   connected: boolean;
   onConnect: () => void;
   onDisconnect: () => void;
@@ -223,6 +228,7 @@ function SiteMenu({
           onClose={() => setShowCoop(false)}
           onChangeUsername={onChangeUsername}
           username={username}
+          gameId={gameId}
           onCreateGame={onCreateCoopGame}
           connected={connected}
           gameMode={gameMode}

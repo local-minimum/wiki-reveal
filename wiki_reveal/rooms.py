@@ -71,13 +71,14 @@ def coop_game_is_full(room: str) -> bool:
 def add_coop_game(
     room: str,
     game_id: int,
-    use_rng_seed: bool,
     sid: SID,
     username: str,
     start: Optional[datetime] = None,
-    duration: Optional[int] = None
-):
+    duration: Optional[int] = None,
+    lexes: list[str] = [],
+) -> list[GUESS]:
     start = datetime.now(tz=timezone.utc) if start is None else start
+    guesses = [[lex, username] for lex in lexes]
     ROOMS[room] = RoomData(
         start=start,
         end=(
@@ -87,8 +88,9 @@ def add_coop_game(
         ),
         game_id=game_id,
         users={sid: username},
-        guesses=[],
+        guesses=guesses,
     )
+    return guesses
 
 
 def add_coop_user(
