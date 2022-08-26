@@ -37,6 +37,19 @@ interface CoopModeProps {
   onQuitCoop: () => void;
 }
 
+function gameModeAsString(coopGameType: CoopGameType): string {
+  switch (coopGameType) {
+    case 'random':
+      return 'Random';
+    case 'today':
+      return 'Today\'s';
+    case 'yesterday':
+      return 'Yesterday\'s';
+    default:
+      return 'Unknown Mode';
+  }
+}
+
 function CoopMode({
   onClose, username, onChangeUsername, connected, onCreateGame, gameMode,
   onConnect, onDisconnect, room, users, onJoin, inRoom, onQuitCoop,
@@ -47,7 +60,7 @@ function CoopMode({
   const previousConnected = usePrevious(connected);
   const [waitedAWhile, setWaitedAWhile] = React.useState<boolean>(false);
   const [newName, setNewName] = React.useState<string>('');
-  const [createType, setCreateType] = React.useState<CoopGameType>('today');
+  const [createType, setCreateType] = React.useState<CoopGameType>('random');
   const [expireType, setExpireType] = React.useState<ExpireType>('today');
   const [expire, setExpire] = React.useState<number>(24);
   const [joinRoom, setJoinRoom] = React.useState<string | null>(null);
@@ -65,6 +78,8 @@ function CoopMode({
     onClose();
   };
 
+  const liveInCoopRoom = room !== null && inRoom && gameMode === 'coop';
+
   return (
     <Dialog
       open
@@ -79,29 +94,6 @@ function CoopMode({
               If the problem persist, then you are probably running an extremely old
               browser or something is blocking websockets.
             </Alert>
-          )}
-          {room !== null && inRoom && gameMode === 'coop' && (
-            <Typography gutterBottom>
-              You are in the COOP game
-              {' '}
-              <strong>{room}</strong>
-              <IconButton
-                title="Copy room ID to clipboard."
-                onClick={() => {
-                  enqueueSnackbar('Room ID copied to clipboard', { variant: 'info' });
-                  const url = `${window.location.href.split('?')[0]}?coop=${room}`;
-                  navigator.clipboard.writeText(`Join my Coop Wiki Reveal game: ${url}`);
-                }}
-                size="small"
-              >
-                <FontAwesomeIcon icon={faCopy} />
-              </IconButton>
-              {' '}
-              together with
-              {' '}
-              {usersToText(users.filter((user) => user !== username))}
-              .
-            </Typography>
           )}
           <Typography gutterBottom>
             {
@@ -165,8 +157,9 @@ function CoopMode({
               value={createType}
               onChange={({ target: { value } }) => setCreateType(value as CoopGameType)}
             >
-              <FormControlLabel value="today" control={<Radio />} label="Today's" />
               <FormControlLabel value="random" control={<Radio />} label="Random" />
+              <FormControlLabel value="yesterday" control={<Radio />} label="Yesterday's" />
+              <FormControlLabel value="today" control={<Radio />} label="Today's" />
             </RadioGroup>
           </FormControl>
           <Stack direction={isSmall ? 'column' : 'row'} gap={1}>
@@ -193,15 +186,45 @@ function CoopMode({
               label="Expire in"
             />
           </Stack>
-          <Button
-            variant="contained"
-            startIcon={<FontAwesomeIcon icon={faSquarePlus} />}
-            onClick={() => onCreateGame(createType, expireType, expire)}
-            disabled={connected !== true}
-            sx={{ marginTop: 1 }}
-          >
-            Create
-          </Button>
+          <Stack direction="row" sx={{ marginTop: 1 }} gap={1}>
+            <Button
+              variant="contained"
+              startIcon={<FontAwesomeIcon icon={faSquarePlus} />}
+              onClick={() => onCreateGame(createType, expireType, expire)}
+              disabled={connected !== true}
+            >
+              Create
+            </Button>
+            {liveInCoopRoom && (
+              <Button
+                title="Copy room ID to clipboard."
+                onClick={() => {
+                  enqueueSnackbar('Room ID copied to clipboard', { variant: 'info' });
+                  const url = `${window.location.href.split('?')[0]}?coop=${room}`;
+                  navigator.clipboard.writeText(
+                    `Join my Coop Wiki Reveal game (${gameModeAsString(createType)}): ${url}`,
+                  );
+                }}
+                variant="contained"
+                size="small"
+                startIcon={<FontAwesomeIcon icon={faCopy} />}
+              >
+                Copy invite link
+              </Button>
+            )}
+          </Stack>
+          {liveInCoopRoom && (
+            <Typography variant="caption" gutterBottom>
+              You are in the COOP game
+              {' '}
+              {room}
+              {' '}
+              together with
+              {' '}
+              {usersToText(users.filter((user) => user !== username))}
+              .
+            </Typography>
+          )}
           <Typography variant="h6" sx={{ marginTop: 2, marginBottom: 1 }}>
             Join existing COOP room
           </Typography>

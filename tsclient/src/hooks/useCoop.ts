@@ -10,7 +10,7 @@ import useStoredRef from './useStoredRef';
 import useTransaction from './useTransaction';
 
 export type ExpireType = 'today' | 'custom';
-export type CoopGameType = 'today' | 'random';
+export type CoopGameType = 'today' | 'yesterday' | 'random';
 
 interface MessageRename {
   type: 'RENAME';

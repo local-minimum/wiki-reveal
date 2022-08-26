@@ -80,9 +80,9 @@ def coop_on_create(data: dict[str, Any]):
     is_yesterdays = data['gameType'] == 'yesterday'
     ends_today = data['expireType'] == 'today'
     game_id = (
-        max(get_game_id() - (0 if is_yesterdays else 1), 0)
+        Random(time()).randint(0, get_number_of_options() - 1)
         if is_random
-        else Random(time()).randint(0, get_number_of_options() - 1)
+        else max(get_game_id() - (1 if is_yesterdays else 0), 0)
     )
     start: Optional[datetime] = None if is_random else get_start_of_current()
     duration = None if ends_today else data['expire']

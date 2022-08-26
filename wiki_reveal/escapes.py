@@ -10,6 +10,7 @@ ESCAPES = {
     '±': '\\pm',
     '≈': '\\approx',
     '∞': '\\infty',
+    '⋅': '\\cdot',
     'Α': '\\Alpha',
     'α': '\\alpha',
     'Β': '\\Beta',
