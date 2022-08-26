@@ -76,18 +76,19 @@ def coop_on_create(data: dict[str, Any]):
     clear_old_coop_games()
     room = token_hex(16)
     username = get_or(data, 'username', generate_name())
-    isToday = data['gameType'] == 'today'
-    endsToday = data['expireType'] == 'today'
+    is_random = data['gameType'] == 'random'
+    is_yesterdays = data['gameType'] == 'yesterday'
+    ends_today = data['expireType'] == 'today'
     game_id = (
-        get_game_id()
-        if isToday
+        max(get_game_id() - (0 if is_yesterdays else 1), 0)
+        if is_random
         else Random(time()).randint(0, get_number_of_options() - 1)
     )
-    start: Optional[datetime] = get_start_of_current() if isToday else None
-    duration = None if endsToday else data['expire']
+    start: Optional[datetime] = None if is_random else get_start_of_current()
+    duration = None if ends_today else data['expire']
     sid = get_sid(request)
     join_room(room)
-    add_coop_game(room, game_id, not isToday, sid, username, start, duration)
+    add_coop_game(room, game_id, is_random, sid, username, start, duration)
 
     logging.info(f'Created a game with id {room} ({game_id}) for {sid}')
 

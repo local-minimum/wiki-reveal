@@ -1,7 +1,8 @@
-from collections.abc import Generator
+from collections.abc import Iterator
 from .escapes import ESCAPES
 
-def find_tags(text: str) -> Generator[tuple[str, int]]:
+
+def find_tags(text: str) -> Iterator[tuple[str, int]]:
     offset = 0
     while (idx := text.find('{\\')) >= 0:
         depth = 1
