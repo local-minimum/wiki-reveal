@@ -14,6 +14,11 @@ interface News {
 
 const news: NewsItem[] = [
   {
+    id: 'coop-updates',
+    title: 'Coop Updates',
+    content: 'It is now possible to invite others to yesterday\'s game too. It is also possible to transfer your guesses so far into the coop games.',
+  },
+  {
     id: 'better-hints',
     title: 'Better hints',
     content: 'The system will avoid using boring words like "are" as hints and make sure the hints given are closer in rank to the user\'s best guess.',
