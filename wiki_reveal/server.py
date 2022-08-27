@@ -298,7 +298,7 @@ VISITORS = {
 
 
 def add_visitor(ip: str, is_coop: boolean, game_id: int = 0):
-    digest = sha256(ip.encode())
+    digest = sha256(ip.encode()).hexdigest()
     if is_coop:
         VISITORS['coop'].add(digest)
     else:
@@ -361,19 +361,13 @@ def coop_room(room: str):
     return jsonify(response_data)
 
 
-@app.get('/api/coop')
-def coop_stats():
-    return jsonify({
-        "rooms": active_rooms()
-    })
-
-
 @app.get('/api/stats')
 def stats():
     return jsonify({
         'info': 'Stats since last reboot',
         'todayIs': get_game_id(),
         'coop': len(VISITORS['coop']),
+        'coopActiveGames': active_rooms(),
         'solo': {
             game_id: len(users) for game_id, users in VISITORS['solo'].items()
         },
