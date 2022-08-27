@@ -24,7 +24,7 @@ function WikiPageContainer(): JSX.Element {
   const { enqueueSnackbar } = useSnackbar();
   const [gameMode, setGameMode] = useStoredValue<GameMode>('game-mode', 'today');
   const prevGameMode = usePrevious(gameMode);
-  const [staleTime, setStaleTime] = React.useState<number>(Infinity);
+  const [staleTime, setStaleTime] = React.useState<number>(-Infinity);
 
   const {
     room, connected, connect, createGame, username, renameMe, disconnect, users, guess,
@@ -84,6 +84,14 @@ function WikiPageContainer(): JSX.Element {
       retry: gameMode !== 'coop' && room !== null,
     },
   );
+
+  React.useEffect(() => {
+    if (Number.isFinite(staleTime)) {
+      const timeout = setTimeout(() => setStaleTime(-Infinity), staleTime);
+      return () => clearTimeout(timeout);
+    }
+    return undefined;
+  }, [staleTime]);
 
   React.useEffect(() => {
     if (gameMode === 'yesterday') {

@@ -1,11 +1,14 @@
+from collections import defaultdict
 from datetime import datetime
 from functools import lru_cache
+from hashlib import sha256
 from http import HTTPStatus
 import logging
 import os
 from random import Random
 from secrets import token_hex, token_urlsafe
 from time import time
+from xmlrpc.client import boolean
 from flask_socketio import (  # type: ignore
     SocketIO, join_room, leave_room, send, rooms,
 )
@@ -288,6 +291,20 @@ def get_page_payload(
     }
 
 
+VISITORS = {
+    'solo': defaultdict(set),
+    'coop': set()
+}
+
+
+def add_visitor(ip: str, is_coop: boolean, game_id: int = 0):
+    digest = sha256(ip.encode())
+    if is_coop:
+        VISITORS['coop'].add(digest)
+    else:
+        VISITORS['solo'][game_id].add(digest)
+
+
 @app.get('/api/yesterday')
 @app.get('/api/yesterday/<language>')
 def yesterday(language: str = 'en'):
@@ -297,6 +314,7 @@ def yesterday(language: str = 'en'):
             'Request for yesterday\'s game though today is the first game',
         )
         abort(HTTPStatus.BAD_REQUEST)
+    add_visitor(request.remote_addr, False, current_id)
 
     logging.info(
         f'Request for yesterday\'s game with id {current_id} ({language})',
@@ -313,6 +331,7 @@ def yesterday(language: str = 'en'):
 def page(language: str = 'en'):
     current_id = get_game_id()
     logging.info(f'Request for game with id {current_id} ({language})')
+    add_visitor(request.remote_addr, False, current_id)
 
     response_data = get_page_payload(language, current_id)
 
@@ -332,6 +351,7 @@ def coop_room(room: str):
         start, override_end, game_id = get_room_data(room)
     except CoopGameDoesNotExistError:
         abort(HTTPStatus.BAD_REQUEST)
+    add_visitor(request.remote_addr, True)
 
     response_data = get_page_payload('en', game_id)
     response_data['start'] = start.isoformat().replace(' ', 'T')
@@ -345,4 +365,16 @@ def coop_room(room: str):
 def coop_stats():
     return jsonify({
         "rooms": active_rooms()
+    })
+
+
+@app.get('/api/stats')
+def stats():
+    return jsonify({
+        'info': 'Stats since last reboot',
+        'todayIs': get_game_id(),
+        'coop': len(VISITORS['coop']),
+        'solo': {
+            game_id: len(users) for game_id, users in VISITORS['solo'].items()
+        },
     })
