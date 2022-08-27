@@ -34,10 +34,13 @@ function InfoDialog({ onClose }: InfoDialogProps): JSX.Element {
           contribute to the project.
         </DialogContentText>
         <DialogContentText>
-          This site does not track you in any way except game related
-          things stored locally in your browser.
-          Neither does it sell or give away information about its users,
-          at least not by intent.
+          This site stores user settings and your guesses locally in your browser.
+          You can at any time wipe this data from the game menu, but it will clear
+          your current game, your victories and achievements.
+          We do record a hashed version of your IP as a way to track number of users
+          to the site per day and it is recorded in the server logs for security and
+          abuse prevention, but no more tracking is performed.
+          We do not sell or give away information about its users.
         </DialogContentText>
       </DialogContent>
       <DialogActions>
