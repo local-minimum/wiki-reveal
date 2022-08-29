@@ -83,6 +83,7 @@ def coop_on_create(data: dict[str, Any]):
     is_yesterdays = data['gameType'] == 'yesterday'
     ends_today = data['expireType'] == 'today'
     guesses = data.get('guesses', [])
+    settings = data.get('settings', {})
     game_id = (
         Random(time()).randint(0, get_number_of_options() - 1)
         if is_random
@@ -92,7 +93,9 @@ def coop_on_create(data: dict[str, Any]):
     duration = None if ends_today else data['expire']
     sid = get_sid(request)
     join_room(room)
-    backlog = add_coop_game(room, game_id, sid, username, start, duration, guesses)
+    backlog = add_coop_game(
+        room, game_id, sid, username, start, duration, guesses, settings,
+    )
 
     logging.info(f'Created a game with id {room} ({game_id}) for {sid}')
 
@@ -102,6 +105,7 @@ def coop_on_create(data: dict[str, Any]):
             "room": room,
             "username": username,
             "backlog": backlog,
+            "settings": settings,
         },
         to=room,
 
@@ -113,9 +117,10 @@ def coop_on_guess(data: dict[str, Any]):
     room = data['room']
     username = data['username']
     lex = data['lex']
+    is_hint = data['isHint']
 
     try:
-        idx = add_coop_guess(room, username, lex)
+        idx = add_coop_guess(room, username, lex, is_hint)
     except CoopGameDoesNotExistError:
         logging.error(f'Someone tried to guess "{lex}" in room {room}')
         abort(HTTPStatus.BAD_REQUEST)
@@ -127,6 +132,7 @@ def coop_on_guess(data: dict[str, Any]):
                 "username": username,
                 "lex": lex,
                 "index": idx,
+                "isHint": is_hint,
             },
             to=room,
 
@@ -187,7 +193,7 @@ def coop_on_join(data: dict[str, Any]):
             to=sid,
         )
     else:
-        users, backlog = add_coop_user(room, sid, username)
+        users, backlog, settings = add_coop_user(room, sid, username)
         send(
             {
                 "type": 'JOIN',
@@ -214,6 +220,7 @@ def coop_on_join(data: dict[str, Any]):
                 "room": room,
                 "users": users,
                 "backlog": backlog,
+                "settings": settings,
             },
             to=sid
         )

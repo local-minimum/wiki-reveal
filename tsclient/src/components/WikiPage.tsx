@@ -25,6 +25,7 @@ import { VictoryType } from './VictoryType';
 import useRevealedPage from '../hooks/useRevealedPage';
 import { UserSettings } from './menu/UserOptions';
 import { BORING_HINTS } from '../utils/hints';
+import { CoopRoomSettings } from '../hooks/useCoop';
 
 function randomEntry<T>(arr: T[]): T {
   return arr[Math.min(Math.floor(Math.random() * arr.length), arr.length - 1)];
@@ -50,7 +51,7 @@ interface WikiPageProps {
   gameMode: GameMode;
   username: string | null;
   coopUsers: string[];
-  onCoopGuess: (lex: string) => void;
+  onCoopGuess: (lex: string, isHint: boolean) => void;
   coopGuesses: Guess[];
   coopRoom: RoomId | null;
   victory: VictoryType | null;
@@ -62,6 +63,7 @@ interface WikiPageProps {
   hideWords: string[];
   unmasked: boolean;
   userSettings: UserSettings;
+  coopRoomSettings: CoopRoomSettings | null;
 }
 
 function calculateProgress(
@@ -101,7 +103,7 @@ function WikiPage({
   isLoading, isError, freeWords, lexicon, gameId, language, pageName, page,
   titleLexes, headingLexes, start, end, gameMode,
   rankings, summaryToReveal, username,
-  coopUsers, coopGuesses, onCoopGuess, unmasked, coopRoom,
+  coopUsers, coopGuesses, onCoopGuess, unmasked, coopRoom, coopRoomSettings,
   victory, onSetVictory, userSettings,
   achievements, onSetAchievements, activeGuesses, onSetSoloGuesses, hideWords,
 }: WikiPageProps): JSX.Element {
@@ -255,7 +257,7 @@ function WikiPage({
       };
 
       if (gameMode === 'coop') {
-        onCoopGuess(entry);
+        onCoopGuess(entry, false);
         if (justWon) {
           onSetVictory(newVictory);
 
@@ -355,14 +357,12 @@ function WikiPage({
       )
       .sort((a, b) => (lexicon[a] > lexicon[b] ? 1 : -1));
     if (worthy.length > 0) {
-      onSetSoloGuesses([
-        ...activeGuesses,
-        [
-          randomEntry(worthy.slice(0, 10)),
-          true,
-          null,
-        ],
-      ]);
+      const word = randomEntry(worthy.slice(0, 10));
+      if (gameMode === 'coop') {
+        onCoopGuess(word, true);
+      } else {
+        onSetSoloGuesses([...activeGuesses, [word, true, null]]);
+      }
       return;
     }
 
@@ -371,31 +371,24 @@ function WikiPage({
       .sort((a, b) => (lexicon[a] > lexicon[b] ? -1 : 1));
 
     if (remainingGood.length > 0) {
-      onSetSoloGuesses(
-        [
-          ...activeGuesses,
-          [
-            randomEntry(remainingGood.slice(0, 10)),
-            true,
-            null,
-          ],
-        ],
-      );
+      const word = randomEntry(remainingGood.slice(0, 10));
+      if (gameMode === 'coop') {
+        onCoopGuess(word, true);
+      } else {
+        onSetSoloGuesses([...activeGuesses, [word, true, null]]);
+      }
       return;
     }
 
-    const boring = options.sort((a, b) => (lexicon[a] > lexicon[b] ? -1 : 1));
-    onSetSoloGuesses(
-      [
-        ...activeGuesses,
-        [
-          boring[0],
-          true,
-          null,
-        ],
-      ],
-    );
-  }, [freeWords, activeGuesses, lexicon, onSetSoloGuesses, title, boringHints]);
+    const [boring] = options.sort((a, b) => (lexicon[a] > lexicon[b] ? -1 : 1));
+    if (gameMode === 'coop') {
+      onCoopGuess(boring, true);
+    } else {
+      onSetSoloGuesses([...activeGuesses, [boring, true, null]]);
+    }
+  }, [
+    activeGuesses, lexicon, gameMode, freeWords, title, boringHints, onCoopGuess, onSetSoloGuesses,
+  ]);
 
   const progress = useMemo(
     () => calculateProgress(lexicon, freeWords, activeGuesses),
@@ -514,6 +507,7 @@ function WikiPage({
             isCoop={gameMode === 'coop'}
             latteralPad
             userSettings={userSettings}
+            allowCoopHints={coopRoomSettings?.allowHints ?? false}
           />
         </Box>
       </>
@@ -621,6 +615,7 @@ function WikiPage({
             onAddHint={addHint}
             isCoop={gameMode === 'coop'}
             userSettings={userSettings}
+            allowCoopHints={coopRoomSettings?.allowHints ?? false}
           />
         </Grid>
       </Grid>

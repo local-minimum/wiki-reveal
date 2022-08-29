@@ -7,7 +7,7 @@ import WikiPage from '../components/WikiPage';
 import { Section } from '../types/wiki';
 import uniq from '../utils/uniq';
 import useStoredValue from '../hooks/useStoredValue';
-import useCoop, { CoopGameType, ExpireType } from '../hooks/useCoop';
+import useCoop, { CoopGameType, CoopRoomSettings, ExpireType } from '../hooks/useCoop';
 import { VictoryType } from '../components/VictoryType';
 import { AchievementsType } from '../utils/achievements';
 import { Guess } from '../components/Guess';
@@ -30,13 +30,15 @@ function WikiPageContainer(): JSX.Element {
     room, connected, connect, createGame, username, renameMe, disconnect, users, guess,
     guesses: coopGuesses,
     join, inRoom,
+    roomSettings,
   } = useCoop(gameMode);
 
   const handleCreateCoopGame = React.useCallback((
     gameType: CoopGameType,
     expireType: ExpireType,
     expire: number,
-    guesses: string[],
+    guesses: Array<[string, boolean]>,
+    settings: CoopRoomSettings,
   ) => {
     if (connected !== true) {
       enqueueSnackbar(
@@ -44,7 +46,7 @@ function WikiPageContainer(): JSX.Element {
         { variant: 'error' },
       );
     } else {
-      createGame(gameType, expireType, expire, guesses);
+      createGame(gameType, expireType, expire, guesses, settings);
       setGameMode('coop');
     }
   }, [connected, createGame, enqueueSnackbar, setGameMode]);
@@ -300,6 +302,7 @@ function WikiPageContainer(): JSX.Element {
         activeGuesses={activeGuesses}
         unmasked={unmasked === gameId}
         userSettings={userSettings}
+        coopRoomSettings={roomSettings}
       />
     </>
   );

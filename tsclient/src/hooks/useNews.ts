@@ -14,6 +14,21 @@ interface News {
 
 const news: NewsItem[] = [
   {
+    id: 'hints-coop',
+    title: 'Hints in Coop',
+    content: 'It is now possible when creating a coop-game to allow the use of hints.',
+  },
+  {
+    id: 'hints-settings',
+    title: 'Hints options',
+    content: 'It is now possible to include boring words in hints given from the user settings.',
+  },
+  {
+    id: 'reveal-words',
+    title: 'Revealing the article',
+    content: 'Upon revealing the article after completing it, the words not guessed on are also visible in the guess list.',
+  },
+  {
     id: 'coop-updates',
     title: 'Coop Updates',
     content: 'It is now possible to invite others to yesterday\'s game too. It is also possible to transfer your guesses so far into the coop games.',

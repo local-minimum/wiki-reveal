@@ -9,9 +9,9 @@ from wiki_reveal.exceptions import CoopGameDoesNotExistError
 from wiki_reveal.game_id import SECONDS_PER_DAY, get_end_of_current
 
 SID = str
-GUESS = list[str]
+GUESS = list[Any]
 ROOM_ATTRIBUTE = Literal[
-    'start', 'end', 'game_id', 'users', 'guesses',
+    'start', 'end', 'game_id', 'users', 'guesses', 'settings'
 ]
 
 
@@ -22,6 +22,7 @@ class RoomData:
     game_id: int
     users: dict[SID, str]
     guesses: list[GUESS]
+    settings: dict[str, Any]
 
 
 ROOMS: dict[str, RoomData] = {}
@@ -75,10 +76,11 @@ def add_coop_game(
     username: str,
     start: Optional[datetime] = None,
     duration: Optional[int] = None,
-    lexes: list[str] = [],
+    lexes: list[tuple[str, bool]] = [],
+    settings: Optional[dict[str, Any]] = None
 ) -> list[GUESS]:
     start = datetime.now(tz=timezone.utc) if start is None else start
-    guesses = [[lex, username] for lex in lexes]
+    guesses = [[lex, username, is_hint] for lex, is_hint in lexes]
     ROOMS[room] = RoomData(
         start=start,
         end=(
@@ -89,6 +91,7 @@ def add_coop_game(
         game_id=game_id,
         users={sid: username},
         guesses=guesses,
+        settings=settings if settings else {},
     )
     return guesses
 
@@ -97,14 +100,14 @@ def add_coop_user(
     room: str,
     sid: SID,
     username: str,
-) -> tuple[list[str], list[GUESS]]:
+) -> tuple[list[str], list[GUESS], dict[str, Any]]:
     if not coop_game_exists(room):
         logging.error('Attempted to add user to a non-existing rom')
-        return [], []
+        return [], [], {}
 
-    users, guesses = cast(
-        tuple[dict[SID, str], list[GUESS]],
-        dest(ROOMS[room], 'users', 'guesses'),
+    users, guesses, settings = cast(
+        tuple[dict[SID, str], list[GUESS], dict[str, Any]],
+        dest(ROOMS[room], 'users', 'guesses', 'settings'),
     )
 
     # Remove others with same name
@@ -113,7 +116,7 @@ def add_coop_user(
             del users[key]
 
     users[sid] = username
-    return list(users.values()), guesses
+    return list(users.values()), guesses, settings
 
 
 def remove_coop_user(room: str, sid: SID) -> tuple[Optional[str], list[str]]:
@@ -145,7 +148,7 @@ def rename_user(room: str, sid: SID, username: str):
 
     if old_name is not None:
         for guess in guesses:
-            ____, user = guess
+            _, user, __ = guess
             if user == old_name:
                 guess[1] = username
 
@@ -162,13 +165,13 @@ def get_room_data(
     )
 
 
-def add_coop_guess(room: str, username: str, lex: str) -> int:
+def add_coop_guess(room: str, username: str, lex: str, is_hint: bool) -> int:
     if not coop_game_exists(room):
         raise CoopGameDoesNotExistError
 
     guesses = ROOMS[room].guesses
-    if any(guess == lex for guess, _ in guesses):
+    if any(guess == lex for guess, _, __ in guesses):
         return -1
 
-    guesses.append([lex, username])
+    guesses.append([lex, username, is_hint])
     return len(guesses) - 1

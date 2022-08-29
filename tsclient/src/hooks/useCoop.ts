@@ -12,6 +12,10 @@ import useTransaction from './useTransaction';
 export type ExpireType = 'today' | 'custom';
 export type CoopGameType = 'today' | 'yesterday' | 'random';
 
+export interface CoopRoomSettings {
+  allowHints: boolean;
+}
+
 interface MessageRename {
   type: 'RENAME';
   from: string | null;
@@ -27,7 +31,8 @@ interface MessageCreate {
   type: 'CREATE';
   room: string;
   username: string;
-  backlog: Array<[string, string]>,
+  backlog: Array<[string, string, boolean]>,
+  settings: CoopRoomSettings,
 }
 
 interface MessageJoinLeave {
@@ -44,7 +49,8 @@ interface MessageJoinMe {
   type: 'JOIN-ME';
   room: string;
   users: string[];
-  backlog: Array<[string, string]>,
+  backlog: Array<[string, string, boolean]>,
+  settings: CoopRoomSettings,
 }
 
 interface MessageJoinFail {
@@ -57,6 +63,7 @@ interface MessageGuess {
   lex: string;
   username: string;
   index: number;
+  isHint: boolean;
 }
 
 type Message = MessageCreate
@@ -77,16 +84,18 @@ interface Coop {
     gameType: CoopGameType,
     expireType: ExpireType,
     expire: number,
-    guesses: string[],
+    guesses: Array<[string, boolean]>,
+    settings: CoopRoomSettings,
   ) => void;
   join: (room: string) => void;
   leave: () => void;
   username: string | null;
   renameMe: (newName: string | null) => void;
   users: string[],
-  guess: (lex: string) => void;
+  guess: (lex: string, isHint: boolean) => void;
   guesses: Guess[];
   inRoom: boolean;
+  roomSettings: CoopRoomSettings | null,
 }
 
 function useCoop(gameMode: GameMode): Coop {
@@ -97,6 +106,7 @@ function useCoop(gameMode: GameMode): Coop {
   const usersRef = useRef<string[] | null>(null);
   const guessesRef = useRef<Guess[]>([]);
   const connectedRef = useRef<boolean>(false);
+  const roomSettingsRef = useRef<CoopRoomSettings | null>(null);
   const [usernameRef, setUsername] = useStoredRef<string | null>('coop-name', null);
   const [socket, setSocket] = useState<Socket | null>(null);
   const [roomRef, setRoom] = useStoredRef<RoomId | null>('coop-room', null);
@@ -105,7 +115,8 @@ function useCoop(gameMode: GameMode): Coop {
     gameType: CoopGameType,
     expireType: ExpireType,
     expire: number,
-    guesses: string[],
+    guesses: Array<[string, boolean]>,
+    settings: CoopRoomSettings,
   ) => {
     socket?.emit(
       'create game',
@@ -115,16 +126,22 @@ function useCoop(gameMode: GameMode): Coop {
         expireType,
         expire,
         guesses,
+        settings,
       },
     );
   // usernameRef are invariant
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [socket]);
 
-  const guess = useCallback((lex: string) => {
+  const guess = useCallback((lex: string, isHint: boolean) => {
     socket?.emit(
       'guess',
-      { room: roomRef.current, username: usernameRef.current, lex },
+      {
+        room: roomRef.current,
+        username: usernameRef.current,
+        lex,
+        isHint,
+      },
     );
   // roomRef, usernameRef are invariant
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -244,7 +261,6 @@ function useCoop(gameMode: GameMode): Coop {
           enqueueSnackbar('Created new COOP game', { variant: 'info' });
           setRoom(message.room);
           usersRef.current = [message.username];
-          guessesRef.current = [];
           if (usernameRef.current !== message.username) {
             enqueueSnackbar(
               `You are known as '${message.username}'`,
@@ -253,7 +269,8 @@ function useCoop(gameMode: GameMode): Coop {
             setUsername(message.username);
           }
           inRoomRef.current = true;
-          guessesRef.current = message.backlog.map(([lex, user]) => [lex, false, user]);
+          guessesRef.current = message.backlog.map(([lex, user, isHint]) => [lex, isHint, user]);
+          roomSettingsRef.current = message.settings;
           endTransaction();
           break;
 
@@ -294,7 +311,8 @@ function useCoop(gameMode: GameMode): Coop {
           setRoom(message.room);
           usersRef.current = message.users;
           inRoomRef.current = true;
-          guessesRef.current = message.backlog.map(([lex, user]) => [lex, false, user]);
+          guessesRef.current = message.backlog.map(([lex, user, isHint]) => [lex, isHint, user]);
+          roomSettingsRef.current = message.settings;
           endTransaction();
           break;
 
@@ -329,7 +347,7 @@ function useCoop(gameMode: GameMode): Coop {
             ...new Array(Math.max(message.index + 1, guessesRef.current.length)).keys(),
           ].map((idx) => (
             idx === message.index
-              ? [message.lex, false, message.username]
+              ? [message.lex, message.isHint, message.username]
               : (guessesRef.current[idx] ?? ['', false, null])
           ));
           endTransaction();
@@ -376,6 +394,7 @@ function useCoop(gameMode: GameMode): Coop {
     guess,
     guesses: guessesRef.current,
     inRoom: inRoomRef.current && roomRef.current !== null,
+    roomSettings: roomSettingsRef.current,
   };
 }
 

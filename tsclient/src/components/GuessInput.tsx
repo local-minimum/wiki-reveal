@@ -17,6 +17,7 @@ interface GuessInputProps {
   onAddGuess: (word: string) => void;
   onAddHint: () => void;
   isCoop: boolean;
+  allowCoopHints: boolean;
   compact?: boolean;
   latteralPad?: boolean;
   userSettings: UserSettings;
@@ -32,7 +33,7 @@ function labelText(isFreeWord: boolean | undefined, hasIllegal: boolean): string
 
 function GuessInput({
   isLoading, isError, isDone, unmasked, hints, onAddGuess, onAddHint, freeWords,
-  isCoop, userSettings, compact = false, latteralPad = false,
+  isCoop, userSettings, compact = false, latteralPad = false, allowCoopHints,
 }: GuessInputProps): JSX.Element {
   const { allowHints } = userSettings;
   const [currentGuess, setCurrentGuess] = React.useState('');
@@ -85,7 +86,7 @@ function GuessInput({
           </IconButton>
         )}
       </Tooltip>
-      {!isCoop && allowHints && (
+      {!(isCoop && !allowCoopHints) && allowHints && (
         <Tooltip title="Get a word for free that is not in the main header">
           {isExtraLarge ? (
             <Button

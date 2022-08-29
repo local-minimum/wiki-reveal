@@ -17,7 +17,7 @@ import {
 import { useSnackbar } from 'notistack';
 import * as React from 'react';
 import { GameMode } from '../../api/page';
-import { CoopGameType, ExpireType } from '../../hooks/useCoop';
+import { CoopGameType, CoopRoomSettings, ExpireType } from '../../hooks/useCoop';
 import usePrevious from '../../hooks/usePrevious';
 import useStoredValue from '../../hooks/useStoredValue';
 import { Guess } from '../Guess';
@@ -32,7 +32,8 @@ interface CoopModeProps {
     gameType: CoopGameType,
     expireType: ExpireType,
     expire: number,
-    guesses: string[],
+    guesses: Array<[string, boolean]>,
+    settings: CoopRoomSettings,
   ) => void;
   onConnect: () => void;
   onDisconnect: () => void;
@@ -84,6 +85,7 @@ function CoopMode({
   const [expire, setExpire] = React.useState<number>(24);
   const [joinRoom, setJoinRoom] = React.useState<string | null>(null);
   const [transferGuesses, setTransferGuesses] = React.useState<boolean>(false);
+  const [allowHints, setAllowHints] = React.useState<boolean>(false);
   const [soloGuesses] = useStoredValue<Guess[]>(
     `guesses-solo-${remapGameId(gameId, gameMode, createType)}`,
     [],
@@ -219,6 +221,22 @@ function CoopMode({
               onChange={(_, checked) => setTransferGuesses(checked)}
             />
           </FormGroup>
+          <Typography variant="caption">
+            When transferring guesses, it will always include hints,
+            even if no further hints are allowed in the coop game.
+          </Typography>
+          <FormGroup>
+            <FormControlLabel
+              checked={allowHints}
+              label="Allow the use of hints in the coop game"
+              control={<Switch />}
+              onChange={(_, checked) => setAllowHints(checked)}
+            />
+          </FormGroup>
+          <Typography variant="caption">
+            Hints are still only visible to the user if they have
+            enabled hints in the settings.
+          </Typography>
           <Stack direction="row" sx={{ marginTop: 1 }} gap={1}>
             <Button
               variant="contained"
@@ -227,7 +245,12 @@ function CoopMode({
                 createType,
                 expireType,
                 expire,
-                createType === 'random' || !transferGuesses ? [] : soloGuesses.map(([lex]) => lex),
+                createType === 'random' || !transferGuesses
+                  ? []
+                  : soloGuesses.map(([lex, isHint]) => [lex, isHint]),
+                {
+                  allowHints,
+                },
               )}
               disabled={connected !== true}
             >

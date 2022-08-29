@@ -9,7 +9,7 @@ import {
 } from '@mui/material';
 import * as React from 'react';
 import { GameMode } from '../api/page';
-import { CoopGameType, ExpireType } from '../hooks/useCoop';
+import { CoopGameType, CoopRoomSettings, ExpireType } from '../hooks/useCoop';
 import { LexicalizedToken } from '../types/wiki';
 import { AchievementsType } from '../utils/achievements';
 import Achievements from './menu/Achievements';
@@ -40,7 +40,8 @@ interface SiteMenuProps {
     gameType: CoopGameType,
     expireType: ExpireType,
     expire: number,
-    guesses: string[],
+    guesses: Array<[string, boolean]>,
+    settings: CoopRoomSettings,
   ) => void;
   connected: boolean;
   onConnect: () => void;
