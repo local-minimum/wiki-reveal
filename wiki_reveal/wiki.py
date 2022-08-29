@@ -16,7 +16,7 @@ from wiki_reveal.nicer_random import randomize_titles
 from wiki_reveal.parser import clean_lines
 
 tokenizer = re.compile(
-    r'[             \t\n\r\v\f:;,.⋯…<>/\\~`\'"!?@#$%^&*°()[\]{}|=+-\-–—− _→?\‑]+',  # noqa: E501
+    r'[             \t\n\r\v\f:;,.⋯…<>/\\~`\'ˈ"!?@#$%^&*°()[\]{}|=+-\-–—− _→?\‑]+',  # noqa: E501
 )
 Token = tuple[str, bool]
 Paragraph = tuple[Token, ...]
