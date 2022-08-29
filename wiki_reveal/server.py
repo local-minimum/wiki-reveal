@@ -325,7 +325,10 @@ def yesterday(language: str = 'en'):
             'Request for yesterday\'s game though today is the first game',
         )
         abort(HTTPStatus.BAD_REQUEST)
-    add_visitor(request.remote_addr, False, current_id)
+
+    if not (ip := request.headers.getlist("X-Forwarded-For")):
+        ip = request.remote_addr
+    add_visitor(ip, False, current_id)
 
     logging.info(
         f'Request for yesterday\'s game with id {current_id} ({language})',
@@ -342,7 +345,10 @@ def yesterday(language: str = 'en'):
 def page(language: str = 'en'):
     current_id = get_game_id()
     logging.info(f'Request for game with id {current_id} ({language})')
-    add_visitor(request.remote_addr, False, current_id)
+
+    if not (ip := request.headers.getlist("X-Forwarded-For")):
+        ip = request.remote_addr
+    add_visitor(ip, False, current_id)
 
     response_data = get_page_payload(language, current_id)
 
@@ -362,7 +368,10 @@ def coop_room(room: str):
         start, override_end, game_id = get_room_data(room)
     except CoopGameDoesNotExistError:
         abort(HTTPStatus.BAD_REQUEST)
-    add_visitor(request.remote_addr, True)
+
+    if not (ip := request.headers.getlist("X-Forwarded-For")):
+        ip = request.remote_addr
+    add_visitor(ip, True)
 
     response_data = get_page_payload('en', game_id)
     response_data['start'] = start.isoformat().replace(' ', 'T')
@@ -372,12 +381,16 @@ def coop_room(room: str):
     return jsonify(response_data)
 
 
+boot_day = get_game_id()
+
+
 @app.get('/api/stats')
 def stats():
     visitors = visitor_stats()
 
     return jsonify({
         'info': 'Stats since last reboot',
+        'bootWas': boot_day,
         'todayIs': get_game_id(),
         'coop': len(visitors['coop']),
         'coopActiveGames': active_rooms(),
