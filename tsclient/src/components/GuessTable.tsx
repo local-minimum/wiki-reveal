@@ -25,14 +25,25 @@ interface GuessTableProps {
   headingLexes: string[];
   gameMode: GameMode;
   userSettings: UserSettings;
+  unmasked: boolean;
+  freeWords: string[] | undefined;
 }
 
 type SortType = 'order' | 'alphabetical' | 'count' | 'rank';
 type SortVariant = 'asc' | 'desc';
 
+function orderSort(a: number, b: number, mode: 'asc' | 'desc'): 1 | -1 {
+  if (Number.isNaN(a)) return 1;
+  if (Number.isNaN(b)) return -1;
+  if (mode === 'desc') {
+    return a > b ? 1 : -1;
+  }
+  return a > b ? -1 : 1;
+}
+
 function GuessTable({
   guesses, lexicon, onSetFocusWord, focusWord, titleLexes, headingLexes,
-  rankings, gameMode, userSettings,
+  rankings, gameMode, userSettings, unmasked, freeWords,
 }: GuessTableProps): JSX.Element {
   const { autoScrollGuess, autoScrollGuessCoop } = userSettings;
   const autoScroll = gameMode === 'coop' ? autoScrollGuessCoop : autoScrollGuess;
@@ -76,16 +87,22 @@ function GuessTable({
 
   const indexedGuesses: Array<[
     word: string, ordinal: number, isHint: boolean, userName: string | null
-  ]> = guesses
-    .map(([word, isHint, userName], idx) => [word, idx + 1, isHint, userName]);
+  ]> = React.useMemo(() => [
+    ...guesses.map<[string, number, boolean, string | null]>(
+      ([word, isHint, userName], idx) => [word, idx + 1, isHint, userName],
+    ),
+    ...(
+      unmasked
+        ? Object.keys(lexicon)
+          .filter((lex) => !freeWords?.includes(lex) && !guesses.some(([gLex]) => lex === gLex))
+          .map<[string, number, false, null]>((lex) => [lex, NaN, false, null])
+        : []
+    ),
+  ], [guesses, unmasked, lexicon, freeWords]);
 
   const sortedGuesses = React.useMemo(() => {
     if (sortType === 'order') {
-      if (sortVariant === 'desc') {
-        const newGuesses = [...indexedGuesses];
-        newGuesses.reverse();
-        return newGuesses;
-      }
+      return indexedGuesses.sort(([_, a], [__, b]) => orderSort(a, b, sortVariant));
     }
     if (sortType === 'alphabetical') {
       if (sortVariant === 'asc') {
@@ -182,6 +199,7 @@ function GuessTable({
           {sortedGuesses.map(([word, ordinal, isHint, userName], idx) => {
             if (word === '') return null;
             const focused = word === focusWord;
+            const missedEntry = Number.isNaN(ordinal);
             const mostRecent = ordinal === sortedGuesses.length;
 
             return (
@@ -191,11 +209,14 @@ function GuessTable({
                 sx={{
                   backgroundColor: focused ? '#CEA2AC' : undefined,
                   cursor: 'pointer',
+                  '*': {
+                    color: missedEntry ? '#AA7777' : undefined,
+                  },
                 }}
                 onClick={() => onSetFocusWord(word, false)}
                 ref={refOrNull(mostRecent, focused)}
               >
-                <TableCell>{ordinal}</TableCell>
+                <TableCell>{missedEntry ? <small><i>N/A</i></small> : ordinal}</TableCell>
                 <TableCell
                   sx={{ fontWeight: mostRecent ? 600 : undefined }}
                 >

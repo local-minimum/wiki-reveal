@@ -497,6 +497,8 @@ function WikiPage({
               rankings={rankings}
               gameMode={gameMode}
               userSettings={userSettings}
+              unmasked={unmasked}
+              freeWords={freeWords}
             />
           </Box>
           <GuessInput
@@ -604,6 +606,8 @@ function WikiPage({
               rankings={rankings}
               gameMode={gameMode}
               userSettings={userSettings}
+              unmasked={unmasked}
+              freeWords={freeWords}
             />
           </Box>
           <GuessInput
