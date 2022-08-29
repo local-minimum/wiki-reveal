@@ -12,6 +12,7 @@ export interface UserSettings {
   allowHints: boolean;
   autoScrollGuess: boolean;
   autoScrollGuessCoop: boolean;
+  boringHints: boolean;
 }
 
 export const defaultSettings: UserSettings = {
@@ -19,6 +20,7 @@ export const defaultSettings: UserSettings = {
   allowHints: true,
   autoScrollGuess: true,
   autoScrollGuessCoop: false,
+  boringHints: false,
 };
 
 interface UserOptionsProps {
@@ -31,7 +33,7 @@ function UserOptions({
   onClose, userSettings, onChangeUserSettings,
 }: UserOptionsProps): JSX.Element {
   const {
-    autoScrollGuess, autoScrollGuessCoop, allowHints, mobileExtraBottom,
+    autoScrollGuess, autoScrollGuessCoop, allowHints, mobileExtraBottom, boringHints,
   } = userSettings;
   return (
     <Dialog open onClose={onClose}>
@@ -47,6 +49,21 @@ function UserOptions({
             )}
           />
         </FormGroup>
+        <FormGroup>
+          <FormControlLabel
+            checked={boringHints}
+            label="Include boring words in hints"
+            control={<Switch />}
+            onChange={() => onChangeUserSettings(
+              { ...userSettings, boringHints: !boringHints },
+            )}
+          />
+        </FormGroup>
+        <Typography variant="caption">
+          Boring hints (e.g. he, she, that, are, not...) are by default
+          avoided even though they may be frequent.
+          Enabling above treats them as any other word that could be hinted.
+        </Typography>
         <Typography variant="h6" sx={{ marginTop: 2 }}>
           Solo Games
         </Typography>

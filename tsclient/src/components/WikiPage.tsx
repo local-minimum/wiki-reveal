@@ -105,6 +105,8 @@ function WikiPage({
   victory, onSetVictory, userSettings,
   achievements, onSetAchievements, activeGuesses, onSetSoloGuesses, hideWords,
 }: WikiPageProps): JSX.Element {
+  const { mobileExtraBottom, boringHints } = userSettings;
+
   const { enqueueSnackbar } = useSnackbar();
   const reportAchievement = React.useCallback((achievement: Achievement): void => {
     enqueueSnackbar(
@@ -347,10 +349,9 @@ function WikiPage({
         && !title.some(([_, isHidden, lex]) => isHidden && lex === word));
 
     if (options.length === 0) return;
-
     const worthy = options
       .filter(
-        (word) => !BORING_HINTS.includes(word) && lexicon[word] >= maxCount,
+        (word) => (boringHints || !BORING_HINTS.includes(word)) && lexicon[word] >= maxCount,
       )
       .sort((a, b) => (lexicon[a] > lexicon[b] ? 1 : -1));
     if (worthy.length > 0) {
@@ -366,7 +367,7 @@ function WikiPage({
     }
 
     const remainingGood = options
-      .filter((word) => !BORING_HINTS.includes(word))
+      .filter((word) => (boringHints || !BORING_HINTS.includes(word)))
       .sort((a, b) => (lexicon[a] > lexicon[b] ? -1 : 1));
 
     if (remainingGood.length > 0) {
@@ -394,7 +395,7 @@ function WikiPage({
         ],
       ],
     );
-  }, [freeWords, activeGuesses, lexicon, onSetSoloGuesses, title]);
+  }, [freeWords, activeGuesses, lexicon, onSetSoloGuesses, title, boringHints]);
 
   const progress = useMemo(
     () => calculateProgress(lexicon, freeWords, activeGuesses),
@@ -447,7 +448,6 @@ function WikiPage({
   const articleRef = React.useRef<HTMLDivElement | null>(null);
   const theme = useTheme();
   const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
-  const { mobileExtraBottom } = userSettings;
 
   if (isSmall) {
     return (
