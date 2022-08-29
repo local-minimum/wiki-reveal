@@ -1,6 +1,6 @@
 from collections import defaultdict
 from datetime import datetime
-from functools import lru_cache
+from functools import cache, lru_cache
 from hashlib import sha256
 from http import HTTPStatus
 import logging
@@ -291,18 +291,22 @@ def get_page_payload(
     }
 
 
-VISITORS = {
-    'solo': defaultdict(set),
-    'coop': set()
-}
+@cache
+def visitor_stats():
+    return {
+        'solo': defaultdict(set),
+        'coop': set()
+    }
 
 
 def add_visitor(ip: str, is_coop: boolean, game_id: int = 0):
-    digest = sha256(ip.encode()).hexdigest()
+    visitors = visitor_stats()
+    digest = sha256(ip.encode()).hexdigest()[::2]
+
     if is_coop:
-        VISITORS['coop'].add(digest)
+        visitors['coop'].add(digest)
     else:
-        VISITORS['solo'][game_id].add(digest)
+        visitors['solo'][game_id].add(digest)
 
 
 @app.get('/api/yesterday')
@@ -363,12 +367,14 @@ def coop_room(room: str):
 
 @app.get('/api/stats')
 def stats():
+    visitors = visitor_stats()
+
     return jsonify({
         'info': 'Stats since last reboot',
         'todayIs': get_game_id(),
-        'coop': len(VISITORS['coop']),
+        'coop': len(visitors['coop']),
         'coopActiveGames': active_rooms(),
         'solo': {
-            game_id: len(users) for game_id, users in VISITORS['solo'].items()
+            game_id: len(users) for game_id, users in visitors['solo'].items()
         },
     })
