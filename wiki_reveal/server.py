@@ -8,11 +8,10 @@ import os
 from random import Random
 from secrets import token_hex, token_urlsafe
 from time import time
-from xmlrpc.client import boolean
 from flask_socketio import (  # type: ignore
     SocketIO, join_room, leave_room, send, rooms,
 )
-from typing import Any, Optional, cast
+from typing import Any, Optional, cast, Union
 from flask import Flask, Response, abort, jsonify, request
 from wiki_reveal.exceptions import CoopGameDoesNotExistError, WikiError
 from wiki_reveal.game_id import (
@@ -306,9 +305,18 @@ def visitor_stats():
     }
 
 
-def add_visitor(ip: str, is_coop: boolean, game_id: int = 0):
+def add_visitor(
+    ip: Union[str, list[str]],
+    is_coop: bool,
+    game_id: int = 0
+):
     visitors = visitor_stats()
-    digest = sha256(ip.encode()).hexdigest()[::2]
+    if type(ip) == list:
+        if (ip):
+            ip = ip[0]
+        else:
+            ip = ''
+    digest = sha256(cast(str, ip).encode()).hexdigest()[::2]
 
     if is_coop:
         visitors['coop'].add(digest)
