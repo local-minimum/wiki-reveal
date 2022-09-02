@@ -198,6 +198,7 @@ function WikiPageContainer(): JSX.Element {
   const revealAll = React.useCallback((): void => {
     setUnmasked(gameId ?? -1);
   }, [gameId]);
+
   React.useEffect(() => {
     if (prevGameMode !== gameMode && (gameMode === 'coop' || prevGameMode === 'coop')) {
       setVictoryVisible(true);
