@@ -26,6 +26,7 @@ import useRevealedPage from '../hooks/useRevealedPage';
 import { UserSettings } from './menu/UserOptions';
 import { BORING_HINTS } from '../utils/hints';
 import { CoopRoomSettings } from '../hooks/useCoop';
+import usePrevious from '../hooks/usePrevious';
 
 function randomEntry<T>(arr: T[]): T {
   return arr[Math.min(Math.floor(Math.random() * arr.length), arr.length - 1)];
@@ -108,8 +109,9 @@ function WikiPage({
   achievements, onSetAchievements, activeGuesses, onSetSoloGuesses, hideWords,
 }: WikiPageProps): JSX.Element {
   const { mobileExtraBottom, boringHints } = userSettings;
-
   const { enqueueSnackbar } = useSnackbar();
+  const prevHideWords = usePrevious(hideWords);
+
   const reportAchievement = React.useCallback((achievement: Achievement): void => {
     enqueueSnackbar(
       (
@@ -156,13 +158,17 @@ function WikiPage({
   }, [focusWord, focusWordIndex, lexicon]);
 
   const focusedWordScrollToCheck = React.useCallback((isHeader: boolean): boolean => {
+    if ((prevHideWords?.length ?? 0) > 0 && (hideWords?.length ?? 0) === 0) {
+      focusedWordCounter.current = -1;
+      return false;
+    }
     if (focusedWordRequireHeader.current && !isHeader) {
       return false;
     }
     const isMe = focusedWordCounter.current === 0;
     focusedWordCounter.current -= 1;
     return isMe;
-  }, []);
+  }, [hideWords, prevHideWords]);
 
   React.useEffect(() => {
     if (focusedWordCounter.current < 0) return;
