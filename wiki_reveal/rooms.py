@@ -52,7 +52,10 @@ def clear_old_coop_games():
             )
         ):
             del ROOMS[key]
-            close_room(key)
+            try:
+                close_room(key)
+            except AttributeError:
+                pass
 
 
 def active_rooms() -> list[int]:
