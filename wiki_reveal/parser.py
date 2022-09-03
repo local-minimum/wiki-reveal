@@ -24,6 +24,9 @@ def in_tag(line: str, tag: str) -> bool:
     return line in tag or line in ESCAPES and ESCAPES[line] in tag
 
 
+EQUATION_TAG = 'xxxxEQUATI0Nxxxx'
+
+
 def clean_lines(text: str) -> str:
     prev_idx = 0
     out = ''
@@ -38,7 +41,7 @@ def clean_lines(text: str) -> str:
         while line_idx < len(rev_lines) and removable(rev_lines[line_idx]):
             line_idx += 1
 
-        out += '\n'.join(rev_lines[line_idx:][::-1])
+        out += '\n'.join(rev_lines[line_idx:][::-1]) + EQUATION_TAG
 
         prev_idx = idx + len(tag) + 1
 

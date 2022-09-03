@@ -246,9 +246,9 @@ function WikiPage({
   const addGuess = React.useCallback((currentGuess: string): void => {
     if (gameId === undefined || pageName === undefined) return;
     const entry = wordAsLexicalEntry(currentGuess);
-    const justWon = revealedTitle(title, entry);
+    const justWon = entry !== null && revealedTitle(title, entry);
 
-    if (freeWords?.includes(entry)) {
+    if (entry === null || freeWords?.includes(entry)) {
       return;
     }
     if (!activeGuesses.some(([word]) => word === entry)) {

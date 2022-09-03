@@ -3,8 +3,33 @@ import * as React from 'react';
 
 import { LexicalizedToken } from '../types/wiki';
 
+const EquationSpan = styled('span')({
+  fontFamily: 'monospace',
+  borderWidth: '2px',
+  borderStyle: 'dotted',
+  borderRadius: '1px',
+  color: '#8F3985',
+  borderColor: '#25283D',
+  fontSize: '75%',
+  fontWeight: 'bold',
+  marginLeft: 2,
+  marginRight: 2,
+  paddingLeft: 2,
+  paddingRight: 2,
+  paddingTop: 2,
+  paddingBottom: 1,
+});
+
+function Equation(): JSX.Element {
+  return (
+    <EquationSpan>
+      EXPRESSION
+    </EquationSpan>
+  );
+}
+
 interface WordBlockProps {
-  word: string;
+  word: string | null;
 }
 
 const Blocked = styled('span')({
@@ -14,6 +39,7 @@ const Blocked = styled('span')({
 const regex = /./gi;
 
 export function WordBlock({ word }: WordBlockProps): JSX.Element {
+  if (word === null) return <Equation />;
   return (
     <Blocked>{word.replace(regex, '\u00A0')}</Blocked>
   );
@@ -50,7 +76,7 @@ const ScrolledTo = styled('span')({
 });
 
 interface RevealedWordProps {
-  word: string;
+  word: string | null;
   focused: boolean;
   scrollTo: boolean;
 }
@@ -66,6 +92,7 @@ export function RevealedWord({ word, focused, scrollTo }: RevealedWordProps): JS
     }
   }, [scrollTo]);
 
+  if (word === null) return <Equation />;
   if (scrollTo) return <ScrolledTo ref={ref}>{word}</ScrolledTo>;
   if (focused) return <Focused>{word}</Focused>;
   return <span>{word}</span>;
@@ -89,6 +116,8 @@ function WikiParagraph({
     <>
       {
         text.map(([token, isHidden, lex], idx) => {
+          if (lex === null || token === null) return <Equation />;
+
           const focused = lex === focusWord;
           if (hideWords?.includes(lex)) {
             return (

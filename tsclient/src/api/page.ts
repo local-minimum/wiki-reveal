@@ -5,7 +5,7 @@ import {
   splitParagraphs, trimSections, unmaskPage, unmaskTokens, wordAsLexicalEntry,
 } from '../utils/wiki';
 
-type Token = [token: string, isHidden: boolean];
+type Token = [token: string | null, isHidden: boolean];
 
 interface ResponseSection {
   title: Token[];

@@ -4,7 +4,7 @@ from typing import Union
 from dataclasses import asdict, dataclass
 import re
 import logging
-from typing import Tuple
+from typing import Optional
 from wikipediaapi import (  # type: ignore
     Wikipedia, WikipediaPage, WikipediaPageSection,
 )
@@ -13,12 +13,12 @@ from wiki_reveal.exceptions import (
     FailedToSelectPageError, NoSuchPageError, ParsingFailedError,
 )
 from wiki_reveal.nicer_random import randomize_titles
-from wiki_reveal.parser import clean_lines
+from wiki_reveal.parser import EQUATION_TAG, clean_lines
 
 tokenizer = re.compile(
     r'[             \t\n\r\v\f:;,.⋯…<>/\\~`\'ˈ"!?@#$%^&*°()[\]{}|=+-\-–—− _→?\‑]+',  # noqa: E501
 )
-Token = tuple[str, bool]
+Token = tuple[Optional[str], bool]
 Paragraph = tuple[Token, ...]
 
 logging.info('Preloading ranomized articles')
@@ -66,13 +66,32 @@ def tokenize(data: str) -> Iterator[Token]:
             yield (non_word, False)
             data = data[len(non_word):]
         else:
-            yield (data[: nw_idx], True)
+            token = data[: nw_idx]
+            if EQUATION_TAG == token:
+                yield (None, False)
+            elif EQUATION_TAG in token:
+                for part in token.split(EQUATION_TAG):
+                    if part:
+                        yield (part, True)
+                    else:
+                        yield (None, False)
+            else:
+                yield (token, True)
             yield (non_word, False)
             data = data[nw_idx + len(non_word):]
         i += 1
 
     if data:
-        yield (data, True)
+        if EQUATION_TAG == data:
+            yield (None, False)
+        elif EQUATION_TAG in data:
+            for part in data.split(EQUATION_TAG):
+                if part:
+                    yield (part, True)
+                else:
+                    yield (None, False)
+        else:
+            yield (data, True)
 
 
 AnyWikiPart = Union[WikipediaPage, WikipediaPageSection]
@@ -82,7 +101,7 @@ def unwrap_sections(
     page: AnyWikiPart,
     *,
     depth: int = 0,
-) -> Tuple[Section, ...]:
+) -> tuple[Section, ...]:
     def parse_section(section: WikipediaPageSection) -> Section:
         return Section(
             title=tuple(tokenize(section.title)),

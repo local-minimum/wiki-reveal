@@ -29,7 +29,8 @@ function HowTo({ onClose }: HowToProps): JSX.Element {
             There are some feature that does not exist on the original Redactle:
             <List>
               <ListItem>
-                You can get hints.
+                You can get hints, which are based on the rank of your best guess
+                that is not among the words considered boring such as e.g. &quo;were&quo;.
               </ListItem>
               <ListItem>
                 You get to know the rank of the word. Rank 1 being the most
@@ -72,7 +73,7 @@ function HowTo({ onClose }: HowToProps): JSX.Element {
               {' '}
               <strong>heading</strong>
               {' '}
-              words (not title).
+              words (not title) and can be clicked to scroll to them.
             </ListItemText>
           </ListItem>
           <ListItem>

@@ -63,4 +63,7 @@ ESCAPES = {
     'ψ': '\\psi',
     'Ω': '\\Omega',
     'ω': '\\omega',
+    '∂': '\\sigma',
+    ']': '\\end',
+    '[': '\\begin',
 }

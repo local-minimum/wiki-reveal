@@ -40,8 +40,8 @@ function GuessInput({
   const theme = useTheme();
   const isExtraLarge = useMediaQuery(theme.breakpoints.up('xl'));
   const lex = wordAsLexicalEntry(currentGuess);
-  const isFreeWord = currentGuess !== '' && freeWords?.includes(lex);
-  const hasIllegal = INVALID.some((sub) => lex.includes(sub));
+  const isFreeWord = currentGuess !== '' && lex !== null && freeWords?.includes(lex);
+  const hasIllegal = INVALID.some((sub) => lex !== null && lex.includes(sub));
   return (
     <Stack direction="row" gap={1} sx={latteralPad ? { marginLeft: 0.5, marginRight: 0.5 } : undefined}>
       <Tooltip title="Enter guess">

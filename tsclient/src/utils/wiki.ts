@@ -2,7 +2,8 @@ import {
   LexicalizedToken, Page, Section,
 } from '../types/wiki';
 
-export function wordAsLexicalEntry(word: string): string {
+export function wordAsLexicalEntry(word: string | null): string | null {
+  if (word === null) return null;
   return word.toLowerCase()
     .replace(/[àáâäæãåā]/g, 'a')
     .replace(/[çćč]/g, 'c')
@@ -23,7 +24,7 @@ export function unmaskTokens(
   words: Record<string, true>,
 ): LexicalizedToken[] {
   return tokens.map(([token, isHidden, lex]) => (
-    isHidden && words[lex]
+    isHidden && (lex === null || words[lex])
       ? [token, false, lex] : [token, isHidden, lex]
   ));
 }
@@ -54,7 +55,7 @@ export function splitParagraphs(text: LexicalizedToken[]): Array<LexicalizedToke
   const out: Array<LexicalizedToken[]> = [];
   let start = 0;
   text.forEach(([value, isHidden, lex], idx) => {
-    if (!isHidden && value.includes('\n')) {
+    if (!isHidden && value !== null && value.includes('\n')) {
       out.push([...text.slice(start, idx), [value.slice(0, value.indexOf('\n')), isHidden, lex]]);
       start = idx + 1;
     }

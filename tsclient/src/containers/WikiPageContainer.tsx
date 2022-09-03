@@ -129,11 +129,14 @@ function WikiPageContainer(): JSX.Element {
   }, [freeWords, lexicon]);
 
   const [titleLexes, headingLexes] = React.useMemo(() => {
+    const isLex = (lex: string | null): lex is string => lex !== null;
+
     const getSectionLexes = (sections: Section[]): string[] => sections
       .map((section) => [
         ...section.title
-          .filter(([, isHidden]) => isHidden)
-          .map(([_, __, lex]) => lex),
+          .filter(([_, isHidden, lex]) => isHidden)
+          .map(([_, __, lex]) => lex)
+          .filter(isLex),
         ...getSectionLexes(section.sections),
       ]).flat();
 
@@ -142,7 +145,7 @@ function WikiPageContainer(): JSX.Element {
       .map(([_, __, lex]) => lex) ?? [];
 
     return [
-      uniq(titleWords),
+      uniq(titleWords.filter(isLex)),
       uniq(getSectionLexes(page?.sections ?? [])),
     ];
   }, [page]);
@@ -150,7 +153,7 @@ function WikiPageContainer(): JSX.Element {
   const summaryToReveal = React.useMemo(
     () => page?.summary.reduce<Record<string, number>>((acc, paragraph) => {
       paragraph.forEach(([, isHidden, lex]) => {
-        if (!isHidden && !freeWords?.includes(lex)) {
+        if (!isHidden && lex !== null && !freeWords?.includes(lex)) {
           acc[lex] = (acc[lex] ?? 0) + 1;
         }
       });

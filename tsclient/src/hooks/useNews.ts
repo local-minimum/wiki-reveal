@@ -14,6 +14,11 @@ interface News {
 
 const news: NewsItem[] = [
   {
+    id: 'expressions',
+    title: 'Omitted expressions',
+    content: 'Inline equations, formula and similar features of the wikipedia article are removed, but now they are indicated with a special formatted word: "EXPRESSION"',
+  },
+  {
     id: 'hints-coop',
     title: 'Hints in Coop',
     content: 'It is now possible when creating a coop-game to allow the use of hints.',
@@ -23,36 +28,12 @@ const news: NewsItem[] = [
     title: 'Hints options',
     content: 'It is now possible to include boring words in hints given from the user settings.',
   },
-  {
-    id: 'reveal-words',
-    title: 'Revealing the article',
-    content: 'Upon revealing the article after completing it, the words not guessed on are also visible in the guess list.',
-  },
-  {
-    id: 'coop-updates',
-    title: 'Coop Updates',
-    content: 'It is now possible to invite others to yesterday\'s game too. It is also possible to transfer your guesses so far into the coop games.',
-  },
-  {
-    id: 'better-hints',
-    title: 'Better hints',
-    content: 'The system will avoid using boring words like "are" as hints and make sure the hints given are closer in rank to the user\'s best guess.',
-  },
-  {
-    id: 'header-matches',
-    title: 'Quick scroll to header matches',
-    content: 'When guesses show the "H" header match icon, it can now be clicked to scroll through those header matches only.',
-  },
-  {
-    id: 'mobile-space',
-    title: 'Mayhaps it works in more mobile browsers',
-    content: 'I really don\'t know much about layouting and mobile things seems to be a can of worms... But there is a new setting that may help.',
-  },
-  {
-    id: 'user-settings',
-    title: 'Introducing user settings',
-    content: 'Some basic configurations are now available in the menu. More might come...',
-  },
+  // id: 'reveal-words',
+  // id: 'coop-updates',
+  // id: 'better-hints',
+  // id: 'header-matches',
+  // id: 'mobile-space',
+  // id: 'user-settings',
 ];
 
 export default function useNews(): News {

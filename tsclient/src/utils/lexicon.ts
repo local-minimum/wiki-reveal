@@ -13,7 +13,7 @@ export function createLexicon({ title, summary, sections }: Page): Record<string
   const lexicon: Record<string, number> = {};
 
   const updateLexicon = ([, isHidden, entry]: LexicalizedToken) => {
-    if (isHidden) {
+    if (isHidden && entry !== null) {
       const cur = lexicon[entry];
       if (cur === undefined) {
         lexicon[entry] = 1;

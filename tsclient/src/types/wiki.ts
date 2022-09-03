@@ -1,4 +1,8 @@
-export type LexicalizedToken = [token: string, isHidden: boolean, lexicalEntry: string];
+export type LexicalizedToken = [
+  token: string | null,
+  isHidden: boolean,
+  lexicalEntry: string | null,
+];
 
 export interface Section {
   title: LexicalizedToken[];
