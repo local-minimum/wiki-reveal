@@ -13,6 +13,7 @@ export interface UserSettings {
   autoScrollGuess: boolean;
   autoScrollGuessCoop: boolean;
   boringHints: boolean;
+  assistSpelling: boolean;
 }
 
 export const defaultSettings: UserSettings = {
@@ -21,6 +22,7 @@ export const defaultSettings: UserSettings = {
   autoScrollGuess: true,
   autoScrollGuessCoop: false,
   boringHints: false,
+  assistSpelling: false,
 };
 
 interface UserOptionsProps {
@@ -34,11 +36,30 @@ function UserOptions({
 }: UserOptionsProps): JSX.Element {
   const {
     autoScrollGuess, autoScrollGuessCoop, allowHints, mobileExtraBottom, boringHints,
+    assistSpelling,
   } = userSettings;
   return (
     <Dialog open onClose={onClose}>
       <DialogTitle>User Settings</DialogTitle>
       <DialogContent>
+        <FormGroup>
+          <FormControlLabel
+            checked={assistSpelling}
+            label="Spelling Assistance"
+            control={<Switch />}
+            onChange={() => onChangeUserSettings(
+              { ...userSettings, assistSpelling: !assistSpelling },
+            )}
+          />
+        </FormGroup>
+        <Typography variant="caption">
+          This will attempt some changes to what you entered and
+          if there is a word in the article that is similar enough,
+          then the most similar word will be chosen.
+          Note that it does not know how to spell and may select other
+          words than what you intended to input if your input was not
+          present in the article.
+        </Typography>
         <FormGroup>
           <FormControlLabel
             checked={mobileExtraBottom}

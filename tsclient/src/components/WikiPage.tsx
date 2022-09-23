@@ -4,6 +4,7 @@ import {
 import { useSnackbar } from 'notistack';
 import * as React from 'react';
 import { useMemo } from 'react';
+import { distance } from 'fastest-levenshtein';
 import { GameMode } from '../api/page';
 
 import useClearStoredValues from '../hooks/useClearStoredValues';
@@ -187,7 +188,7 @@ function WikiPage({
       if (gameMode !== 'coop' || pageName === undefined || page === undefined) return;
 
       const { title: originalTile } = page;
-      if (originalTile === []) return;
+      if (originalTile?.length === 0) return;
 
       const tLexes = originalTile
         .filter(([_, isHidden]) => isHidden)
@@ -245,7 +246,15 @@ function WikiPage({
 
   const addGuess = React.useCallback((currentGuess: string): void => {
     if (gameId === undefined || pageName === undefined) return;
-    const entry = wordAsLexicalEntry(currentGuess);
+    const rawEntry = wordAsLexicalEntry(currentGuess);
+    let entry = rawEntry;
+    if (userSettings.assistSpelling && rawEntry !== null && lexicon[rawEntry] === undefined) {
+      const entryAlternatives = Object.keys(lexicon)
+        .map<[string, number]>((lex) => [lex, distance(rawEntry, lex) / lex.length])
+        .filter(([_, dist]) => dist < 0.4)
+        .sort(([_, distA], [__, distB]) => (distA < distB ? -1 : 1));
+      entry = entryAlternatives[0]?.[0] ?? null;
+    }
     const justWon = entry !== null && revealedTitle(title, entry);
 
     if (entry === null || freeWords?.includes(entry)) {
@@ -344,7 +353,7 @@ function WikiPage({
     onSetSoloGuesses, setPlayerResults, onSetVictory, title, pageName, achievements,
     onSetAchievements,
     titleLexes, headingLexes, victory, playStart, start, end, reportAchievement, gameMode,
-    rankings, username, onCoopGuess, coopRoom, coopGuesses,
+    rankings, username, onCoopGuess, coopRoom, coopGuesses, userSettings.assistSpelling,
   ]);
 
   const addHint = React.useCallback((): void => {
