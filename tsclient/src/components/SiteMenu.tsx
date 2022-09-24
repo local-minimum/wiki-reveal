@@ -90,7 +90,7 @@ function SiteMenu({
       >
         <FontAwesomeIcon icon={faBars} size="1x" />
       </IconButton>
-      <Menu open={open} onClose={handleClose} anchorEl={anchorEl}>
+      <Menu open={open} onClose={handleClose} anchorEl={anchorEl} sx={{ '.MuiList-root': { paddingTop: 0 } }}>
         {about !== undefined && (
           <Box sx={{ p: 1, backgroundColor: '#EFD9CE' }}>
             <Typography variant="h6">{about.name}</Typography>
