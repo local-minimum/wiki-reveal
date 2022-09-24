@@ -13,6 +13,7 @@ from flask_socketio import (  # type: ignore
 )
 from typing import Any, Optional, cast, Union
 from flask import Flask, Response, abort, jsonify, request
+from wiki_reveal.about import get_about
 from wiki_reveal.exceptions import CoopGameDoesNotExistError, WikiError
 from wiki_reveal.game_id import (
     get_game_id, get_start_and_end, get_start_of_current,
@@ -387,6 +388,12 @@ def coop_room(room: str):
         response_data['end'] = override_end.isoformat().replace(' ', 'T')
 
     return jsonify(response_data)
+
+
+
+@app.get('/api/about')
+def about_game():
+    return jsonify(get_about())
 
 
 boot_day = get_game_id()

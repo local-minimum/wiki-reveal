@@ -253,7 +253,7 @@ function WikiPage({
         .map<[string, number]>((lex) => [lex, distance(rawEntry, lex) / lex.length])
         .filter(([_, dist]) => dist < 0.4)
         .sort(([_, distA], [__, distB]) => (distA < distB ? -1 : 1));
-      entry = entryAlternatives[0]?.[0] ?? null;
+      entry = entryAlternatives[0]?.[0] ?? rawEntry;
     }
     const justWon = entry !== null && revealedTitle(title, entry);
 

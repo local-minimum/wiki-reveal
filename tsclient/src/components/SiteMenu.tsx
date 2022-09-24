@@ -5,9 +5,11 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  Divider, IconButton, ListItemIcon, ListItemText, Menu, MenuItem,
+  Box,
+  Divider, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Typography,
 } from '@mui/material';
 import * as React from 'react';
+import { AboutData } from '../api/about';
 import { GameMode } from '../api/page';
 import { CoopGameType, CoopRoomSettings, ExpireType } from '../hooks/useCoop';
 import { LexicalizedToken } from '../types/wiki';
@@ -23,6 +25,7 @@ import VictoryHistory from './menu/VictoryHistory';
 import WipeDataDialog from './menu/WipeDataDialog';
 
 interface SiteMenuProps {
+  about?: AboutData;
   yesterdaysTitle: LexicalizedToken[] | undefined;
   yesterdaysPage: string | undefined;
   onShowVictory: (() => void) | undefined;
@@ -59,7 +62,7 @@ function SiteMenu({
   yesterdaysTitle, onShowVictory, achievements, onSetAchievements, gameId, hideFound, onHideFound,
   end, gameMode, onChangeGameMode, username, onChangeUsername, onCreateCoopGame, connected,
   onConnect, onDisconnect, coopRoom, coopUsers, onJoinCoopGame, coopInRoom, userSettings,
-  onChangeUserSettings, yesterdaysPage, language,
+  onChangeUserSettings, yesterdaysPage, language, about,
 }: SiteMenuProps): JSX.Element {
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null);
   const open = Boolean(anchorEl);
@@ -88,6 +91,12 @@ function SiteMenu({
         <FontAwesomeIcon icon={faBars} size="1x" />
       </IconButton>
       <Menu open={open} onClose={handleClose} anchorEl={anchorEl}>
+        {about !== undefined && (
+          <Box sx={{ p: 1, backgroundColor: '#EFD9CE' }}>
+            <Typography variant="h6">{about.name}</Typography>
+            <Typography variant="caption">{about.pages}</Typography>
+          </Box>
+        )}
         {end !== undefined && (
           <>
             <RemainingTime end={end} yesterdays={gameMode === 'yesterday'} />

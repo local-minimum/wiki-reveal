@@ -15,6 +15,7 @@ import { pluralize } from '../utils/plural';
 import { SingleAchievement } from './menu/SingleAchievement';
 
 interface VictoryProps {
+  gameName?: string;
   hints: number;
   guesses: number;
   accuracy: number;
@@ -44,7 +45,7 @@ function gameModeToText(gameMode: GameMode): string {
 
 function Victory({
   hints, guesses, game, onRevealAll, accuracy, revealed, visible, onSetVisible,
-  achievements, gameMode, unmasked, onUnrevealAll,
+  achievements, gameMode, unmasked, onUnrevealAll, gameName = 'Wiki Reveal',
 }: VictoryProps): JSX.Element {
   const { enqueueSnackbar } = useSnackbar();
   const newAchievements = Object
@@ -56,8 +57,8 @@ function Victory({
   const handleShare = () => {
     const nAchieve = newAchievements.length;
     const hasAchievements = nAchieve === 0 ? '' : ` earning me ${nAchieve} new ${pluralize('achievement', nAchieve)}`;
-    const msg = `I solved ${gameModeToText(gameMode)} Wiki-Reveal ${String(game).slice(0, 6)} in ${total} ${pluralize('guess', total)} using ${hints} ${pluralize('hint', hints)}!
-My accuracy was ${accuracy.toFixed(1)}% revealing ${revealed.toFixed(1)}% of the article${hasAchievements}.`;
+    const msg = `I solved ${gameModeToText(gameMode)} ${gameName} ${String(game).slice(0, 6)} in ${total} ${pluralize('guess', total)} using ${hints} ${pluralize('hint', hints)}!
+My accuracy was ${accuracy.toFixed(1)}% revealing ${revealed.toFixed(1)}% of the article${hasAchievements}. ${window.location.href}`;
     navigator.clipboard.writeText(msg);
     enqueueSnackbar('Copied message to clipboard', { variant: 'info' });
   };

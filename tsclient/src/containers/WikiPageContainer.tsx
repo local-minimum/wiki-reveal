@@ -19,6 +19,7 @@ import usePrevious from '../hooks/usePrevious';
 import { defaultSettings, UserSettings } from '../components/menu/UserOptions';
 import useNews from '../hooks/useNews';
 import News from '../components/News';
+import { getAbout } from '../api/about';
 
 function WikiPageContainer(): JSX.Element {
   const { enqueueSnackbar } = useSnackbar();
@@ -86,6 +87,10 @@ function WikiPageContainer(): JSX.Element {
       retry: gameMode !== 'coop' && room !== null,
     },
   );
+
+  const { data: aboutData } = useQuery(['about'], getAbout, {
+    staleTime: Infinity,
+  });
 
   React.useEffect(() => {
     if (Number.isFinite(staleTime)) {
@@ -234,6 +239,7 @@ function WikiPageContainer(): JSX.Element {
       {!firstVisit && !isError && news.length > 0 && <News onClose={onReadNews} news={news} /> }
       {!firstVisit && !isError && news.length === 0 && victory !== null && (
         <Victory
+          gameName={aboutData?.name}
           gameMode={gameMode}
           guesses={victory.guesses}
           hints={victory.hints}
@@ -249,6 +255,7 @@ function WikiPageContainer(): JSX.Element {
         />
       )}
       <SiteMenu
+        about={aboutData}
         yesterdaysTitle={yesterdaysTitle}
         yesterdaysPage={yesterdaysPage}
         onShowVictory={
