@@ -33,6 +33,7 @@ interface WordBlockProps {
 }
 
 const Blocked = styled('span')({
+  color: '#25283D',
   backgroundColor: '#25283D',
   fontFamily: 'monospace',
 });
@@ -41,7 +42,7 @@ const regex = /./gi;
 export function WordBlock({ word }: WordBlockProps): JSX.Element {
   if (word === null) return <Equation />;
   return (
-    <Blocked>{word.replace(regex, '\u00A0')}</Blocked>
+    <Blocked>{word.replace(regex, '█')}</Blocked>
   );
 }
 
