@@ -1,10 +1,11 @@
 import { faCirclePlay, faPlay, faPuzzlePiece } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  Button, IconButton, Stack, TextField, Tooltip, useMediaQuery, useTheme,
+  Button, IconButton, InputProps, Stack, TextField, Tooltip, useMediaQuery, useTheme,
 } from '@mui/material';
 import * as React from 'react';
 import { wordAsLexicalEntry } from '../utils/wiki';
+import { Guess } from './Guess';
 import { UserSettings } from './menu/UserOptions';
 
 interface GuessInputProps {
@@ -13,6 +14,7 @@ interface GuessInputProps {
   isDone: boolean;
   unmasked: boolean;
   hints: number;
+  guesses: Guess[];
   freeWords: string[] | undefined;
   onAddGuess: (word: string) => void;
   onAddHint: () => void;
@@ -25,15 +27,30 @@ interface GuessInputProps {
 
 const INVALID = [' ', '-', '\'', '"', '_', '.', ':', ';', '\n', '\t', '\r'];
 
-function labelText(isFreeWord: boolean | undefined, hasIllegal: boolean): string {
+function labelText(
+  isFreeWord: boolean | undefined,
+  hasIllegal: boolean,
+  isGuessed: boolean,
+): string {
   if (hasIllegal) return 'Includes illegal character';
   if (isFreeWord) return 'Free word given from start';
+  if (isGuessed) return 'Already guessed';
   return 'Guess';
+}
+
+function inputColor(
+  isFreeWord: boolean | undefined,
+  hasIllegal: boolean,
+  isGuessed: boolean,
+): InputProps['color'] {
+  if (isFreeWord || hasIllegal) return 'warning';
+  if (isGuessed) return 'secondary';
+  return undefined;
 }
 
 function GuessInput({
   isLoading, isError, isDone, unmasked, hints, onAddGuess, onAddHint, freeWords,
-  isCoop, userSettings, compact = false, latteralPad = false, allowCoopHints,
+  isCoop, userSettings, compact = false, latteralPad = false, allowCoopHints, guesses,
 }: GuessInputProps): JSX.Element {
   const { allowHints } = userSettings;
   const [currentGuess, setCurrentGuess] = React.useState('');
@@ -42,6 +59,8 @@ function GuessInput({
   const lex = wordAsLexicalEntry(currentGuess);
   const isFreeWord = currentGuess !== '' && lex !== null && freeWords?.includes(lex);
   const hasIllegal = INVALID.some((sub) => lex !== null && lex.includes(sub));
+  const isGuessed = guesses.find(([guessLex]) => guessLex === lex) !== undefined;
+
   return (
     <Stack direction="row" gap={1} sx={latteralPad ? { marginLeft: 0.5, marginRight: 0.5 } : undefined}>
       <Tooltip title="Enter guess">
@@ -50,7 +69,7 @@ function GuessInput({
           disabled={isLoading || isError || isDone || unmasked}
           variant="outlined"
           focused
-          color={isFreeWord || hasIllegal ? 'warning' : undefined}
+          color={inputColor(isFreeWord, hasIllegal, isGuessed)}
           value={currentGuess}
           onChange={({ target: { value } }) => setCurrentGuess(value.replace(/\s/g, ''))}
           onKeyDown={({ key }) => {
@@ -59,7 +78,7 @@ function GuessInput({
               onAddGuess(currentGuess);
             }
           }}
-          label={labelText(isFreeWord, hasIllegal)}
+          label={labelText(isFreeWord, hasIllegal, isGuessed)}
           spellCheck
           size={compact ? 'small' : 'medium'}
         />

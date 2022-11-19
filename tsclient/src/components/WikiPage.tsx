@@ -513,6 +513,7 @@ function WikiPage({
             isLoading={isLoading}
             isError={isError}
             isDone={progress === 100}
+            guesses={activeGuesses}
             unmasked={unmasked}
             hints={hints}
             freeWords={freeWords}
@@ -623,6 +624,7 @@ function WikiPage({
             isLoading={isLoading}
             isError={isError}
             isDone={progress === 100}
+            guesses={activeGuesses}
             unmasked={unmasked}
             hints={hints}
             freeWords={freeWords}
