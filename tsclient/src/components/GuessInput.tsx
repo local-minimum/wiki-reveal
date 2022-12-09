@@ -48,16 +48,23 @@ function inputColor(
   return undefined;
 }
 
+function parseInput(rawInput: string): string {
+  const candidate = rawInput.match(/\S+ ?/);
+  if (candidate == null) return '';
+  return candidate[0] ?? '';
+}
+
 function GuessInput({
   isLoading, isError, isDone, unmasked, hints, onAddGuess, onAddHint, freeWords,
   isCoop, userSettings, compact = false, latteralPad = false, allowCoopHints, guesses,
 }: GuessInputProps): JSX.Element {
   const { allowHints } = userSettings;
   const [currentGuess, setCurrentGuess] = React.useState('');
+  const cleanCurrentGuess = currentGuess.trimEnd();
   const theme = useTheme();
   const isExtraLarge = useMediaQuery(theme.breakpoints.up('xl'));
-  const lex = wordAsLexicalEntry(currentGuess);
-  const isFreeWord = currentGuess !== '' && lex !== null && freeWords?.includes(lex);
+  const lex = wordAsLexicalEntry(cleanCurrentGuess);
+  const isFreeWord = cleanCurrentGuess !== '' && lex !== null && freeWords?.includes(lex);
   const hasIllegal = INVALID.some((sub) => lex !== null && lex.includes(sub));
   const isGuessed = guesses.find(([guessLex]) => guessLex === lex) !== undefined;
 
@@ -71,11 +78,11 @@ function GuessInput({
           focused
           color={inputColor(isFreeWord, hasIllegal, isGuessed)}
           value={currentGuess}
-          onChange={({ target: { value } }) => setCurrentGuess(value.replace(/\s/g, ''))}
+          onChange={({ target: { value } }) => setCurrentGuess(parseInput(value))}
           onKeyDown={({ key }) => {
-            if (key === 'Enter' && currentGuess.length > 0 && !isFreeWord && !hasIllegal) {
+            if (key === 'Enter' && cleanCurrentGuess.length > 0 && !isFreeWord && !hasIllegal) {
               setCurrentGuess('');
-              onAddGuess(currentGuess);
+              onAddGuess(cleanCurrentGuess);
             }
           }}
           label={labelText(isFreeWord, hasIllegal, isGuessed)}
@@ -87,18 +94,18 @@ function GuessInput({
         {isExtraLarge ? (
           <Button
             variant="contained"
-            onClick={() => { onAddGuess(currentGuess); setCurrentGuess(''); }}
+            onClick={() => { onAddGuess(cleanCurrentGuess); setCurrentGuess(''); }}
             startIcon={<FontAwesomeIcon icon={faPlay} />}
-            disabled={isFreeWord || currentGuess.length === 0 || isDone || unmasked}
+            disabled={isFreeWord || cleanCurrentGuess.length === 0 || isDone || unmasked}
             size={compact ? 'small' : 'medium'}
           >
             Submit
           </Button>
         ) : (
           <IconButton
-            onClick={() => { onAddGuess(currentGuess); setCurrentGuess(''); }}
+            onClick={() => { onAddGuess(cleanCurrentGuess); setCurrentGuess(''); }}
             color="primary"
-            disabled={isFreeWord || currentGuess.length === 0 || isDone || unmasked}
+            disabled={isFreeWord || cleanCurrentGuess.length === 0 || isDone || unmasked}
             size={compact ? 'small' : 'medium'}
           >
             <FontAwesomeIcon icon={faCirclePlay} />
