@@ -168,8 +168,8 @@ function WikiPage({
     }
     const isMe = focusedWordCounter.current === 0;
     focusedWordCounter.current -= 1;
-    return isMe;
-  }, [hideWords, prevHideWords]);
+    return isMe && !userSettings.noScrollPage;
+  }, [hideWords?.length, prevHideWords?.length, userSettings.noScrollPage]);
 
   React.useEffect(() => {
     if (focusedWordCounter.current < 0) return;

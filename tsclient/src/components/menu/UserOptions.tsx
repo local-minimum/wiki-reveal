@@ -12,6 +12,7 @@ export interface UserSettings {
   allowHints: boolean;
   autoScrollGuess: boolean;
   autoScrollGuessCoop: boolean;
+  noScrollPage: boolean;
   boringHints: boolean;
   assistSpelling: boolean;
 }
@@ -19,6 +20,7 @@ export interface UserSettings {
 export const defaultSettings: UserSettings = {
   mobileExtraBottom: false,
   allowHints: true,
+  noScrollPage: false,
   autoScrollGuess: true,
   autoScrollGuessCoop: false,
   boringHints: false,
@@ -36,7 +38,7 @@ function UserOptions({
 }: UserOptionsProps): JSX.Element {
   const {
     autoScrollGuess, autoScrollGuessCoop, allowHints, mobileExtraBottom, boringHints,
-    assistSpelling,
+    assistSpelling, noScrollPage,
   } = userSettings;
   return (
     <Dialog open onClose={onClose}>
@@ -101,10 +103,20 @@ function UserOptions({
         <FormGroup>
           <FormControlLabel
             checked={autoScrollGuess}
-            label="Auto-scroll to newest guess"
+            label="Auto-scroll to newest guess in guess table"
             control={<Switch />}
             onChange={() => onChangeUserSettings(
               { ...userSettings, autoScrollGuess: !autoScrollGuess },
+            )}
+          />
+        </FormGroup>
+        <FormGroup>
+          <FormControlLabel
+            checked={noScrollPage}
+            label="Never scroll wiki page automatically"
+            control={<Switch />}
+            onChange={() => onChangeUserSettings(
+              { ...userSettings, noScrollPage: !noScrollPage },
             )}
           />
         </FormGroup>
@@ -114,7 +126,7 @@ function UserOptions({
         <FormGroup>
           <FormControlLabel
             checked={autoScrollGuessCoop}
-            label="Auto-scroll to newest guess"
+            label="Auto-scroll to newest guess in guess table"
             control={<Switch />}
             onChange={() => onChangeUserSettings(
               { ...userSettings, autoScrollGuessCoop: !autoScrollGuessCoop },
