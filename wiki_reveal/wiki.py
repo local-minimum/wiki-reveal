@@ -4,7 +4,9 @@ from typing import Union
 from dataclasses import asdict, dataclass
 import re
 import logging
+import requests
 from typing import Optional
+from requests.exceptions import JSONDecodeError
 from wikipediaapi import (  # type: ignore
     Wikipedia, WikipediaPage, WikipediaPageSection,
 )
@@ -113,6 +115,19 @@ def unwrap_sections(
     return tuple(parse_section(section) for section in page.sections)
 
 
+
+def patch_session(wiki: Wikipedia) -> bool:
+    if not hasattr(wiki, '_session'):
+        return False
+
+    if not 'requests.sessions.Session' in repr(wiki._session):
+        return False
+
+    logging.info('Patched in new session')
+    wiki._session = requests.session()
+    return True
+
+
 @lru_cache(maxsize=256)
 def get_page(
     page_name: str,
@@ -121,8 +136,16 @@ def get_page(
 ) -> Page:
     wiki = Wikipedia(language)
     page = wiki.page(page_name)
-    if not page.exists():
-        raise NoSuchPageError
+    try:
+        if not page.exists():
+            raise NoSuchPageError
+    except JSONDecodeError:
+        logging.error(f"Failed to load '{page_name}'")
+
+        if patch_session(wiki):
+            page = wiki.page(page_name)
+        else:
+            raise NoSuchPageError
 
     return Page(
         title=tuple(tokenize(page.title)),
