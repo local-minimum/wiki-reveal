@@ -22,6 +22,7 @@ interface RedactedPageProps {
   containerNode?: Node;
   hideWords: string[];
   masked: boolean;
+  numberHints: boolean;
 }
 
 const commonSX: SxProps<Theme> = {
@@ -46,7 +47,7 @@ const summarySX: SxProps<Theme> = {
 
 function RedactedPage({
   title, summary, sections, isSolved, language, pageName, scrollToFocusWordCheck, focusWord,
-  containerNode, hideWords, masked, scrollButtonYOffset,
+  containerNode, hideWords, masked, scrollButtonYOffset, numberHints,
 }: RedactedPageProps): JSX.Element {
   const titleId = 'redacted-article-title';
   return (
@@ -59,6 +60,7 @@ function RedactedPage({
           scrollToCheck={scrollToFocusWordCheck}
           hideWords={hideWords}
           isHeader
+          numberHints={numberHints}
         />
         {isSolved && (
         <Link
@@ -83,6 +85,7 @@ function RedactedPage({
               scrollToCheck={scrollToFocusWordCheck}
               hideWords={hideWords}
               masked={masked}
+              numberHints={numberHints}
             />
           </Typography>
         ))
@@ -97,6 +100,7 @@ function RedactedPage({
             key={idx}
             hideWords={hideWords}
             masked={masked}
+            numberHints={numberHints}
           />
         ))
       }

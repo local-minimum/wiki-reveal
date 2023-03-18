@@ -16,6 +16,7 @@ export interface UserSettings {
   boringHints: boolean;
   assistSpelling: boolean;
   wordCloud: boolean;
+  numberHints: boolean;
 }
 
 export const defaultSettings: UserSettings = {
@@ -27,6 +28,7 @@ export const defaultSettings: UserSettings = {
   boringHints: false,
   assistSpelling: false,
   wordCloud: true,
+  numberHints: true,
 };
 
 interface UserOptionsProps {
@@ -40,7 +42,7 @@ function UserOptions({
 }: UserOptionsProps): JSX.Element {
   const {
     autoScrollGuess, autoScrollGuessCoop, allowHints, mobileExtraBottom, boringHints,
-    assistSpelling, noScrollPage, wordCloud,
+    assistSpelling, noScrollPage, wordCloud, numberHints,
   } = userSettings;
   return (
     <Dialog open onClose={onClose}>
@@ -89,6 +91,16 @@ function UserOptions({
           avoided even though they may be frequent.
           Enabling above treats them as any other word that could be hinted.
         </Typography>
+        <FormGroup>
+          <FormControlLabel
+            checked={numberHints}
+            label="Show length of hidden word"
+            control={<Switch />}
+            onChange={() => onChangeUserSettings(
+              { ...userSettings, numberHints: !numberHints },
+            )}
+          />
+        </FormGroup>
         <FormGroup>
           <FormControlLabel
             checked={wordCloud}

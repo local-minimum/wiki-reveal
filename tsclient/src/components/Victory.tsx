@@ -1,10 +1,11 @@
 import {
   faBarChart,
-  faEye, faEyeSlash, faShare, faX,
+  faEye, faEyeSlash, faShareNodes, faX,
 } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { FontAwesomeIcon, FontAwesomeIconProps } from '@fortawesome/react-fontawesome';
 import {
-  Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Grid, Typography,
+  Button, Dialog, DialogActions, DialogContent, DialogContentText,
+  DialogTitle, Grid, IconButton, Typography, useMediaQuery, useTheme,
 } from '@mui/material';
 import { useSnackbar } from 'notistack';
 import * as React from 'react';
@@ -45,10 +46,42 @@ function gameModeToText(gameMode: GameMode): string {
   }
 }
 
+interface ResponsiveButtonProps {
+  icon: FontAwesomeIconProps['icon'];
+  title: string;
+  onClick: () => void;
+  isSmallish?: boolean;
+}
+
+function ResponsiveButton({
+  icon, title, onClick, isSmallish = false,
+}: ResponsiveButtonProps): JSX.Element {
+  if (isSmallish) {
+    return (
+      <IconButton color="primary" title={title} onClick={onClick}>
+        <FontAwesomeIcon icon={icon} />
+      </IconButton>
+    );
+  }
+
+  return (
+    <Button
+      variant="outlined"
+      onClick={onClick}
+      startIcon={<FontAwesomeIcon icon={icon} />}
+    >
+      {title}
+    </Button>
+  );
+}
+
 function Victory({
   hints, guesses, game, onRevealAll, accuracy, revealed, visible, onSetVisible,
   achievements, gameMode, unmasked, onUnrevealAll, gameName = 'Wiki Reveal', onShowStats,
 }: VictoryProps): JSX.Element {
+  const theme = useTheme();
+  const isSmallish = useMediaQuery(theme.breakpoints.down('md'));
+
   const { enqueueSnackbar } = useSnackbar();
   const newAchievements = Object
     .values(Achievement)
@@ -117,22 +150,10 @@ My accuracy was ${accuracy.toFixed(1)}% revealing ${revealed.toFixed(1)}% of the
         </Grid>
       </DialogContent>
       <DialogActions>
-        <Button
-          variant="outlined"
-          onClick={onShowStats}
-          startIcon={<FontAwesomeIcon icon={faBarChart} />}
-        >
-          Stats
-        </Button>
-        <Button
-          variant="outlined"
-          onClick={handleShare}
-          startIcon={<FontAwesomeIcon icon={faShare} />}
-        >
-          Share
-        </Button>
-        <Button
-          variant="outlined"
+        <ResponsiveButton title="Stats" onClick={onShowStats} icon={faBarChart} isSmallish={isSmallish} />
+        <ResponsiveButton title="Share" onClick={handleShare} icon={faShareNodes} isSmallish={isSmallish} />
+        <ResponsiveButton
+          title={unmasked ? 'Un-Reveal' : 'Reveal'}
           onClick={() => {
             if (unmasked) {
               onUnrevealAll();
@@ -141,18 +162,15 @@ My accuracy was ${accuracy.toFixed(1)}% revealing ${revealed.toFixed(1)}% of the
             }
             onSetVisible(false);
           }}
-          startIcon={<FontAwesomeIcon icon={unmasked ? faEyeSlash : faEye} />}
-        >
-          {unmasked ? 'Un-' : ''}
-          Reveal
-        </Button>
-        <Button
-          variant="outlined"
+          icon={unmasked ? faEyeSlash : faEye}
+          isSmallish={isSmallish}
+        />
+        <ResponsiveButton
+          title="Close"
           onClick={() => onSetVisible(false)}
-          startIcon={<FontAwesomeIcon icon={faX} />}
-        >
-          Close
-        </Button>
+          icon={faX}
+          isSmallish={isSmallish}
+        />
       </DialogActions>
     </Dialog>
   );

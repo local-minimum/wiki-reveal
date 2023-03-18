@@ -30,20 +30,39 @@ function Equation(): JSX.Element {
 
 interface WordBlockProps {
   word: string | null;
+  numberHint: boolean;
 }
+
+const BlockedNumberHint = styled('span')({
+  color: '#CEA2AC',
+  backgroundColor: '#25283D',
+  fontFamily: 'monospace',
+});
 
 const Blocked = styled('span')({
   color: '#25283D',
   backgroundColor: '#25283D',
   fontFamily: 'monospace',
 });
-const regex = /./gi;
 
-export function WordBlock({ word }: WordBlockProps): JSX.Element {
+function lengthBlock(word: string, filler = '█'): [string, string] {
+  const lengthText = word.length.toString();
+  const rest = filler.repeat(word.length - lengthText.length);
+  return [lengthText, rest];
+}
+
+export function WordBlock({ word, numberHint }: WordBlockProps): JSX.Element {
   if (word === null) return <Equation />;
-  return (
-    <Blocked>{word.replace(regex, '█')}</Blocked>
-  );
+  if (numberHint && word.length > 1) {
+    const [hint, rest] = lengthBlock(word);
+    return (
+      <>
+        <BlockedNumberHint>{hint}</BlockedNumberHint>
+        <Blocked>{rest}</Blocked>
+      </>
+    );
+  }
+  return <Blocked>{'█'.repeat(word.length)}</Blocked>;
 }
 
 interface WordBlockHiddenProps {
@@ -57,7 +76,7 @@ const BlockedHidden = styled('span')({
 
 export function WordBlockHidden({ word }: WordBlockHiddenProps): JSX.Element {
   return (
-    <BlockedHidden>{word.replace(regex, '\u00A0')}</BlockedHidden>
+    <BlockedHidden>{'\u00A0'.repeat(word.length)}</BlockedHidden>
   );
 }
 
@@ -106,10 +125,11 @@ interface WikiParagraphProps {
   hideWords?: string[];
   masked?: boolean;
   isHeader?: boolean;
+  numberHints: boolean;
 }
 
 function WikiParagraph({
-  text, focusWord, scrollToCheck, hideWords, masked = true, isHeader = false,
+  text, focusWord, scrollToCheck, hideWords, masked = true, isHeader = false, numberHints = false,
 }: WikiParagraphProps): JSX.Element | null {
   if (text === undefined) return null;
 
@@ -132,7 +152,7 @@ function WikiParagraph({
           return (
             isHidden && masked
               // eslint-disable-next-line react/no-array-index-key
-              ? <WordBlock word={token} key={idx} />
+              ? <WordBlock word={token} key={idx} numberHint={numberHints} />
               : (
                 <RevealedWord
                   word={token}

@@ -20,6 +20,7 @@ interface WikiSectionProps {
   focusWord: string | null;
   scrollToCheck: (isHeader: boolean) => boolean;
   hideWords: string[];
+  numberHints: boolean;
   masked: boolean;
 }
 
@@ -75,6 +76,7 @@ function WikiSection({
   scrollToCheck,
   hideWords,
   masked,
+  numberHints,
 }: WikiSectionProps): JSX.Element {
   return (
     <>
@@ -86,6 +88,7 @@ function WikiSection({
           hideWords={hideWords}
           masked={masked}
           isHeader
+          numberHints={numberHints}
         />
       </Typography>
       {paragraphs.map((paragraph, idx) => (
@@ -101,6 +104,7 @@ function WikiSection({
             scrollToCheck={scrollToCheck}
             hideWords={hideWords}
             masked={masked}
+            numberHints={numberHints}
           />
         </Typography>
       ))}
@@ -114,6 +118,7 @@ function WikiSection({
             key={idx}
             hideWords={hideWords}
             masked={masked}
+            numberHints={numberHints}
           />
         ))
       }

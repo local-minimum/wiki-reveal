@@ -14,6 +14,11 @@ interface News {
 
 const news: NewsItem[] = [
   {
+    id: 'number-hints',
+    title: 'See length of hidden word',
+    content: 'Because it is annoying to count length on mobile.',
+  },
+  {
     id: 'game-stats',
     title: 'Cool info about your current game',
     content: 'From the menu you can access a section with various neat info about the current game',
@@ -23,11 +28,7 @@ const news: NewsItem[] = [
     title: 'Word Clouds are still hot',
     content: 'You can now see most of your guesses in a word cloud. There\'s a setting to disable if you hate it.',
   },
-  {
-    id: 'never-scroll',
-    title: 'Tired of helpful scrolling?',
-    content: 'There is now an option to turn off all scrolling on the wiki page. The other scroll options relate to the guesses table.',
-  },
+  // id: 'never-scroll',
   // id: 'spell-assist',
   // id: 'expressions',
   // id: 'hints-coop',

@@ -96,7 +96,7 @@ function RevealYesterday({
                               sx={{ cursor: 'pointer' }}
                               onClick={() => handleReveal(idx)}
                             >
-                              <WordBlock word={word} />
+                              <WordBlock word={word} numberHint />
                             </Box>
                           );
                         }

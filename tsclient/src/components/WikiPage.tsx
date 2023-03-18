@@ -479,6 +479,7 @@ function WikiPage({
             language={language}
             pageName={pageName}
             focusWord={focusWord}
+            numberHints={userSettings.numberHints}
             scrollToFocusWordCheck={focusedWordScrollToCheck}
             scrollButtonYOffset="25vh"
           />
@@ -575,6 +576,7 @@ function WikiPage({
               focusWord={focusWord}
               containerNode={articleRef.current ?? undefined}
               scrollToFocusWordCheck={focusedWordScrollToCheck}
+              numberHints={userSettings.numberHints}
             />
           </TableContainer>
         </Grid>
