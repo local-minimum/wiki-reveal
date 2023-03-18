@@ -8,6 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClose } from '@fortawesome/free-solid-svg-icons';
 import GuessCloud from './GuessCloud';
 import { Guess } from './Guess';
+import GuessHistogram from './GuessHistogram';
 
 interface GameStatsProps {
   guesses: Array<Guess>;
@@ -63,6 +64,7 @@ function GameStats({
       open
       onClose={onClose}
       fullWidth={isSmallish}
+      sx={{ minWidth: '50vw', minHeight: '50vh' }}
     >
       <DialogTitle>Game Stats</DialogTitle>
       <DialogContent>
@@ -86,7 +88,7 @@ function GameStats({
           />
         </TabPanel>
         <TabPanel value={GameStatTab.Histogram} selected={activeTab}>
-          Not yet
+          <GuessHistogram guesses={guesses} lexicon={lexicon} />
         </TabPanel>
       </DialogContent>
       <DialogActions>

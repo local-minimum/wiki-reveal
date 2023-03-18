@@ -1,5 +1,5 @@
 import {
-  faBars, faBroom, faCloud, faEye, faEyeLowVision, faGear, faInfo, faMedal,
+  faBars, faBroom, faChartBar, faEye, faEyeLowVision, faGear, faInfo, faMedal,
   faPeopleGroup,
   faPersonChalkboard, faPlay, faStar, faTrophy, faUserSecret,
 } from '@fortawesome/free-solid-svg-icons';
@@ -130,10 +130,10 @@ function SiteMenu({
           onClick={onShowGameStats}
         >
           <ListItemIcon>
-            <FontAwesomeIcon icon={faCloud} />
+            <FontAwesomeIcon icon={faChartBar} />
           </ListItemIcon>
           <ListItemText>
-            Word Cloud
+            Game Stats (e.g. Word Cloud)
           </ListItemText>
         </MenuItem>
         <MenuItem onClick={() => { handleClose(); setShowGameHistory(true); }}>
