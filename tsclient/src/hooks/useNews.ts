@@ -14,6 +14,11 @@ interface News {
 
 const news: NewsItem[] = [
   {
+    id: 'word-cloud',
+    title: 'Word Clouds are still hot',
+    content: 'You can now see most of your guesses in a word cloud. On small screens, it\'s only available from the menu. There\'s a setting if you hate it.',
+  },
+  {
     id: 'never-scroll',
     title: 'Tired of helpful scrolling?',
     content: 'There is now an option to turn off all scrolling on the wiki page. The other scroll options relate to the guesses table.',

@@ -20,6 +20,7 @@ import { defaultSettings, UserSettings } from '../components/menu/UserOptions';
 import useNews from '../hooks/useNews';
 import News from '../components/News';
 import { getAbout } from '../api/about';
+import GameStats from '../components/GameStats';
 
 function WikiPageContainer(): JSX.Element {
   const { enqueueSnackbar } = useSnackbar();
@@ -91,6 +92,8 @@ function WikiPageContainer(): JSX.Element {
   const { data: aboutData } = useQuery(['about'], getAbout, {
     staleTime: Infinity,
   });
+
+  const [showGameStats, setShowGameStats] = React.useState(false);
 
   React.useEffect(() => {
     if (Number.isFinite(staleTime)) {
@@ -237,6 +240,15 @@ function WikiPageContainer(): JSX.Element {
       {firstVisit && <HowTo onClose={closeHowTo} />}
       {!firstVisit && isError && <LoadFail gameMode={gameMode} onClose={onCloseFail} />}
       {!firstVisit && !isError && news.length > 0 && <News onClose={onReadNews} news={news} /> }
+      {showGameStats && (
+        <GameStats
+          onClose={() => setShowGameStats(false)}
+          guesses={activeGuesses}
+          lexicon={lexicon}
+          titleLexes={titleLexes}
+          headingLexes={headingLexes}
+        />
+      )}
       {!firstVisit && !isError && news.length === 0 && victory !== null && (
         <Victory
           gameName={aboutData?.name}
@@ -282,6 +294,7 @@ function WikiPageContainer(): JSX.Element {
         userSettings={userSettings}
         onChangeUserSettings={setUserSettings}
         language={language}
+        onShowGameStats={() => setShowGameStats(true)}
       />
       <WikiPage
         isLoading={isLoading}

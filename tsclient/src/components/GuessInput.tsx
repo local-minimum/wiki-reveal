@@ -70,26 +70,24 @@ function GuessInput({
 
   return (
     <Stack direction="row" gap={1} sx={latteralPad ? { marginLeft: 0.5, marginRight: 0.5 } : undefined}>
-      <Tooltip title="Enter guess">
-        <TextField
-          sx={{ flex: 1 }}
-          disabled={isLoading || isError || isDone || unmasked}
-          variant="outlined"
-          focused
-          color={inputColor(isFreeWord, hasIllegal, isGuessed)}
-          value={currentGuess}
-          onChange={({ target: { value } }) => setCurrentGuess(parseInput(value))}
-          onKeyDown={({ key }) => {
-            if (key === 'Enter' && cleanCurrentGuess.length > 0 && !isFreeWord && !hasIllegal) {
-              setCurrentGuess('');
-              onAddGuess(cleanCurrentGuess);
-            }
-          }}
-          label={labelText(isFreeWord, hasIllegal, isGuessed)}
-          spellCheck
-          size={compact ? 'small' : 'medium'}
-        />
-      </Tooltip>
+      <TextField
+        sx={{ flex: 1 }}
+        disabled={isLoading || isError || isDone || unmasked}
+        variant="outlined"
+        focused
+        color={inputColor(isFreeWord, hasIllegal, isGuessed)}
+        value={currentGuess}
+        onChange={({ target: { value } }) => setCurrentGuess(parseInput(value))}
+        onKeyDown={({ key }) => {
+          if (key === 'Enter' && cleanCurrentGuess.length > 0 && !isFreeWord && !hasIllegal) {
+            setCurrentGuess('');
+            onAddGuess(cleanCurrentGuess);
+          }
+        }}
+        label={labelText(isFreeWord, hasIllegal, isGuessed)}
+        spellCheck
+        size={compact ? 'small' : 'medium'}
+      />
       <Tooltip title="Submit guess">
         {isExtraLarge ? (
           <Button

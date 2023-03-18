@@ -3,7 +3,7 @@ COPY package* /ui/
 COPY .eslintrc.json /ui/
 COPY tsconfig.json /ui/
 WORKDIR /ui
-RUN npm install react-scripts
+RUN npm install react-scripts --force
 COPY . /ui
 WORKDIR /ui
 RUN npm run-script build

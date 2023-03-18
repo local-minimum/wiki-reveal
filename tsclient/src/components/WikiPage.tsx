@@ -28,6 +28,7 @@ import { UserSettings } from './menu/UserOptions';
 import { BORING_HINTS } from '../utils/hints';
 import { CoopRoomSettings } from '../hooks/useCoop';
 import usePrevious from '../hooks/usePrevious';
+import GuessCloud from './GuessCloud';
 
 function randomEntry<T>(arr: T[]): T {
   return arr[Math.min(Math.floor(Math.random() * arr.length), arr.length - 1)];
@@ -603,7 +604,7 @@ function WikiPage({
               // Gap 8px
               // Padding 4px
               // And some extra?
-              height: 'calc(100vh - 130px)',
+              height: `calc(100vh - ${userSettings.wordCloud ? 330 : 130}px)`,
             }}
           >
             <GuessTable
@@ -620,6 +621,18 @@ function WikiPage({
               freeWords={freeWords}
             />
           </Box>
+          {userSettings.wordCloud && (
+            <Box
+              sx={{ height: '200px' }}
+            >
+              <GuessCloud
+                guesses={activeGuesses}
+                lexicon={lexicon}
+                titleLexes={titleLexes}
+                headingLexes={headingLexes}
+              />
+            </Box>
+          )}
           <GuessInput
             isLoading={isLoading}
             isError={isError}

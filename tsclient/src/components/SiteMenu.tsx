@@ -1,5 +1,5 @@
 import {
-  faBars, faBroom, faEye, faEyeLowVision, faGear, faInfo, faMedal,
+  faBars, faBroom, faCloud, faEye, faEyeLowVision, faGear, faInfo, faMedal,
   faPeopleGroup,
   faPersonChalkboard, faPlay, faStar, faTrophy, faUserSecret,
 } from '@fortawesome/free-solid-svg-icons';
@@ -56,13 +56,14 @@ interface SiteMenuProps {
   userSettings: UserSettings;
   onChangeUserSettings: (settings: UserSettings) => void;
   language: string | undefined;
+  onShowGameStats: () => void;
 }
 
 function SiteMenu({
   yesterdaysTitle, onShowVictory, achievements, onSetAchievements, gameId, hideFound, onHideFound,
   end, gameMode, onChangeGameMode, username, onChangeUsername, onCreateCoopGame, connected,
   onConnect, onDisconnect, coopRoom, coopUsers, onJoinCoopGame, coopInRoom, userSettings,
-  onChangeUserSettings, yesterdaysPage, language, about,
+  onChangeUserSettings, yesterdaysPage, language, about, onShowGameStats,
 }: SiteMenuProps): JSX.Element {
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null);
   const open = Boolean(anchorEl);
@@ -122,6 +123,17 @@ function SiteMenu({
           </ListItemIcon>
           <ListItemText>
             {`${hideFound ? 'Show' : 'Hide'} Found Words`}
+          </ListItemText>
+        </MenuItem>
+        <MenuItem
+          title="Admire how well you have guessed"
+          onClick={onShowGameStats}
+        >
+          <ListItemIcon>
+            <FontAwesomeIcon icon={faCloud} />
+          </ListItemIcon>
+          <ListItemText>
+            Word Cloud
           </ListItemText>
         </MenuItem>
         <MenuItem onClick={() => { handleClose(); setShowGameHistory(true); }}>

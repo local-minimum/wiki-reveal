@@ -15,6 +15,7 @@ export interface UserSettings {
   noScrollPage: boolean;
   boringHints: boolean;
   assistSpelling: boolean;
+  wordCloud: boolean;
 }
 
 export const defaultSettings: UserSettings = {
@@ -25,6 +26,7 @@ export const defaultSettings: UserSettings = {
   autoScrollGuessCoop: false,
   boringHints: false,
   assistSpelling: false,
+  wordCloud: true,
 };
 
 interface UserOptionsProps {
@@ -38,7 +40,7 @@ function UserOptions({
 }: UserOptionsProps): JSX.Element {
   const {
     autoScrollGuess, autoScrollGuessCoop, allowHints, mobileExtraBottom, boringHints,
-    assistSpelling, noScrollPage,
+    assistSpelling, noScrollPage, wordCloud,
   } = userSettings;
   return (
     <Dialog open onClose={onClose}>
@@ -87,6 +89,16 @@ function UserOptions({
           avoided even though they may be frequent.
           Enabling above treats them as any other word that could be hinted.
         </Typography>
+        <FormGroup>
+          <FormControlLabel
+            checked={wordCloud}
+            label="Word Cloud (not on small screens)"
+            control={<Switch />}
+            onChange={() => onChangeUserSettings(
+              { ...userSettings, wordCloud: !wordCloud },
+            )}
+          />
+        </FormGroup>
         <Typography variant="h6" sx={{ marginTop: 2 }}>
           Solo Games
         </Typography>
