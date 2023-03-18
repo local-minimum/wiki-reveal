@@ -43,6 +43,8 @@ def coors_or_none() -> Optional[list[str]]:
         split = [c.strip() for c in coors.split('|')]
         logging.info(f'Allowing websockets from {coors}')
         return split
+    else:
+        logging.info(f'No COORS for websockets setup')
     return None
 
 
