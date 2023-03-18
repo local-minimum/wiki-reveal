@@ -14,9 +14,14 @@ interface News {
 
 const news: NewsItem[] = [
   {
+    id: 'game-stats',
+    title: 'Cool info about your current game',
+    content: 'From the menu you can access a section with various neat info about the current game',
+  },
+  {
     id: 'word-cloud',
     title: 'Word Clouds are still hot',
-    content: 'You can now see most of your guesses in a word cloud. On small screens, it\'s only available from the menu. There\'s a setting if you hate it.',
+    content: 'You can now see most of your guesses in a word cloud. There\'s a setting to disable if you hate it.',
   },
   {
     id: 'never-scroll',

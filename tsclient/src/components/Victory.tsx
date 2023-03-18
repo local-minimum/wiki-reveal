@@ -1,4 +1,5 @@
 import {
+  faBarChart,
   faEye, faEyeSlash, faShare, faX,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -26,6 +27,7 @@ interface VictoryProps {
   unmasked: boolean;
   visible: boolean;
   onSetVisible: (visible: boolean) => void;
+  onShowStats: () => void;
   achievements: AchievementsType;
   gameMode: GameMode;
 }
@@ -45,7 +47,7 @@ function gameModeToText(gameMode: GameMode): string {
 
 function Victory({
   hints, guesses, game, onRevealAll, accuracy, revealed, visible, onSetVisible,
-  achievements, gameMode, unmasked, onUnrevealAll, gameName = 'Wiki Reveal',
+  achievements, gameMode, unmasked, onUnrevealAll, gameName = 'Wiki Reveal', onShowStats,
 }: VictoryProps): JSX.Element {
   const { enqueueSnackbar } = useSnackbar();
   const newAchievements = Object
@@ -115,6 +117,13 @@ My accuracy was ${accuracy.toFixed(1)}% revealing ${revealed.toFixed(1)}% of the
         </Grid>
       </DialogContent>
       <DialogActions>
+        <Button
+          variant="outlined"
+          onClick={onShowStats}
+          startIcon={<FontAwesomeIcon icon={faBarChart} />}
+        >
+          Stats
+        </Button>
         <Button
           variant="outlined"
           onClick={handleShare}

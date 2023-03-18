@@ -9,18 +9,25 @@ import { faClose } from '@fortawesome/free-solid-svg-icons';
 import GuessCloud from './GuessCloud';
 import { Guess } from './Guess';
 import GuessHistogram from './GuessHistogram';
+import GuessTable from './GuessTable';
+import { UserSettings } from './menu/UserOptions';
+import { GameMode } from '../api/page';
 
 interface GameStatsProps {
   guesses: Array<Guess>;
   lexicon: Record<string, number>;
   titleLexes: string[];
   headingLexes: string[];
+  rankings: Record<string, number>;
+  userSettings: UserSettings;
+  gameMode: GameMode;
   onClose: () => void;
 }
 
 enum GameStatTab {
   WordCloud = 'word-cloud',
   Histogram = 'histogram',
+  GuessHistory = 'guess-history',
 }
 
 interface TabPanelProps {
@@ -28,6 +35,8 @@ interface TabPanelProps {
   selected: GameStatTab;
   value: GameStatTab;
 }
+
+const noop = () => { /** NOOP */ };
 
 function TabPanel({
   children, selected, value,
@@ -39,11 +48,7 @@ function TabPanel({
       id={`simple-tabpanel-${value}`}
       aria-labelledby={`simple-tab-${value}`}
     >
-      {value === selected && (
-        <Box p={3}>
-          {children}
-        </Box>
-      )}
+      {value === selected && children}
     </div>
   );
 }
@@ -54,6 +59,9 @@ function GameStats({
   lexicon,
   titleLexes,
   headingLexes,
+  rankings,
+  userSettings,
+  gameMode,
 }: GameStatsProps): JSX.Element {
   const theme = useTheme();
   const isSmallish = useMediaQuery(theme.breakpoints.down('md'));
@@ -76,6 +84,7 @@ function GameStats({
           >
             <Tab label="Word Cloud" value={GameStatTab.WordCloud} />
             <Tab label="Histogram" value={GameStatTab.Histogram} />
+            <Tab label="Guess History" value={GameStatTab.GuessHistory} />
           </Tabs>
         </Box>
         <TabPanel value={GameStatTab.WordCloud} selected={activeTab}>
@@ -89,6 +98,21 @@ function GameStats({
         </TabPanel>
         <TabPanel value={GameStatTab.Histogram} selected={activeTab}>
           <GuessHistogram guesses={guesses} lexicon={lexicon} />
+        </TabPanel>
+        <TabPanel value={GameStatTab.GuessHistory} selected={activeTab}>
+          <GuessTable
+            guesses={guesses}
+            lexicon={lexicon}
+            titleLexes={titleLexes}
+            headingLexes={headingLexes}
+            focusWord={null}
+            freeWords={undefined}
+            rankings={rankings}
+            onSetFocusWord={noop}
+            unmasked={false}
+            userSettings={userSettings}
+            gameMode={gameMode}
+          />
         </TabPanel>
       </DialogContent>
       <DialogActions>

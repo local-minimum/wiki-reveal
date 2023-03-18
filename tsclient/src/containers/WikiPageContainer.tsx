@@ -247,6 +247,9 @@ function WikiPageContainer(): JSX.Element {
           lexicon={lexicon}
           titleLexes={titleLexes}
           headingLexes={headingLexes}
+          rankings={rankings}
+          userSettings={userSettings}
+          gameMode={gameMode}
         />
       )}
       {!firstVisit && !isError && news.length === 0 && victory !== null && (
@@ -264,6 +267,7 @@ function WikiPageContainer(): JSX.Element {
           visible={victoryVisible && !isLoading && activeGuesses.length > 0}
           onSetVisible={setVictoryVisible}
           achievements={achievements}
+          onShowStats={() => setShowGameStats(true)}
         />
       )}
       <SiteMenu
