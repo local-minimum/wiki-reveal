@@ -260,6 +260,7 @@ function WikiPageContainer(): JSX.Element {
           hints={victory.hints}
           accuracy={victory.accuracy}
           revealed={victory.revealed}
+          gameDuration={victory.playDuration}
           onRevealAll={revealAll}
           onUnrevealAll={() => setUnmasked(-1)}
           unmasked={unmasked === gameId}

@@ -38,7 +38,7 @@ function countGuesses(
   const counts: Array<number | undefined> = [];
   guesses
     .forEach(([lex]) => {
-      const frequency = lexicon[lex];
+      const frequency = lexicon[lex] ?? 0;
       counts[frequency] = (counts[frequency] ?? 0) + 1;
     });
 

@@ -11,4 +11,5 @@ export interface VictoryType {
   hints: number;
   revealed: number;
   accuracy: number;
+  playDuration?: number;
 }

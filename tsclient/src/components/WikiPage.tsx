@@ -29,6 +29,7 @@ import { BORING_HINTS } from '../utils/hints';
 import { CoopRoomSettings } from '../hooks/useCoop';
 import usePrevious from '../hooks/usePrevious';
 import GuessCloud from './GuessCloud';
+import PlayClock from './PlayClock';
 
 function randomEntry<T>(arr: T[]): T {
   return arr[Math.min(Math.floor(Math.random() * arr.length), arr.length - 1)];
@@ -127,18 +128,10 @@ function WikiPage({
     );
   }, [enqueueSnackbar]);
 
-  const [playStart, setPlayStart] = useStoredValue<string| null>(`start-${gameMode}-${gameId}`, null);
+  const [playStart] = useStoredValue<string| null>(`start-${gameMode}-${gameId}`, new Date().toISOString());
   const [playerResults, setPlayerResults] = useStoredValue<Array<[number, VictoryType]>>('player-results', []);
 
   useClearStoredValues(gameId, CASH_KEYS, gameMode, 2);
-
-  React.useEffect(
-    () => {
-      if (gameId === undefined) return;
-      setPlayStart(new Date().toISOString());
-    },
-    [gameId, setPlayStart],
-  );
 
   const [[focusWord, focusWordIndex, headerRequired], setFocusWord] = React
     .useState<[word: string | null, index: number, header: boolean]>([null, 0, false]);
@@ -264,12 +257,19 @@ function WikiPage({
     if (!activeGuesses.some(([word]) => word === entry)) {
       const nextGuesses: Array<Guess> = [...activeGuesses, [entry, false, username]];
 
+      const playEnd = new Date();
+      const playDuration = playStart === null ? null : (
+        Math.floor(playEnd.getTime() / 1000)
+          - Math.floor(new Date(playStart).getTime() / 1000)
+      );
+
       const newVictory = {
         guesses: activeGuesses.length - hints + 1,
         hints,
         accuracy: justWon ? calculateAccuracy(lexicon, nextGuesses) : 0,
         revealed: justWon ? calculateProgress(lexicon, freeWords, nextGuesses) : 0,
         pageName,
+        playDuration: playDuration ?? undefined,
       };
 
       if (gameMode === 'coop') {
@@ -310,12 +310,6 @@ function WikiPage({
       newAchievements.map(reportAchievement);
 
       if (justWon) {
-        const playEnd = new Date();
-        const playDuration = playStart === null ? null : (
-          Math.floor(playEnd.getTime() / 1000)
-          - Math.floor(new Date(playStart).getTime() / 1000)
-        );
-
         onSetVictory(newVictory);
         const newVictoryAchievements = checkVictoryAchievements(
           gameMode,
@@ -461,6 +455,15 @@ function WikiPage({
   if (isSmall) {
     return (
       <>
+        <PlayClock
+          startISO={playStart}
+          playDuration={victory?.playDuration}
+          positioning={{
+            position: 'fixed',
+            top: 42,
+            right: 6,
+          }}
+        />
         <Box sx={{ backgroundColor: '#EFD9CE' }}>
           <Tooltip title={`${progress.toFixed(1)}% of article revealed.`}>
             <LinearProgress
@@ -540,6 +543,7 @@ function WikiPage({
         overflow: 'hidden',
       }}
     >
+      <PlayClock startISO={playStart} playDuration={victory?.playDuration} />
       <Grid
         container
         spacing={0}

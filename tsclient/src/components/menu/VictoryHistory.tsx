@@ -9,6 +9,7 @@ import * as React from 'react';
 
 import useStoredValue from '../../hooks/useStoredValue';
 import { VictoryType } from '../VictoryType';
+import { humanFormatDuration } from '../PlayClock';
 
 interface VictoryHistoryProps {
   onClose: () => void;
@@ -22,7 +23,7 @@ function VictoryHistory({ onClose }: VictoryHistoryProps): JSX.Element {
   const xsTableSx: SxProps | undefined = isSmall ? { fontSize: '70%' } : undefined;
 
   return (
-    <Dialog open onClose={onClose}>
+    <Dialog open onClose={onClose} fullWidth>
       <DialogTitle>Victories</DialogTitle>
       <DialogContent>
         <DialogContentText>
@@ -68,11 +69,17 @@ function VictoryHistory({ onClose }: VictoryHistoryProps): JSX.Element {
                   >
                     {`Rev${isSmall ? '.' : 'ealed [%]'}`}
                   </TableCell>
+                  <TableCell
+                    sx={xsTableSx}
+                    title="How long it took solving the article."
+                  >
+                    {`${isSmall ? 'Time' : 'Duration'}`}
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {playerResults.map(([gameId, {
-                  pageName, guesses, hints, accuracy, revealed,
+                  pageName, guesses, hints, accuracy, revealed, playDuration,
                 }]) => (
                   <TableRow key={gameId}>
                     <TableCell sx={xsTableSx}>{gameId}</TableCell>
@@ -80,6 +87,7 @@ function VictoryHistory({ onClose }: VictoryHistoryProps): JSX.Element {
                     <TableCell sx={xsTableSx}>{`${guesses} (${hints})`}</TableCell>
                     <TableCell sx={xsTableSx}>{accuracy.toFixed(1)}</TableCell>
                     <TableCell sx={xsTableSx}>{revealed.toFixed(1)}</TableCell>
+                    <TableCell sx={xsTableSx}>{playDuration == null ? '--' : humanFormatDuration(playDuration)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

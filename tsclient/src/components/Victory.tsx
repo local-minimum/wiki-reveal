@@ -22,6 +22,7 @@ interface VictoryProps {
   guesses: number;
   accuracy: number;
   revealed: number;
+  gameDuration: number | undefined;
   game: Game | undefined;
   onRevealAll: () => void;
   onUnrevealAll: () => void;
@@ -75,9 +76,19 @@ function ResponsiveButton({
   );
 }
 
+function humanFormatDuration(totalSeconds: number): string {
+  const seconds = totalSeconds % 60;
+  const minutes = (totalSeconds - seconds) / 60;
+
+  if (minutes === 0) return `${seconds} ${pluralize('second', seconds)}`;
+  if (seconds === 0) return `${minutes} ${pluralize('minute', minutes)}`;
+  return `${minutes} ${pluralize('minute', minutes)} and ${seconds} ${pluralize('second', seconds)}`;
+}
+
 function Victory({
   hints, guesses, game, onRevealAll, accuracy, revealed, visible, onSetVisible,
   achievements, gameMode, unmasked, onUnrevealAll, gameName = 'Wiki Reveal', onShowStats,
+  gameDuration,
 }: VictoryProps): JSX.Element {
   const theme = useTheme();
   const isSmallish = useMediaQuery(theme.breakpoints.down('md'));
@@ -92,7 +103,8 @@ function Victory({
   const handleShare = () => {
     const nAchieve = newAchievements.length;
     const hasAchievements = nAchieve === 0 ? '' : ` earning me ${nAchieve} new ${pluralize('achievement', nAchieve)}`;
-    const msg = `I solved ${gameModeToText(gameMode)} ${gameName} ${String(game).slice(0, 6)} in ${total} ${pluralize('guess', total)} using ${hints} ${pluralize('hint', hints)}!
+    const durationMsg = gameDuration == null ? '' : `${humanFormatDuration(gameDuration)} with `;
+    const msg = `I solved ${gameModeToText(gameMode)} ${gameName} ${String(game).slice(0, 6)} in ${durationMsg}${total} ${pluralize('guess', total)} using ${hints} ${pluralize('hint', hints)}!
 My accuracy was ${accuracy.toFixed(1)}% revealing ${revealed.toFixed(1)}% of the article${hasAchievements}. ${window.location.href}`;
     navigator.clipboard.writeText(msg);
     enqueueSnackbar('Copied message to clipboard', { variant: 'info' });
@@ -108,7 +120,7 @@ My accuracy was ${accuracy.toFixed(1)}% revealing ${revealed.toFixed(1)}% of the
       </DialogTitle>
       <DialogContent>
         <DialogContentText>
-          <Typography>
+          <Typography gutterBottom>
             You solved
             {' '}
             {gameModeToText(gameMode)}
@@ -119,16 +131,21 @@ My accuracy was ${accuracy.toFixed(1)}% revealing ${revealed.toFixed(1)}% of the
             {` ${total} ${pluralize('guess', total)}`}
             {` using ${hints} ${pluralize('hint', hints)}!`}
           </Typography>
-          <Typography>
+          <Typography gutterBottom>
             Your accuracy was
             {` ${accuracy.toFixed(1)}`}
             % revealing
             {` ${revealed.toFixed(1)}`}
             % of the article.
           </Typography>
-          <Typography>
-            You may continue guessing words to your heart&apos;s content.
-          </Typography>
+          {gameDuration != null && (
+            <Typography>
+              Solved in
+              {' '}
+              {humanFormatDuration(gameDuration)}
+              .
+            </Typography>
+          )}
         </DialogContentText>
         <Grid container alignItems="stretch">
           {newAchievements
