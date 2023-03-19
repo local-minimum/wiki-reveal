@@ -59,11 +59,11 @@ function UserOptions({
           />
         </FormGroup>
         <Typography variant="caption">
-          This will attempt some changes to what you entered and
-          if there is a word in the article that is similar enough,
-          then the most similar word will be chosen.
+          This will attempt to slightly alter what you entered so that
+          if there is a similar enought word in the article,
+          then it will be chosen.
           Note that it does not know how to spell and may select other
-          words than what you intended to input if your input was not
+          words than what you intended, if your input was not
           present in the article.
         </Typography>
         <FormGroup>
@@ -87,8 +87,7 @@ function UserOptions({
           />
         </FormGroup>
         <Typography variant="caption">
-          Boring hints (e.g. he, she, that, are, not...) are by default
-          avoided even though they may be frequent.
+          Boring hints (e.g. he, she, that...) are avoided by default.
           Enabling above treats them as any other word that could be hinted.
         </Typography>
         <FormGroup>

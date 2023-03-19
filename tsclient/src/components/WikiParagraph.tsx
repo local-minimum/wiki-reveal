@@ -53,7 +53,7 @@ function lengthBlock(word: string, filler = '█'): [string, string] {
 
 export function WordBlock({ word, numberHint }: WordBlockProps): JSX.Element {
   if (word === null) return <Equation />;
-  if (numberHint && word.length > 1) {
+  if (numberHint && word.length > 3) {
     const [hint, rest] = lengthBlock(word);
     return (
       <>
