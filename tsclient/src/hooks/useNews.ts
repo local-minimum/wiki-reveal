@@ -14,6 +14,11 @@ interface News {
 
 const news: NewsItem[] = [
   {
+    id: 'timer',
+    title: 'You can now see the time elapsed (or not)',
+    content: 'There\'s a timer (that can be hidden in the settings) for those of us that are more interested in fast than accurate play',
+  },
+  {
     id: 'number-hints',
     title: 'See length of hidden word',
     content: 'Because it is annoying to count length on mobile.',

@@ -128,8 +128,14 @@ function WikiPage({
     );
   }, [enqueueSnackbar]);
 
-  const [playStart] = useStoredValue<string| null>(`start-${gameMode}-${gameId}`, new Date().toISOString());
+  const [playStart, setPlayStart] = useStoredValue<string| null>(`start-${gameMode}-${gameId}`, null);
   const [playerResults, setPlayerResults] = useStoredValue<Array<[number, VictoryType]>>('player-results', []);
+
+  React.useEffect(() => {
+    if (playStart == null && gameId != null) {
+      setPlayStart(new Date().toISOString());
+    }
+  }, [gameId, playStart, setPlayStart]);
 
   useClearStoredValues(gameId, CASH_KEYS, gameMode, 2);
 
@@ -463,6 +469,7 @@ function WikiPage({
             top: 42,
             right: 6,
           }}
+          hidden={userSettings.hideTimer}
         />
         <Box sx={{ backgroundColor: '#EFD9CE' }}>
           <Tooltip title={`${progress.toFixed(1)}% of article revealed.`}>
@@ -543,7 +550,11 @@ function WikiPage({
         overflow: 'hidden',
       }}
     >
-      <PlayClock startISO={playStart} playDuration={victory?.playDuration} />
+      <PlayClock
+        startISO={playStart}
+        playDuration={victory?.playDuration}
+        hidden={userSettings.hideTimer}
+      />
       <Grid
         container
         spacing={0}

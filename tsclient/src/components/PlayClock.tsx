@@ -5,6 +5,7 @@ interface PlayClockProps {
   startISO: string | undefined | null;
   playDuration?: number;
   positioning?: SxProps;
+  hidden?: boolean;
 }
 
 export function humanFormatDuration(totalSeconds: number): string {
@@ -22,7 +23,8 @@ function PlayClock({
     top: 14,
     right: 46,
   },
-}: PlayClockProps): JSX.Element {
+  hidden = false,
+}: PlayClockProps): JSX.Element | null {
   const [duration, setDuration] = useState<number>(0);
 
   useEffect(() => {
@@ -41,6 +43,8 @@ function PlayClock({
       clearInterval(interval);
     };
   }, [playDuration, startISO]);
+
+  if (hidden) return null;
 
   return (
     <Box sx={positioning}>

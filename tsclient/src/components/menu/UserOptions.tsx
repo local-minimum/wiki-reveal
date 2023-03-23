@@ -17,6 +17,7 @@ export interface UserSettings {
   assistSpelling: boolean;
   wordCloud: boolean;
   numberHints: boolean;
+  hideTimer: boolean;
 }
 
 export const defaultSettings: UserSettings = {
@@ -29,6 +30,7 @@ export const defaultSettings: UserSettings = {
   assistSpelling: false,
   wordCloud: true,
   numberHints: true,
+  hideTimer: false,
 };
 
 interface UserOptionsProps {
@@ -42,7 +44,7 @@ function UserOptions({
 }: UserOptionsProps): JSX.Element {
   const {
     autoScrollGuess, autoScrollGuessCoop, allowHints, mobileExtraBottom, boringHints,
-    assistSpelling, noScrollPage, wordCloud, numberHints,
+    assistSpelling, noScrollPage, wordCloud, numberHints, hideTimer,
   } = userSettings;
   return (
     <Dialog open onClose={onClose}>
@@ -107,6 +109,16 @@ function UserOptions({
             control={<Switch />}
             onChange={() => onChangeUserSettings(
               { ...userSettings, wordCloud: !wordCloud },
+            )}
+          />
+        </FormGroup>
+        <FormGroup>
+          <FormControlLabel
+            checked={hideTimer}
+            label="Hide timer while playing"
+            control={<Switch />}
+            onChange={() => onChangeUserSettings(
+              { ...userSettings, hideTimer: !hideTimer },
             )}
           />
         </FormGroup>

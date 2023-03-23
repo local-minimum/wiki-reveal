@@ -102,11 +102,17 @@ function Victory({
 
   const handleShare = () => {
     const nAchieve = newAchievements.length;
-    const hasAchievements = nAchieve === 0 ? '' : ` earning me ${nAchieve} new ${pluralize('achievement', nAchieve)}`;
-    const durationMsg = gameDuration == null ? '' : `${humanFormatDuration(gameDuration)} with `;
-    const msg = `I solved ${gameModeToText(gameMode)} ${gameName} ${String(game).slice(0, 6)} in ${durationMsg}${total} ${pluralize('guess', total)} using ${hints} ${pluralize('hint', hints)}!
-My accuracy was ${accuracy.toFixed(1)}% revealing ${revealed.toFixed(1)}% of the article${hasAchievements}. ${window.location.href}`;
-    navigator.clipboard.writeText(msg);
+
+    const msg = [
+      `I solved ${gameModeToText(gameMode)} ${gameName} ${String(game).slice(0, 6)} in ${total} ${pluralize('guess', total)}!`,
+      hints === 0 ? null : `I needed ${hints} ${pluralize('hint', hints)}!`,
+      gameDuration == null ? null : `It took me ${humanFormatDuration(gameDuration)}.`,
+      `My accuracy was ${accuracy.toFixed(1)}% revealing ${revealed.toFixed(1)}% of the article.`,
+      nAchieve === 0 ? null : `${nAchieve} new ${pluralize('achievement', nAchieve)}!`,
+      `Try it out: ${window.location.href}`,
+    ].filter((line) => line != null);
+
+    navigator.clipboard.writeText(msg.join('\n'));
     enqueueSnackbar('Copied message to clipboard', { variant: 'info' });
   };
 
