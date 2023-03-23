@@ -34,10 +34,43 @@ interface VictoryProps {
   gameMode: GameMode;
 }
 
-function gameModeToText(gameMode: GameMode): string {
+function emojiGuesses(guesses: number): string {
+  const guessString = `${guesses}`;
+  return guessString.split('').map((ch) => {
+    switch (ch) {
+      case '0':
+        return '0️⃣';
+      case '1':
+        return '1️⃣';
+      case '2':
+        return '2️⃣';
+      case '3':
+        return '3️⃣';
+      case '4':
+        return '4️⃣';
+      case '5':
+        return '5️⃣';
+      case '6':
+        return '6️⃣';
+      case '7':
+        return '7️⃣';
+      case '8':
+        return '8️⃣';
+      case '9':
+        return '9️⃣';
+      default:
+        return '';
+    }
+  }).join('');
+}
+
+function gameModeToText(
+  gameMode: GameMode,
+  hideToday = false,
+): string {
   switch (gameMode) {
     case 'today':
-      return 'today\'s';
+      return hideToday ? '' : 'today\'s';
     case 'yesterday':
       return 'yesterday\'s';
     case 'coop':
@@ -104,12 +137,12 @@ function Victory({
     const nAchieve = newAchievements.length;
 
     const msg = [
-      `I solved ${gameModeToText(gameMode)} ${gameName} ${String(game).slice(0, 6)} in ${total} ${pluralize('guess', total)}!`,
+      `I solved ${gameName} in ${emojiGuesses(total)} ${pluralize('guess', total)}!`,
       hints === 0 ? null : `I needed ${hints} ${pluralize('hint', hints)}!`,
       gameDuration == null ? null : `It took me ${humanFormatDuration(gameDuration)}.`,
       `My accuracy was ${accuracy.toFixed(1)}% revealing ${revealed.toFixed(1)}% of the article.`,
       nAchieve === 0 ? null : `${nAchieve} new ${pluralize('achievement', nAchieve)}!`,
-      `Try it out: ${window.location.href}`,
+      `Try ${gameModeToText(gameMode, true)} ${gameName} (${String(game).slice(0, 6)}): ${window.location.href}`,
     ].filter((line) => line != null);
 
     navigator.clipboard.writeText(msg.join('\n'));
