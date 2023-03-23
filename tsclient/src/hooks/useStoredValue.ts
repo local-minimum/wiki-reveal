@@ -12,7 +12,7 @@ function useStoredValue<T>(
   defaultValue: T | undefined = undefined,
   enforce = false,
 ):readonly [T | undefined, (newValue: T) => void] {
-  const [value, setValue] = useState(() => loadStored(key, defaultValue));
+  const [value, setValue] = useState(loadStored(key, defaultValue));
   const previousKey = usePrevious(key);
 
   useEffect(() => {
@@ -30,10 +30,13 @@ function useStoredValue<T>(
     }
   }, [key]);
 
-  if (enforce && typeof value === 'object') {
-    return [{ ...defaultValue, ...value }, handleNewValue];
+  const isShifting = key !== previousKey;
+  const outValue: T | undefined = isShifting ? loadStored(key, defaultValue) : value;
+
+  if (enforce && typeof defaultValue === 'object') {
+    return [{ ...defaultValue, ...outValue }, handleNewValue];
   }
-  return [value, handleNewValue];
+  return [outValue, handleNewValue];
 }
 
 export default useStoredValue;
