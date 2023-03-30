@@ -17,7 +17,7 @@ ChartJS.register(
   Title,
 );
 
-export const options = {
+const options = {
   responsive: true,
   plugins: {
     title: {

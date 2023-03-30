@@ -12,6 +12,7 @@ import GuessHistogram from './GuessHistogram';
 import GuessTable from './GuessTable';
 import { UserSettings } from './menu/UserOptions';
 import { GameMode } from '../api/page';
+import GuessProgression from './GuessProgression';
 
 interface GameStatsProps {
   guesses: Array<Guess>;
@@ -28,6 +29,7 @@ enum GameStatTab {
   WordCloud = 'word-cloud',
   Histogram = 'histogram',
   GuessHistory = 'guess-history',
+  Progression = 'progression',
 }
 
 interface TabPanelProps {
@@ -84,6 +86,7 @@ function GameStats({
           >
             <Tab label="Word Cloud" value={GameStatTab.WordCloud} />
             <Tab label="Histogram" value={GameStatTab.Histogram} />
+            <Tab label="Progression" value={GameStatTab.Progression} />
             <Tab label="Guess History" value={GameStatTab.GuessHistory} />
           </Tabs>
         </Box>
@@ -98,6 +101,9 @@ function GameStats({
         </TabPanel>
         <TabPanel value={GameStatTab.Histogram} selected={activeTab}>
           <GuessHistogram guesses={guesses} lexicon={lexicon} />
+        </TabPanel>
+        <TabPanel value={GameStatTab.Progression} selected={activeTab}>
+          <GuessProgression guesses={guesses} lexicon={lexicon} />
         </TabPanel>
         <TabPanel value={GameStatTab.GuessHistory} selected={activeTab}>
           <GuessTable

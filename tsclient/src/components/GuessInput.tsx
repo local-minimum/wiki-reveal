@@ -27,15 +27,21 @@ interface GuessInputProps {
 
 const INVALID = [' ', '-', '\'', '"', '_', '.', ':', ';', '\n', '\t', '\r'];
 
+function wordLengthText(wordLength: number | undefined): string {
+  if (wordLength == null || wordLength <= 3) return '';
+  return ` [${wordLength}]`;
+}
+
 function labelText(
   isFreeWord: boolean | undefined,
   hasIllegal: boolean,
   isGuessed: boolean,
+  wordLength: number | undefined,
 ): string {
   if (hasIllegal) return 'Includes illegal character';
   if (isFreeWord) return 'Free word given from start';
   if (isGuessed) return 'Already guessed';
-  return 'Guess';
+  return `Guess${wordLengthText(wordLength)}`;
 }
 
 function inputColor(
@@ -84,7 +90,7 @@ function GuessInput({
             onAddGuess(cleanCurrentGuess);
           }
         }}
-        label={labelText(isFreeWord, hasIllegal, isGuessed)}
+        label={labelText(isFreeWord, hasIllegal, isGuessed, cleanCurrentGuess.length)}
         spellCheck
         size={compact ? 'small' : 'medium'}
       />

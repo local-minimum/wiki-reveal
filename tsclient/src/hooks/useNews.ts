@@ -14,6 +14,16 @@ interface News {
 
 const news: NewsItem[] = [
   {
+    id: 'guess-progression',
+    title: 'There is a new graph!',
+    content: 'You can see how you progressed or got stuck in the stats section',
+  },
+  {
+    id: 'letter-count',
+    title: 'Stop counting letters',
+    content: 'You can now directly see in the guess field how long the guess is',
+  },
+  {
     id: 'timer',
     title: 'You can now see the time elapsed (or not)',
     content: 'There\'s a timer (that can be hidden in the settings) for those of us that are more interested in fast than accurate play',

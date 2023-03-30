@@ -118,6 +118,11 @@ function humanFormatDuration(totalSeconds: number): string {
   return `${minutes} ${pluralize('minute', minutes)} and ${seconds} ${pluralize('second', seconds)}`;
 }
 
+function addSpaceIfNotEmpty(stuff: string): string {
+  if (stuff === '') return stuff;
+  return `${stuff} `;
+}
+
 function Victory({
   hints, guesses, game, onRevealAll, accuracy, revealed, visible, onSetVisible,
   achievements, gameMode, unmasked, onUnrevealAll, gameName = 'Wiki Reveal', onShowStats,
@@ -142,7 +147,7 @@ function Victory({
       gameDuration == null ? null : `It took me ${humanFormatDuration(gameDuration)}.`,
       `My accuracy was ${accuracy.toFixed(1)}% revealing ${revealed.toFixed(1)}% of the article.`,
       nAchieve === 0 ? null : `${nAchieve} new ${pluralize('achievement', nAchieve)}!`,
-      `Try ${gameModeToText(gameMode, true)} ${gameName} (${String(game).slice(0, 6)}): ${window.location.href}`,
+      `Try ${addSpaceIfNotEmpty(gameModeToText(gameMode, true))}${gameName} (${String(game).slice(0, 6)}): ${window.location.href}`,
     ].filter((line) => line != null);
 
     navigator.clipboard.writeText(msg.join('\n'));
