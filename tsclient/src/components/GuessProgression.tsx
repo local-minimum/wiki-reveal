@@ -50,7 +50,7 @@ function GuessProgression({ guesses, lexicon }: GuessProgressionProps): JSX.Elem
   });
 
   const data = {
-    labels: series.map((_, idx) => idx),
+    labels: series.map((_, idx) => idx + 1),
     datasets: [
       {
         label: 'Best guess hits',
