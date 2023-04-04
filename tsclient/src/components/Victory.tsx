@@ -143,7 +143,7 @@ function Victory({
 
     const msg = [
       `I solved ${gameName} in ${emojiGuesses(total)} ${pluralize('guess', total)}!`,
-      hints === 0 ? null : `I needed ${hints} ${pluralize('hint', hints)}!`,
+      hints === 0 ? null : `I needed ${emojiGuesses(hints)} ${pluralize('hint', hints)}!`,
       gameDuration == null ? null : `It took me ${humanFormatDuration(gameDuration)}.`,
       `My accuracy was ${accuracy.toFixed(1)}% revealing ${revealed.toFixed(1)}% of the article.`,
       nAchieve === 0 ? null : `${nAchieve} new ${pluralize('achievement', nAchieve)}!`,
