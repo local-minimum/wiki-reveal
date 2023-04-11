@@ -230,7 +230,9 @@ function SiteMenu({
       {showWipe && <WipeDataDialog onClose={() => setShowWipe(false)} />}
       {showAbout && <InfoDialog onClose={() => setShowAbout(false)} />}
       {showHowTo && <HowTo onClose={() => setShowHowTo(false)} />}
-      {showGameHistory && <VictoryHistory onClose={() => setShowGameHistory(false)} />}
+      {showGameHistory && (
+        <VictoryHistory language={language} onClose={() => setShowGameHistory(false)} />
+      )}
       {showAchievements && (
         <Achievements achievements={achievements} onClose={() => setShowAchievements(false)} />
       )}

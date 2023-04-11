@@ -1,7 +1,8 @@
-import { faClose } from '@fortawesome/free-solid-svg-icons';
+import { faClose, faLink } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
+  Link,
   SxProps,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, useMediaQuery, useTheme,
 } from '@mui/material';
@@ -12,10 +13,11 @@ import { VictoryType } from '../VictoryType';
 import { humanFormatDuration } from '../PlayClock';
 
 interface VictoryHistoryProps {
+  language: string | undefined;
   onClose: () => void;
 }
 
-function VictoryHistory({ onClose }: VictoryHistoryProps): JSX.Element {
+function VictoryHistory({ onClose, language }: VictoryHistoryProps): JSX.Element {
   const theme = useTheme();
   const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
   const [playerResults] = useStoredValue<Array<[number, VictoryType]>>('player-results', []);
@@ -23,7 +25,7 @@ function VictoryHistory({ onClose }: VictoryHistoryProps): JSX.Element {
   const xsTableSx: SxProps | undefined = isSmall ? { fontSize: '70%' } : undefined;
 
   return (
-    <Dialog open onClose={onClose} fullWidth>
+    <Dialog open onClose={onClose} fullWidth sx={{ maxWidth: '95vw' }}>
       <DialogTitle>Victories</DialogTitle>
       <DialogContent>
         <DialogContentText>
@@ -35,7 +37,7 @@ function VictoryHistory({ onClose }: VictoryHistoryProps): JSX.Element {
           }
         </DialogContentText>
         {playerResults.length > 0 && (
-          <TableContainer sx={{ maxHeight: '50vw' }}>
+          <TableContainer sx={{ maxHeight: '80vh' }}>
             <Table>
               <TableHead>
                 <TableRow>
@@ -83,7 +85,15 @@ function VictoryHistory({ onClose }: VictoryHistoryProps): JSX.Element {
                 }]) => (
                   <TableRow key={gameId}>
                     <TableCell sx={xsTableSx}>{gameId}</TableCell>
-                    <TableCell sx={xsTableSx}>{pageName.replace('_', ' ')}</TableCell>
+                    <TableCell sx={xsTableSx}>
+                      {pageName.replace(/_/g, ' ')}
+                      <Link
+                        href={`https://${language}.wikipedia.org/wiki/${pageName}`}
+                        sx={{ color: '#25283D', marginLeft: 1 }}
+                      >
+                        <FontAwesomeIcon icon={faLink} />
+                      </Link>
+                    </TableCell>
                     <TableCell sx={xsTableSx}>{`${guesses} (${hints})`}</TableCell>
                     <TableCell sx={xsTableSx}>{accuracy.toFixed(1)}</TableCell>
                     <TableCell sx={xsTableSx}>{revealed.toFixed(1)}</TableCell>
