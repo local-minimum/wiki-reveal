@@ -35,7 +35,7 @@ const commonSX: SxProps<Theme> = {
 
 const titleSX: SxProps<Theme> = {
   ...commonSX,
-  fontSize: '28pt',
+  fontSize: '32pt',
   pt: 1,
 };
 

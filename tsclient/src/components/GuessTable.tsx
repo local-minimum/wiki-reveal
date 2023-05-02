@@ -259,7 +259,7 @@ function GuessTable({
                           bgcolor: stringToColor(userName),
                           height: 24,
                           width: 24,
-                          fontSize: '8tp',
+                          fontSize: '8pt',
                         }}
                         alt={userName}
                       >

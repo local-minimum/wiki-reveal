@@ -42,15 +42,15 @@ function getHeader(depth: number) {
 function getFontSize(depth: number) {
   switch (depth) {
     case 0:
-      return '24pt';
+      return '26pt';
     case 1:
-      return '22pt';
+      return '24pt';
     case 2:
-      return '20pt';
+      return '22pt';
     case 3:
-      return '18pt';
+      return '20pt';
     default:
-      return '16pt';
+      return '18pt';
   }
 }
 
