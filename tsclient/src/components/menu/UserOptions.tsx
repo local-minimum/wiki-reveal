@@ -2,7 +2,7 @@ import * as React from 'react';
 import {
   Button,
   Dialog, DialogActions, DialogContent, DialogTitle,
-  FormControlLabel, FormGroup, Switch, Typography,
+  FormControlLabel, FormGroup, Slider, Switch, Typography,
 } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClose } from '@fortawesome/free-solid-svg-icons';
@@ -18,6 +18,7 @@ export interface UserSettings {
   wordCloud: boolean;
   numberHints: boolean;
   hideTimer: boolean;
+  wikiFontSize: number;
 }
 
 export const defaultSettings: UserSettings = {
@@ -31,6 +32,7 @@ export const defaultSettings: UserSettings = {
   wordCloud: true,
   numberHints: true,
   hideTimer: false,
+  wikiFontSize: 14,
 };
 
 interface UserOptionsProps {
@@ -44,7 +46,7 @@ function UserOptions({
 }: UserOptionsProps): JSX.Element {
   const {
     autoScrollGuess, autoScrollGuessCoop, allowHints, mobileExtraBottom, boringHints,
-    assistSpelling, noScrollPage, wordCloud, numberHints, hideTimer,
+    assistSpelling, noScrollPage, wordCloud, numberHints, hideTimer, wikiFontSize,
   } = userSettings;
   return (
     <Dialog open onClose={onClose}>
@@ -60,7 +62,7 @@ function UserOptions({
             )}
           />
         </FormGroup>
-        <Typography variant="caption">
+        <Typography variant="caption" gutterBottom>
           This will attempt to slightly alter what you entered so that
           if there is a similar enought word in the article,
           then it will be chosen.
@@ -68,6 +70,21 @@ function UserOptions({
           words than what you intended, if your input was not
           present in the article.
         </Typography>
+        <FormGroup>
+          <Typography id="font-size-slider">Wiki font size</Typography>
+          <Slider
+            min={6}
+            max={30}
+            step={1}
+            value={wikiFontSize}
+            onChange={(_, value) => {
+              if (typeof value === 'number') {
+                onChangeUserSettings({ ...userSettings, wikiFontSize: value });
+              }
+            }}
+            aria-labelledby="font-size-slider"
+          />
+        </FormGroup>
         <FormGroup>
           <FormControlLabel
             checked={mobileExtraBottom}

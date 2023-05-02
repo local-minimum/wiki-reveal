@@ -23,6 +23,7 @@ interface RedactedPageProps {
   hideWords: string[];
   masked: boolean;
   numberHints: boolean;
+  fontSize: number;
 }
 
 const commonSX: SxProps<Theme> = {
@@ -33,22 +34,22 @@ const commonSX: SxProps<Theme> = {
   fontFamily: 'ui-monospace, monospace',
 };
 
-const titleSX: SxProps<Theme> = {
-  ...commonSX,
-  fontSize: '32pt',
-  pt: 1,
-};
-
-const summarySX: SxProps<Theme> = {
-  ...commonSX,
-  fontSize: '14pt',
-  marginTop: 1,
-};
-
 function RedactedPage({
   title, summary, sections, isSolved, language, pageName, scrollToFocusWordCheck, focusWord,
-  containerNode, hideWords, masked, scrollButtonYOffset, numberHints,
+  containerNode, hideWords, masked, scrollButtonYOffset, numberHints, fontSize,
 }: RedactedPageProps): JSX.Element {
+  const titleSX: SxProps<Theme> = {
+    ...commonSX,
+    fontSize: `${fontSize + 18}pt`,
+    pt: 1,
+  };
+
+  const summarySX: SxProps<Theme> = {
+    ...commonSX,
+    fontSize: `${fontSize}pt`,
+    marginTop: 1,
+  };
+
   const titleId = 'redacted-article-title';
   return (
     <>
@@ -101,6 +102,7 @@ function RedactedPage({
             hideWords={hideWords}
             masked={masked}
             numberHints={numberHints}
+            fontSize={fontSize}
           />
         ))
       }

@@ -22,6 +22,7 @@ interface WikiSectionProps {
   hideWords: string[];
   numberHints: boolean;
   masked: boolean;
+  fontSize: number;
 }
 
 function getHeader(depth: number) {
@@ -39,18 +40,18 @@ function getHeader(depth: number) {
   }
 }
 
-function getFontSize(depth: number) {
+function getFontSize(depth: number, base: number) {
   switch (depth) {
     case 0:
-      return '26pt';
+      return `${base + 12}pt`;
     case 1:
-      return '24pt';
+      return `${base + 10}pt`;
     case 2:
-      return '22pt';
+      return `${base + 8}pt`;
     case 3:
-      return '20pt';
+      return `${base + 6}pt`;
     default:
-      return '18pt';
+      return `${base + 4}pt`;
   }
 }
 
@@ -63,11 +64,6 @@ const commonSX: SxProps<Theme> = {
   fontFamily: 'ui-monospace, monospace',
 };
 
-const bodySx: SxProps<Theme> = {
-  ...commonSX,
-  fontSize: '14pt',
-};
-
 function WikiSection({
   section: {
     title, paragraphs, sections, depth,
@@ -77,10 +73,19 @@ function WikiSection({
   hideWords,
   masked,
   numberHints,
+  fontSize,
 }: WikiSectionProps): JSX.Element {
+  const bodySx: SxProps<Theme> = {
+    ...commonSX,
+    fontSize: `${fontSize}pt`,
+  };
+
   return (
     <>
-      <Typography variant={getHeader(depth)} sx={{ fontSize: getFontSize(depth), ...commonSX }}>
+      <Typography
+        variant={getHeader(depth)}
+        sx={{ fontSize: getFontSize(depth, fontSize), ...commonSX }}
+      >
         <WikiParagraph
           text={title}
           focusWord={focusWord}
@@ -119,6 +124,7 @@ function WikiSection({
             hideWords={hideWords}
             masked={masked}
             numberHints={numberHints}
+            fontSize={fontSize}
           />
         ))
       }

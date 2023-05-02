@@ -492,6 +492,7 @@ function WikiPage({
             numberHints={userSettings.numberHints}
             scrollToFocusWordCheck={focusedWordScrollToCheck}
             scrollButtonYOffset="25vh"
+            fontSize={userSettings.wikiFontSize}
           />
           <Box sx={{ height: mobileExtraBottom ? '40vh' : '28vh' }} />
         </Box>
@@ -592,6 +593,7 @@ function WikiPage({
               containerNode={articleRef.current ?? undefined}
               scrollToFocusWordCheck={focusedWordScrollToCheck}
               numberHints={userSettings.numberHints}
+              fontSize={userSettings.wikiFontSize}
             />
           </TableContainer>
         </Grid>
