@@ -4,7 +4,7 @@ import * as React from 'react';
 import { LexicalizedToken } from '../types/wiki';
 
 const EquationSpan = styled('span')({
-  fontFamily: 'monospace',
+  fontFamily: 'ui-monospace, monospace',
   borderWidth: '2px',
   borderStyle: 'dotted',
   borderRadius: '1px',
@@ -36,13 +36,13 @@ interface WordBlockProps {
 const BlockedNumberHint = styled('span')({
   color: '#CEA2AC',
   backgroundColor: '#25283D',
-  fontFamily: 'monospace',
+  fontFamily: 'ui-monospace, monospace',
 });
 
 const Blocked = styled('span')({
   color: '#25283D',
   backgroundColor: '#25283D',
-  fontFamily: 'monospace',
+  fontFamily: 'ui-monospace, monospace',
 });
 
 function lengthBlock(word: string, filler = '█'): [string, string] {
@@ -71,7 +71,7 @@ interface WordBlockHiddenProps {
 
 const BlockedHidden = styled('span')({
   backgroundColor: '#8F3985',
-  fontFamily: 'monospace',
+  fontFamily: 'ui-monospace, monospace',
 });
 
 export function WordBlockHidden({ word }: WordBlockHiddenProps): JSX.Element {
@@ -84,7 +84,7 @@ const Focused = styled('span')({
   backgroundColor: '#CEA2AC',
   margin: -3,
   padding: 3,
-  fontFamily: 'monospace',
+  fontFamily: 'ui-monospace, monospace',
 });
 
 const ScrolledTo = styled('span')({
@@ -92,7 +92,7 @@ const ScrolledTo = styled('span')({
   color: '#EFD9CE',
   margin: -3,
   padding: 3,
-  fontFamily: 'monospace',
+  fontFamily: 'ui-monospace, monospace',
 });
 
 interface RevealedWordProps {

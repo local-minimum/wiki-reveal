@@ -30,18 +30,18 @@ const commonSX: SxProps<Theme> = {
   color: '#25283D',
   paddingLeft: 2,
   paddingRight: 2,
-  fontFamily: 'monospace',
+  fontFamily: 'ui-monospace, monospace',
 };
 
 const titleSX: SxProps<Theme> = {
   ...commonSX,
-  fontSize: '3rem',
+  fontSize: '28pt',
   pt: 1,
 };
 
 const summarySX: SxProps<Theme> = {
   ...commonSX,
-  fontSize: '1.1rem',
+  fontSize: '14pt',
   marginTop: 1,
 };
 

@@ -84,7 +84,7 @@ function RevealYesterday({
                   <Typography>
                     Yesterday&apos;s article title was:
                   </Typography>
-                  <Typography variant="h4" sx={{ fontFamily: 'monospace' }}>
+                  <Typography variant="h4" sx={{ fontFamily: 'ui-monospace, monospace' }}>
                     {
                       title.map(([word, isHidden], idx) => {
                         if (isHidden && !revealed[idx]) {

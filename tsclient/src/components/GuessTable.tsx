@@ -240,7 +240,7 @@ function GuessTable({
                         }}
                         sx={{
                           lineHeight: 1.43,
-                          fontSize: '0.875rem',
+                          fontSize: '10pt',
                           padding: 0,
                           color: 'rgba(0, 0, 0, 0.87)',
                         }}
@@ -259,7 +259,7 @@ function GuessTable({
                           bgcolor: stringToColor(userName),
                           height: 24,
                           width: 24,
-                          fontSize: '0.75rem',
+                          fontSize: '8tp',
                         }}
                         alt={userName}
                       >

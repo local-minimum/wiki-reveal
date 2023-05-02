@@ -42,15 +42,15 @@ function getHeader(depth: number) {
 function getFontSize(depth: number) {
   switch (depth) {
     case 0:
-      return '2.5rem';
+      return '24pt';
     case 1:
-      return '2rem';
+      return '22pt';
     case 2:
-      return '2.5rem';
+      return '20pt';
     case 3:
-      return '2rem';
+      return '18pt';
     default:
-      return '1.8rem';
+      return '16pt';
   }
 }
 
@@ -60,12 +60,12 @@ const commonSX: SxProps<Theme> = {
   paddingLeft: 2,
   paddingRight: 2,
   marginTop: 1,
-  fontFamily: 'monospace',
+  fontFamily: 'ui-monospace, monospace',
 };
 
 const bodySx: SxProps<Theme> = {
   ...commonSX,
-  fontSize: '1.1rem',
+  fontSize: '14pt',
 };
 
 function WikiSection({
