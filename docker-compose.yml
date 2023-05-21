@@ -24,6 +24,7 @@ services:
       - WR_WS_COORS
       - WR_WS_DEBUG
       - WR_PAGES
+      - WR_FORCE_PAGE
 
   wiki_reveal_frontend:
     build: ./tsclient

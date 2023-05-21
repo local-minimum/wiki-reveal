@@ -6,12 +6,13 @@ import os
 from wiki_reveal.page_options import load_page_name_options
 
 _SEED = int(os.environ.get('WR_SEED', 777))
+_FORCE_PAGE = os.environ.get('WR_FORCE_PAGE', '')
 
 
 @cache
 def randomize_titles() -> list[str]:
     rng = Random(_SEED)
-    titles = load_page_name_options()
+    titles = load_page_name_options() if not _FORCE_PAGE else { 'forced': [_FORCE_PAGE] }
     categorized = [list(v) for v in titles.values()]
     tuple(map(rng.shuffle, categorized))
     counts = [len(v) for v in categorized]
