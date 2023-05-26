@@ -148,7 +148,7 @@ def get_page(
             raise NoSuchPageError
 
     return Page(
-        title=tuple(tokenize(page.title)),
+        title=tuple(tokenize(page.title.replace('_', ' '))),
         summary=tuple(tokenize(page.summary)),
         sections=unwrap_sections(page)
     )
