@@ -68,7 +68,8 @@ export function splitParagraphs(text: LexicalizedToken[]): Array<LexicalizedToke
 
 export function trimSections(sections: Section[]): Section[] {
   let include = true;
-  const trimAt = ['references', 'see also', 'notes', 'external links', 'sources', 'further reading'];
+  // excluded 'sources' from list since it can give false positives e.g. on 'Louis IX of France'
+  const trimAt = ['references', 'see also', 'notes', 'external links', 'further reading'];
 
   return sections.filter(({ title }) => {
     if (!include) return false;
