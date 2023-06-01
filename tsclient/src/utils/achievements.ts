@@ -288,7 +288,7 @@ export function achievementToTitle(achievement: Achievement): [string, string] {
     case Achievement.SpeedOneHour:
       return ['Human', 'Solve game in less than one hour'];
     case Achievement.ThinkOnIt:
-      return ['Pensative', 'Solve the game at least 18 hours after starting it'];
+      return ['Pensive', 'Solve the game at least 18 hours after starting it'];
     case Achievement.EarlyTenMinutes:
       return ['Early Bird', 'Solve the game within 10 minutes of becoming available'];
     case Achievement.EarlyOneHour:
