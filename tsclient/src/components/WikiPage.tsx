@@ -31,6 +31,7 @@ import usePrevious from '../hooks/usePrevious';
 import GuessCloud from './GuessCloud';
 import PlayClock from './PlayClock';
 import { isDefined } from '../utils/typeGates';
+import { wikiPageBGColor } from '../utils/colors';
 
 function randomEntry<T>(arr: T[]): T {
   return arr[Math.min(Math.floor(Math.random() * arr.length), arr.length - 1)];
@@ -603,7 +604,7 @@ function WikiPage({
           }}
           hidden={userSettings.hideTimer}
         />
-        <Box sx={{ backgroundColor: '#EFD9CE' }}>
+        <Box sx={{ backgroundColor: wikiPageBGColor(gameMode) }}>
           <Tooltip title={`${progress.toFixed(1)}% of article revealed.`}>
             <LinearProgress
               variant={isLoading ? undefined : 'determinate'}
@@ -625,6 +626,7 @@ function WikiPage({
             scrollToFocusWordCheck={focusedWordScrollToCheck}
             scrollButtonYOffset="25vh"
             fontSize={userSettings.wikiFontSize}
+            gameMode={gameMode}
           />
           <Box sx={{ height: mobileExtraBottom ? '40vh' : '28vh' }} />
         </Box>
@@ -703,7 +705,7 @@ function WikiPage({
           sx={{
             height: '100vh',
             overflow: 'hidden',
-            backgroundColor: '#EFD9CE',
+            backgroundColor: wikiPageBGColor(gameMode),
           }}
         >
           <TableContainer component="div" sx={{ height: '100%' }} ref={articleRef}>
@@ -728,6 +730,7 @@ function WikiPage({
               scrollToFocusWordCheck={focusedWordScrollToCheck}
               numberHints={userSettings.numberHints}
               fontSize={userSettings.wikiFontSize}
+              gameMode={gameMode}
             />
           </TableContainer>
         </Grid>

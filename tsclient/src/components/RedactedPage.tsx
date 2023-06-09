@@ -8,6 +8,8 @@ import ScrollToTop from './ScrollToTop';
 
 import WikiParagraph from './WikiParagraph';
 import WikiSection from './WikiSection';
+import { wikiPageBGColor } from '../utils/colors';
+import { GameMode } from '../api/page';
 
 interface RedactedPageProps {
   title: LexicalizedToken[];
@@ -24,10 +26,10 @@ interface RedactedPageProps {
   masked: boolean;
   numberHints: boolean;
   fontSize: number;
+  gameMode: GameMode;
 }
 
 const commonSX: SxProps<Theme> = {
-  backgroundColor: '#EFD9CE',
   color: '#25283D',
   paddingLeft: 2,
   paddingRight: 2,
@@ -36,18 +38,20 @@ const commonSX: SxProps<Theme> = {
 
 function RedactedPage({
   title, summary, sections, isSolved, language, pageName, scrollToFocusWordCheck, focusWord,
-  containerNode, hideWords, masked, scrollButtonYOffset, numberHints, fontSize,
+  containerNode, hideWords, masked, scrollButtonYOffset, numberHints, fontSize, gameMode,
 }: RedactedPageProps): JSX.Element {
   const titleSX: SxProps<Theme> = {
     ...commonSX,
     fontSize: `${fontSize + 18}pt`,
     pt: 1,
+    backgroundColor: wikiPageBGColor(gameMode),
   };
 
   const summarySX: SxProps<Theme> = {
     ...commonSX,
     fontSize: `${fontSize}pt`,
     marginTop: 1,
+    backgroundColor: wikiPageBGColor(gameMode),
   };
 
   const titleId = 'redacted-article-title';
@@ -103,6 +107,7 @@ function RedactedPage({
             masked={masked}
             numberHints={numberHints}
             fontSize={fontSize}
+            gameMode={gameMode}
           />
         ))
       }

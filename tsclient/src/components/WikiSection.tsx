@@ -6,6 +6,8 @@ import * as React from 'react';
 
 import { Section } from '../types/wiki';
 import WikiParagraph from './WikiParagraph';
+import { wikiPageBGColor } from '../utils/colors';
+import { GameMode } from '../api/page';
 
 /* Palette
 #25283D
@@ -23,6 +25,7 @@ interface WikiSectionProps {
   numberHints: boolean;
   masked: boolean;
   fontSize: number;
+  gameMode: GameMode;
 }
 
 function getHeader(depth: number) {
@@ -56,7 +59,7 @@ function getFontSize(depth: number, base: number) {
 }
 
 const commonSX: SxProps<Theme> = {
-  backgroundColor: '#EFD9CE',
+  // backgroundColor: '#EFD9CE',
   color: '#25283D',
   paddingLeft: 2,
   paddingRight: 2,
@@ -74,10 +77,12 @@ function WikiSection({
   masked,
   numberHints,
   fontSize,
+  gameMode,
 }: WikiSectionProps): JSX.Element {
   const bodySx: SxProps<Theme> = {
     ...commonSX,
     fontSize: `${fontSize}pt`,
+    backgroundColor: wikiPageBGColor(gameMode),
   };
 
   return (
@@ -125,6 +130,7 @@ function WikiSection({
             masked={masked}
             numberHints={numberHints}
             fontSize={fontSize}
+            gameMode={gameMode}
           />
         ))
       }
