@@ -180,12 +180,12 @@ function GuessInput({
 
   return (
     <Stack direction="row" gap={1} sx={latteralPad ? { marginLeft: 0.5, marginRight: 0.5 } : undefined}>
-      <FormControl>
+      <FormControl sx={{ flex: 1 }}>
         <InputLabel htmlFor="guess-input-field">{inputLabel}</InputLabel>
         <OutlinedInput
           id="guess-input-field"
           type="text"
-          sx={{ flex: 1, '& legend': { visibility: 'visible' } }}
+          sx={{ '& legend': { visibility: 'visible' } }}
           disabled={isLoading || isError || isDone || unmasked}
           autoFocus
           color={inputColor(isFreeWord, hasIllegal, isGuessed)}
