@@ -30,6 +30,7 @@ import { CoopRoomSettings } from '../hooks/useCoop';
 import usePrevious from '../hooks/usePrevious';
 import GuessCloud from './GuessCloud';
 import PlayClock from './PlayClock';
+import { isDefined } from '../utils/typeGates';
 
 function randomEntry<T>(arr: T[]): T {
   return arr[Math.min(Math.floor(Math.random() * arr.length), arr.length - 1)];
@@ -101,6 +102,51 @@ function revealedTitle(
     title.some(([_, __, lex]) => lex === entry)
       && title.every(([_, isHidden, lex]) => !isHidden || lex === entry)
   );
+}
+
+function convertToGuess(
+  currentGuess: string,
+  lexicon: Record<string, number>,
+  spellAssist: boolean,
+): string | null {
+  const rawEntry = wordAsLexicalEntry(currentGuess);
+  if (spellAssist && rawEntry !== null && lexicon[rawEntry] === undefined) {
+    const entryAlternatives = Object.keys(lexicon)
+      .map<[string, number]>((lex) => [lex, distance(rawEntry, lex) / lex.length])
+      .filter(([_, dist]) => dist < 0.4)
+      .sort(([_, distA], [__, distB]) => (distA < distB ? -1 : 1));
+    return entryAlternatives[0]?.[0] ?? rawEntry;
+  }
+  return rawEntry;
+}
+
+function createVictory(
+  pageName: string,
+  lexicon: Record<string, number>,
+  guesses: Guess[],
+  hints: number,
+  freeWords: string[] | undefined,
+  playStart: string | null,
+): [victory: VictoryType, playEnd: Date] {
+  const justWon = true;
+
+  const playEnd = new Date();
+  const playDuration = playStart === null ? null : (
+    Math.floor(playEnd.getTime() / 1000)
+          - Math.floor(new Date(playStart).getTime() / 1000)
+  );
+
+  return [
+    {
+      guesses: guesses.length - hints,
+      hints,
+      accuracy: justWon ? calculateAccuracy(lexicon, guesses) : 0,
+      revealed: justWon ? calculateProgress(lexicon, freeWords, guesses) : 0,
+      pageName,
+      playDuration: playDuration ?? undefined,
+    },
+    playEnd,
+  ];
 }
 
 function WikiPage({
@@ -244,43 +290,128 @@ function WikiPage({
     ],
   );
 
+  const addMultiGuess = React.useCallback((currentGuesses: string[]): void => {
+    if (gameId === undefined || pageName === undefined) return;
+
+    const newGuesses: string[] = currentGuesses
+      .map((g) => convertToGuess(g, lexicon, userSettings.assistSpelling))
+      .filter(isDefined)
+      .filter((g) => !activeGuesses.some(([word]) => word === g));
+
+    if (newGuesses.length === 0) return;
+
+    const justWon = title.filter(([_, isHidden, lex]) => !isHidden || newGuesses.includes(lex ?? '')).length === title.length;
+
+    const nextGuesses: Array<Guess> = [
+      ...activeGuesses,
+      ...newGuesses.map((entry): Guess => [entry, false, username]),
+    ];
+
+    const [newVictory, playEnd] = justWon
+      ? createVictory(pageName, lexicon, nextGuesses, hints, freeWords, playStart)
+      : [null, null];
+
+    if (gameMode === 'coop') {
+      newGuesses.forEach((entry) => onCoopGuess(entry, false));
+
+      if (newVictory != null) {
+        onSetVictory(newVictory);
+
+        if (username !== null && coopRoom !== null) {
+          const newCoopAchievements = checkCoopVictoryAchievements(
+            username,
+            coopGuesses,
+            lexicon,
+            titleLexes,
+          ).filter((achievement) => achievements[achievement] === undefined);
+          onSetAchievements(
+            updateAchievements(
+              achievements,
+              newCoopAchievements,
+              coopRoom,
+            ),
+          );
+        }
+      }
+
+      return;
+    }
+
+    onSetSoloGuesses(nextGuesses);
+
+    let newAchievements = [];
+    if (victory !== null && achievements[Achievement.ContinueGuessing] === undefined) {
+      newAchievements.push(Achievement.ContinueGuessing);
+    }
+
+    newAchievements = [
+      ...newAchievements,
+      ...checkRankAchievements(nextGuesses, rankings)
+        .filter((achievement) => achievements[achievement] === undefined),
+    ];
+    newAchievements.map(reportAchievement);
+
+    if (newVictory != null) {
+      onSetVictory(newVictory);
+      const newVictoryAchievements = checkVictoryAchievements(
+        gameMode,
+        gameId,
+        newVictory,
+        nextGuesses,
+        titleLexes,
+        headingLexes,
+        playerResults,
+        newVictory.playDuration ?? null,
+        playEnd,
+        start,
+        end,
+      )
+        .filter((achievement) => achievements[achievement] === undefined);
+      if (newVictoryAchievements.length) {
+        onSetAchievements(
+          updateAchievements(
+            achievements,
+            [...newAchievements, ...newVictoryAchievements],
+            gameId,
+          ),
+        );
+        newVictoryAchievements.map(reportAchievement);
+      }
+      // TODO what happens if player complete yesterdays after todays?
+      setPlayerResults([...playerResults, [gameId, newVictory]]);
+    } else if (newAchievements.length > 0) {
+      onSetAchievements(updateAchievements(achievements, newAchievements, gameId));
+    }
+  }, [
+    achievements, activeGuesses, coopGuesses, coopRoom, end, freeWords, gameId,
+    gameMode, headingLexes, hints, lexicon, onCoopGuess, onSetAchievements,
+    onSetSoloGuesses, onSetVictory, pageName, playStart, playerResults, rankings,
+    reportAchievement, setPlayerResults, start, title, titleLexes,
+    userSettings.assistSpelling, username, victory,
+  ]);
+
   const addGuess = React.useCallback((currentGuess: string): void => {
     if (gameId === undefined || pageName === undefined) return;
-    const rawEntry = wordAsLexicalEntry(currentGuess);
-    let entry = rawEntry;
-    if (userSettings.assistSpelling && rawEntry !== null && lexicon[rawEntry] === undefined) {
-      const entryAlternatives = Object.keys(lexicon)
-        .map<[string, number]>((lex) => [lex, distance(rawEntry, lex) / lex.length])
-        .filter(([_, dist]) => dist < 0.4)
-        .sort(([_, distA], [__, distB]) => (distA < distB ? -1 : 1));
-      entry = entryAlternatives[0]?.[0] ?? rawEntry;
-    }
-    const justWon = entry !== null && revealedTitle(title, entry);
+
+    const entry = convertToGuess(currentGuess, lexicon, userSettings.assistSpelling);
 
     if (entry === null || freeWords?.includes(entry)) {
       return;
     }
+
+    const justWon = entry !== null && revealedTitle(title, entry);
+
+    // Is a new guess
     if (!activeGuesses.some(([word]) => word === entry)) {
       const nextGuesses: Array<Guess> = [...activeGuesses, [entry, false, username]];
 
-      const playEnd = new Date();
-      const playDuration = playStart === null ? null : (
-        Math.floor(playEnd.getTime() / 1000)
-          - Math.floor(new Date(playStart).getTime() / 1000)
-      );
-
-      const newVictory = {
-        guesses: activeGuesses.length - hints + 1,
-        hints,
-        accuracy: justWon ? calculateAccuracy(lexicon, nextGuesses) : 0,
-        revealed: justWon ? calculateProgress(lexicon, freeWords, nextGuesses) : 0,
-        pageName,
-        playDuration: playDuration ?? undefined,
-      };
+      const [newVictory, playEnd] = justWon
+        ? createVictory(pageName, lexicon, nextGuesses, hints, freeWords, playStart)
+        : [null, null];
 
       if (gameMode === 'coop') {
         onCoopGuess(entry, false);
-        if (justWon) {
+        if (newVictory != null) {
           onSetVictory(newVictory);
 
           if (username !== null && coopRoom !== null) {
@@ -301,6 +432,7 @@ function WikiPage({
         }
         return;
       }
+
       onSetSoloGuesses(nextGuesses);
 
       let newAchievements = [];
@@ -315,7 +447,7 @@ function WikiPage({
       ];
       newAchievements.map(reportAchievement);
 
-      if (justWon) {
+      if (newVictory != null) {
         onSetVictory(newVictory);
         const newVictoryAchievements = checkVictoryAchievements(
           gameMode,
@@ -325,7 +457,7 @@ function WikiPage({
           titleLexes,
           headingLexes,
           playerResults,
-          playDuration,
+          newVictory.playDuration ?? null,
           playEnd,
           start,
           end,
@@ -531,9 +663,11 @@ function WikiPage({
             hints={hints}
             freeWords={freeWords}
             onAddGuess={addGuess}
+            onAddMultiGuess={addMultiGuess}
             onAddHint={addHint}
             compact
             isCoop={gameMode === 'coop'}
+            isYesterday={gameMode === 'yesterday'}
             latteralPad
             userSettings={userSettings}
             allowCoopHints={coopRoomSettings?.allowHints ?? false}
@@ -661,8 +795,10 @@ function WikiPage({
             hints={hints}
             freeWords={freeWords}
             onAddGuess={addGuess}
+            onAddMultiGuess={addMultiGuess}
             onAddHint={addHint}
             isCoop={gameMode === 'coop'}
+            isYesterday={gameMode === 'yesterday'}
             userSettings={userSettings}
             allowCoopHints={coopRoomSettings?.allowHints ?? false}
           />

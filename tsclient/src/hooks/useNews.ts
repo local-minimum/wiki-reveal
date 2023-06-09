@@ -14,35 +14,25 @@ interface News {
 
 const news: NewsItem[] = [
   {
-    id: 'guess-progression',
-    title: 'There is a new graph!',
-    content: 'You can see how you progressed or got stuck in the stats section',
+    id: 'game-mode-feedback',
+    title: 'Info about how/what you play in guess field',
+    content: 'There are now some helpful icons with tooltips if you are playing yesterdays game or with spell assistance.',
+  },
+  {
+    id: 'auto-guess',
+    title: 'Stop inputing filler words',
+    content: 'You now have the option to guess sets of common filler words from the pen icon in the input field.',
   },
   {
     id: 'letter-count',
     title: 'Stop counting letters',
     content: 'You can now directly see in the guess field how long the guess is',
   },
-  {
-    id: 'timer',
-    title: 'You can now see the time elapsed (or not)',
-    content: 'There\'s a timer (that can be hidden in the settings) for those of us that are more interested in fast than accurate play',
-  },
-  {
-    id: 'number-hints',
-    title: 'See length of hidden word',
-    content: 'Because it is annoying to count length on mobile.',
-  },
-  {
-    id: 'game-stats',
-    title: 'Cool info about your current game',
-    content: 'From the menu you can access a section with various neat info about the current game',
-  },
-  {
-    id: 'word-cloud',
-    title: 'Word Clouds are still hot',
-    content: 'You can now see most of your guesses in a word cloud. There\'s a setting to disable if you hate it.',
-  },
+  // id: 'guess-progression',
+  // id: 'timer',
+  // id: 'number-hints',
+  // id: 'game-stats',
+  // id: 'word-cloud',
   // id: 'never-scroll',
   // id: 'spell-assist',
   // id: 'expressions',

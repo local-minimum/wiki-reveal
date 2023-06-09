@@ -1,7 +1,12 @@
-import { faCirclePlay, faPlay, faPuzzlePiece } from '@fortawesome/free-solid-svg-icons';
+import {
+  faCirclePlay, faSpellCheck, faClockRotateLeft, faPen, faPlay, faPuzzlePiece,
+} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  Button, IconButton, InputProps, Stack, TextField, Tooltip, useMediaQuery, useTheme,
+  Alert,
+  Button, FormControl, IconButton, InputAdornment, InputLabel, InputProps,
+  Menu, MenuItem, OutlinedInput, Stack,
+  Tooltip, useMediaQuery, useTheme,
 } from '@mui/material';
 import * as React from 'react';
 import { wordAsLexicalEntry } from '../utils/wiki';
@@ -12,11 +17,13 @@ interface GuessInputProps {
   isLoading: boolean;
   isError: boolean;
   isDone: boolean;
+  isYesterday: boolean;
   unmasked: boolean;
   hints: number;
   guesses: Guess[];
   freeWords: string[] | undefined;
   onAddGuess: (word: string) => void;
+  onAddMultiGuess: (words: string[]) => void;
   onAddHint: () => void;
   isCoop: boolean;
   allowCoopHints: boolean;
@@ -60,9 +67,83 @@ function parseInput(rawInput: string): string {
   return candidate[0] ?? '';
 }
 
+interface AutoGuess {
+  name: string,
+  guesses: string[],
+}
+
+const autoGuesses: AutoGuess[] = [
+  {
+    name: 'Verbs',
+    guesses: ['are', 'were', 'be', 'being', 'have', 'has', 'had', 'make'],
+  },
+  {
+    name: 'Numbers',
+    guesses: ['zero', 'one', 'two', 'three', 'four', 'first', 'second', 'third', '0', '000', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'i', 'ii'],
+  },
+  {
+    name: 'Pronouns',
+    guesses: ['he', 'him', 'his', 'she', 'her', 'hers', 'its', 'them', 'they', 'these', 'those', 'we'],
+  },
+  {
+    name: 'Letters',
+    guesses: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'],
+  },
+  {
+    name: 'This, That...',
+    guesses: ['this', 'that', 'there', 'then'],
+  },
+  {
+    name: 'Which, Where...',
+    guesses: ['which', 'where', 'when', 'who', 'while', 'how'],
+  },
+  {
+    name: 'Comparisons',
+    guesses: ['many', 'more', 'most', 'few', 'some'],
+  },
+  {
+    name: 'Directions',
+    guesses: ['north', 'south', 'west', 'east', 'central', 'northwest', 'northeast', 'southeast', 'southwest', 'northern', 'western', 'eastern', 'southern'],
+  },
+  {
+    name: 'Centuries',
+    guesses: ['century', 'centuries', '10th', '11th', '12th', '13th', '14th', '15th', '16th', '17th', '18th', '19th', '20th', '21st'],
+  },
+];
+
+function startAdornment(isYesterday: boolean, usesSpellCheck: boolean): JSX.Element | undefined {
+  const icons = [];
+  if (isYesterday) {
+    icons.push((
+      <Tooltip title="Playing yesterday's game">
+        <FontAwesomeIcon icon={faClockRotateLeft} />
+      </Tooltip>
+    ));
+  }
+
+  if (usesSpellCheck) {
+    icons.push((
+      <Tooltip title="Spell assist activated">
+        <FontAwesomeIcon icon={faSpellCheck} />
+      </Tooltip>
+    ));
+  }
+
+  if (icons.length === 0) return undefined;
+
+  return (
+    <InputAdornment position="start">
+      <Stack gap={0.5} direction="row">
+        {icons}
+      </Stack>
+    </InputAdornment>
+  );
+}
+
 function GuessInput({
   isLoading, isError, isDone, unmasked, hints, onAddGuess, onAddHint, freeWords,
-  isCoop, userSettings, compact = false, latteralPad = false, allowCoopHints, guesses,
+  isCoop, userSettings, compact = false, latteralPad = false, allowCoopHints, guesses, isYesterday,
+  onAddMultiGuess,
 }: GuessInputProps): JSX.Element {
   const { allowHints } = userSettings;
   const [currentGuess, setCurrentGuess] = React.useState('');
@@ -74,26 +155,81 @@ function GuessInput({
   const hasIllegal = INVALID.some((sub) => lex !== null && lex.includes(sub));
   const isGuessed = guesses.find(([guessLex]) => guessLex === lex) !== undefined;
 
+  const filteredAutoguesses = autoGuesses
+    .map(({ name, guesses: aGuesses }) => ({
+      name,
+      guesses: aGuesses.filter((g) => !freeWords?.some((w) => w === g)
+        && !guesses.some(([guessesLex]) => g === guessesLex)),
+    }));
+
+  const [autoGuessAnchorEl, setAutoGuessAnchorEl] = React.useState<null | HTMLElement>(null);
+  const open = Boolean(autoGuessAnchorEl);
+  const handleAutoGuessClick = (newGuesses: string[]) => {
+    setAutoGuessAnchorEl(null);
+    onAddMultiGuess(newGuesses);
+  };
+  const handleShowAutoGuess = (event: React.MouseEvent<HTMLElement>) => {
+    setAutoGuessAnchorEl(event.currentTarget);
+  };
+  const handleCloseAutoGuess = () => {
+    setAutoGuessAnchorEl(null);
+  };
+
+  const inputLabel = labelText(isFreeWord, hasIllegal, isGuessed, cleanCurrentGuess.length);
+  const usesSpellCheck = userSettings.assistSpelling;
+
   return (
     <Stack direction="row" gap={1} sx={latteralPad ? { marginLeft: 0.5, marginRight: 0.5 } : undefined}>
-      <TextField
-        sx={{ flex: 1 }}
-        disabled={isLoading || isError || isDone || unmasked}
-        variant="outlined"
-        focused
-        color={inputColor(isFreeWord, hasIllegal, isGuessed)}
-        value={currentGuess}
-        onChange={({ target: { value } }) => setCurrentGuess(parseInput(value))}
-        onKeyDown={({ key }) => {
-          if (key === 'Enter' && cleanCurrentGuess.length > 0 && !isFreeWord && !hasIllegal) {
-            setCurrentGuess('');
-            onAddGuess(cleanCurrentGuess);
-          }
-        }}
-        label={labelText(isFreeWord, hasIllegal, isGuessed, cleanCurrentGuess.length)}
-        spellCheck
-        size={compact ? 'small' : 'medium'}
-      />
+      <FormControl>
+        <InputLabel htmlFor="guess-input-field">{inputLabel}</InputLabel>
+        <OutlinedInput
+          id="guess-input-field"
+          type="text"
+          sx={{ flex: 1, '& legend': { visibility: 'visible' } }}
+          disabled={isLoading || isError || isDone || unmasked}
+          autoFocus
+          color={inputColor(isFreeWord, hasIllegal, isGuessed)}
+          value={currentGuess}
+          onChange={({ target: { value } }) => setCurrentGuess(parseInput(value))}
+          onKeyDown={({ key }) => {
+            if (key === 'Enter' && cleanCurrentGuess.length > 0 && !isFreeWord && !hasIllegal) {
+              setCurrentGuess('');
+              onAddGuess(cleanCurrentGuess);
+            }
+          }}
+          label={inputLabel}
+          spellCheck
+          size={compact ? 'small' : 'medium'}
+          startAdornment={startAdornment(isYesterday, usesSpellCheck)}
+          endAdornment={(
+            <InputAdornment position="end">
+              <IconButton aria-label="automatic-guessing" edge="end" onClick={handleShowAutoGuess}>
+                <FontAwesomeIcon icon={faPen} />
+              </IconButton>
+            </InputAdornment>
+        )}
+        />
+      </FormControl>
+      <Menu
+        anchorEl={autoGuessAnchorEl}
+        open={open}
+        onClose={handleCloseAutoGuess}
+      >
+        {filteredAutoguesses.map(({ name, guesses: aGuesses }) => (
+          <Tooltip key={name} title={`Guesses: ${aGuesses.join(', ')}`} arrow>
+            <MenuItem
+              disabled={aGuesses.length === 0}
+              onClick={() => handleAutoGuessClick(aGuesses)}
+            >
+              {`[${aGuesses.length}] ${name}`}
+            </MenuItem>
+          </Tooltip>
+        ))}
+        <Alert variant="outlined" severity="info" sx={{ maxWidth: '250px', m: 1 }}>
+          Guess a predefined group of guesses at once (number of new guesses within brackets)
+          so you don&apos;t have to type them all out. Hover each to see the exact guesses.
+        </Alert>
+      </Menu>
       <Tooltip title="Submit guess">
         {isExtraLarge ? (
           <Button
