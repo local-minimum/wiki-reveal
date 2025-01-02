@@ -8,7 +8,7 @@ import {
 import * as React from 'react';
 import { GameMode } from '../api/page';
 import usePrevious from '../hooks/usePrevious';
-import { useGuesses } from '../hooks/useGuesses';
+import { SortedGuess, SortType, SortVariant, } from '../hooks/useGuesses';
 import { initials, stringToColor } from '../utils/avatar';
 import { Guess } from './Guess';
 import { UserSettings } from './menu/UserOptions';
@@ -17,21 +17,24 @@ import SortIcon from './SortIcon';
 
 interface GuessTableProps {
   guesses: Array<Guess>;
+  sortedGuesses: Array<SortedGuess>,
   lexicon: Record<string, number>;
   rankings: Record<string, number>;
   onSetFocusWord: (word: string | null, requireHeader: boolean) => void;
+  onChangeSort: (type: SortType) => void;
+  sortType: SortType;
+  sortVariant: SortVariant;
   focusWord: string | null;
   titleLexes: string[];
   headingLexes: string[];
   gameMode: GameMode;
   userSettings: UserSettings;
-  unmasked: boolean;
-  freeWords: string[] | undefined;
 }
 
 function GuessTable({
   guesses, lexicon, onSetFocusWord, focusWord, titleLexes, headingLexes,
-  rankings, gameMode, userSettings, unmasked, freeWords,
+  rankings, gameMode, userSettings, sortedGuesses, onChangeSort, sortType,
+  sortVariant,
 }: GuessTableProps): JSX.Element {
   const { autoScrollGuess, autoScrollGuessCoop } = userSettings;
   const autoScroll = gameMode === 'coop' ? autoScrollGuessCoop : autoScrollGuess;
@@ -40,13 +43,6 @@ function GuessTable({
   const mostRecentGuessRef = React.useRef<HTMLTableRowElement | null>(null);
   const focusGuessRef = React.useRef<HTMLTableRowElement | null>(null);
   const previousFocusWord = usePrevious(focusWord);
-
-  const [
-    sortedGuesses,
-    sortType,
-    sortVariant,
-    changeSort,
-  ] = useGuesses(guesses, focusWord, lexicon, freeWords, unmasked);
 
   React.useEffect(() => {
     if (!autoScroll) return;
@@ -89,7 +85,7 @@ function GuessTable({
             onMouseLeave={() => setShowSort(false)}
           >
             <TableCell
-              onClick={() => changeSort('order')}
+              onClick={() => onChangeSort('order')}
               title="Guess order"
             >
               #
@@ -100,7 +96,7 @@ function GuessTable({
               )}
             </TableCell>
             <TableCell
-              onClick={() => changeSort('alphabetical')}
+              onClick={() => onChangeSort('alphabetical')}
               title="The lexical entry of your guess (lower case and removing diacritics)."
             >
               Guess
@@ -111,7 +107,7 @@ function GuessTable({
               )}
             </TableCell>
             <TableCell
-              onClick={() => changeSort('count')}
+              onClick={() => onChangeSort('count')}
               title="Number of occurances (if any) in article."
             >
               {isCramped ? 'n' : 'Count' }
@@ -123,7 +119,7 @@ function GuessTable({
             </TableCell>
             <TableCell
               title="Most frequent word has rank 1, second most rank 2 and so on."
-              onClick={() => changeSort('rank')}
+              onClick={() => onChangeSort('rank')}
             >
               Rank
               {(showSort || !isCramped) && (

@@ -2,8 +2,9 @@ import * as React from 'react';
 import { Guess } from '../components/Guess';
 import useStoredValue from './useStoredValue';
 
-type SortType = 'order' | 'alphabetical' | 'count' | 'rank';
-type SortVariant = 'asc' | 'desc';
+export type SortType = 'order' | 'alphabetical' | 'count' | 'rank';
+export type SortVariant = 'asc' | 'desc';
+export type SortedGuess = [word: string, ordinal: number, isHint: boolean, userName: string | null];
 
 function orderSort(a: number, b: number, mode: 'asc' | 'desc'): 1 | -1 {
   if (Number.isNaN(a)) return 1;
@@ -20,7 +21,14 @@ export const useGuesses = (
   lexicon: Record<string, number>,
   freeWords: string[] | undefined,
   unmasked: boolean,
-) => {
+): [
+    Array<SortedGuess>,
+    SortType,
+    SortVariant,
+    (type: SortType) => void,
+    string,
+    string,
+] => {
   const [[sortType, sortVariant], setSort] = useStoredValue<[SortType, SortVariant]>('sort-order', ['order', 'desc']);
 
   const changeSort = React.useCallback((newSortType: SortType): void => {

@@ -32,6 +32,7 @@ import GuessCloud from './GuessCloud';
 import PlayClock from './PlayClock';
 import { isDefined } from '../utils/typeGates';
 import { wikiPageBGColor } from '../utils/colors';
+import { useGuesses } from '../hooks/useGuesses';
 
 function randomEntry<T>(arr: T[]): T {
   return arr[Math.min(Math.floor(Math.random() * arr.length), arr.length - 1)];
@@ -600,6 +601,13 @@ function WikiPage({
   const theme = useTheme();
   const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
 
+  const [
+    sortedGuesses,
+    sortType,
+    sortVariant,
+    changeSort,
+  ] = useGuesses(activeGuesses, focusWord, lexicon, freeWords, unmasked);
+
   if (isSmall) {
     return (
       <>
@@ -661,8 +669,10 @@ function WikiPage({
               rankings={rankings}
               gameMode={gameMode}
               userSettings={userSettings}
-              unmasked={unmasked}
-              freeWords={freeWords}
+              sortedGuesses={sortedGuesses}
+              sortType={sortType}
+              sortVariant={sortVariant}
+              onChangeSort={changeSort}
             />
           </Box>
           <GuessInput
@@ -783,8 +793,10 @@ function WikiPage({
               rankings={rankings}
               gameMode={gameMode}
               userSettings={userSettings}
-              unmasked={unmasked}
-              freeWords={freeWords}
+              sortedGuesses={sortedGuesses}
+              sortType={sortType}
+              sortVariant={sortVariant}
+              onChangeSort={changeSort}
             />
           </Box>
           {userSettings.wordCloud && (
