@@ -8,7 +8,7 @@ import {
 import * as React from 'react';
 import { GameMode } from '../api/page';
 import usePrevious from '../hooks/usePrevious';
-import useStoredValue from '../hooks/useStoredValue';
+import { useGuesses } from '../hooks/useGuesses';
 import { initials, stringToColor } from '../utils/avatar';
 import { Guess } from './Guess';
 import { UserSettings } from './menu/UserOptions';
@@ -29,18 +29,6 @@ interface GuessTableProps {
   freeWords: string[] | undefined;
 }
 
-type SortType = 'order' | 'alphabetical' | 'count' | 'rank';
-type SortVariant = 'asc' | 'desc';
-
-function orderSort(a: number, b: number, mode: 'asc' | 'desc'): 1 | -1 {
-  if (Number.isNaN(a)) return 1;
-  if (Number.isNaN(b)) return -1;
-  if (mode === 'desc') {
-    return a > b ? 1 : -1;
-  }
-  return a > b ? -1 : 1;
-}
-
 function GuessTable({
   guesses, lexicon, onSetFocusWord, focusWord, titleLexes, headingLexes,
   rankings, gameMode, userSettings, unmasked, freeWords,
@@ -52,6 +40,13 @@ function GuessTable({
   const mostRecentGuessRef = React.useRef<HTMLTableRowElement | null>(null);
   const focusGuessRef = React.useRef<HTMLTableRowElement | null>(null);
   const previousFocusWord = usePrevious(focusWord);
+
+  const [
+    sortedGuesses,
+    sortType,
+    sortVariant,
+    changeSort,
+  ] = useGuesses(guesses, focusWord, lexicon, freeWords, unmasked);
 
   React.useEffect(() => {
     if (!autoScroll) return;
@@ -77,61 +72,6 @@ function GuessTable({
     return null;
   };
 
-  const [[sortType, sortVariant], setSort] = useStoredValue<[SortType, SortVariant]>('sort-order', ['order', 'desc']);
-
-  const changeSort = React.useCallback((newSortType: SortType): void => {
-    if (sortType !== newSortType) setSort([newSortType, 'asc']);
-    else if (sortVariant === 'asc') setSort([sortType, 'desc']);
-    else setSort([sortType, 'asc']);
-  }, [setSort, sortType, sortVariant]);
-
-  const indexedGuesses: Array<[
-    word: string, ordinal: number, isHint: boolean, userName: string | null
-  ]> = React.useMemo(() => [
-    ...guesses.map<[string, number, boolean, string | null]>(
-      ([word, isHint, userName], idx) => [word, idx + 1, isHint, userName],
-    ),
-    ...(
-      unmasked
-        ? Object.keys(lexicon)
-          .filter((lex) => !freeWords?.includes(lex) && !guesses.some(([gLex]) => lex === gLex))
-          .map<[string, number, false, null]>((lex) => [lex, NaN, false, null])
-        : []
-    ),
-  ], [guesses, unmasked, lexicon, freeWords]);
-
-  const sortedGuesses = React.useMemo(() => {
-    if (sortType === 'order') {
-      return indexedGuesses.sort(([_, a], [__, b]) => orderSort(a, b, sortVariant));
-    }
-    if (sortType === 'alphabetical') {
-      if (sortVariant === 'asc') {
-        return indexedGuesses.sort(([a], [b]) => (a < b ? -1 : 1));
-      }
-      return indexedGuesses.sort(([a], [b]) => (a < b ? 1 : -1));
-    }
-    if (sortType === 'count') {
-      if (sortVariant === 'asc') {
-        return indexedGuesses.sort(
-          ([a], [b]) => ((lexicon[a] ?? 0) < (lexicon[b] ?? 0) ? -1 : 1),
-        );
-      }
-      return indexedGuesses.sort(
-        ([a], [b]) => ((lexicon[a] ?? 0) < (lexicon[b] ?? 0) ? 1 : -1),
-      );
-    }
-    if (sortType === 'rank') {
-      if (sortVariant === 'desc') {
-        return indexedGuesses.sort(
-          ([a], [b]) => ((lexicon[a] ?? 0) < (lexicon[b] ?? 0) ? -1 : 1),
-        );
-      }
-      return indexedGuesses.sort(
-        ([a], [b]) => ((lexicon[a] ?? 0) < (lexicon[b] ?? 0) ? 1 : -1),
-      );
-    }
-    return indexedGuesses;
-  }, [indexedGuesses, lexicon, sortType, sortVariant]);
 
   const theme = useTheme();
   const isCramped = useMediaQuery(theme.breakpoints.down('lg'));
