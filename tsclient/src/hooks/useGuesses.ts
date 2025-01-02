@@ -100,5 +100,5 @@ export const useGuesses = (
     changeSort,
     previousWord,
     nextWord,
-  ] as const;
+  ];
 };
