@@ -13,6 +13,7 @@ import GuessTable from './GuessTable';
 import { UserSettings } from './menu/UserOptions';
 import { GameMode } from '../api/page';
 import GuessProgression from './GuessProgression';
+import { useGuesses } from '../hooks/useGuesses';
 
 interface GameStatsProps {
   guesses: Array<Guess>;
@@ -69,6 +70,13 @@ function GameStats({
   const isSmallish = useMediaQuery(theme.breakpoints.down('md'));
   const [activeTab, setTab] = useState(GameStatTab.WordCloud);
 
+  const [
+    sortedGuesses,
+    sortType,
+    sortVariant,
+    changeSort,
+  ] = useGuesses(guesses, null, lexicon, undefined, false);
+
   return (
     <Dialog
       open
@@ -108,16 +116,18 @@ function GameStats({
         <TabPanel value={GameStatTab.GuessHistory} selected={activeTab}>
           <GuessTable
             guesses={guesses}
+            sortedGuesses={sortedGuesses}
             lexicon={lexicon}
             titleLexes={titleLexes}
             headingLexes={headingLexes}
             focusWord={null}
-            freeWords={undefined}
             rankings={rankings}
             onSetFocusWord={noop}
-            unmasked={false}
             userSettings={userSettings}
             gameMode={gameMode}
+            sortType={sortType}
+            sortVariant={sortVariant}
+            onChangeSort={changeSort}
           />
         </TabPanel>
       </DialogContent>
