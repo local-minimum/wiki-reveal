@@ -27,6 +27,7 @@ interface GuessInputProps {
   onAddMultiGuess: (words: string[]) => void;
   onAddHint: () => void;
   onSetFocusWord: (word: string | null, requireHeader: boolean) => void;
+  onScrollPage: (directoin: 1 | -1) => void;
   isCoop: boolean;
   allowCoopHints: boolean;
   compact?: boolean;
@@ -148,7 +149,7 @@ function startAdornment(isYesterday: boolean, usesSpellCheck: boolean): JSX.Elem
 function GuessInput({
   isLoading, isError, isDone, unmasked, hints, onAddGuess, onAddHint, freeWords, onSetFocusWord,
   isCoop, userSettings, compact = false, latteralPad = false, allowCoopHints, guesses, isYesterday,
-  onAddMultiGuess, focusWord, nextFocusWord, previousFocusWord,
+  onAddMultiGuess, focusWord, nextFocusWord, previousFocusWord, onScrollPage
 }: GuessInputProps): JSX.Element {
   const theme = useTheme();
   const { enqueueSnackbar } = useSnackbar();
@@ -221,6 +222,10 @@ function GuessInput({
               if (nextFocusWord != null && nextFocusWord !== focusWord) {
                 onSetFocusWord(nextFocusWord, false);
               }
+            } else if (key === 'PageUp') {
+              onScrollPage(-1);
+            } else if (key === 'PageDown') {
+              onScrollPage(1);
             }
           }}
           label={inputLabel}

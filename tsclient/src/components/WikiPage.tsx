@@ -630,6 +630,10 @@ function WikiPage({
     nextFocusWord,
   ] = useGuesses(activeGuesses, focusWord, lexicon, freeWords, unmasked);
 
+  const keyboardScroll = React.useCallback((direction: 1 | -1) => {
+    articleRef.current?.scrollBy(0, direction * articleRef.current.offsetHeight * 0.8);
+  }, []);
+
   if (isSmall) {
     return (
       <>
@@ -718,6 +722,7 @@ function WikiPage({
             focusWord={focusWord}
             previousFocusWord={previousFocusWord}
             nextFocusWord={nextFocusWord}
+            onScrollPage={keyboardScroll}
           />
         </Box>
       </>
@@ -855,6 +860,7 @@ function WikiPage({
             focusWord={focusWord}
             previousFocusWord={previousFocusWord}
             nextFocusWord={nextFocusWord}
+            onScrollPage={keyboardScroll}
           />
         </Grid>
       </Grid>
