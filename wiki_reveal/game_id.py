@@ -9,7 +9,7 @@ NIGHT_RESET_OFFSET = 60 * 60 * 5
 def get_game_id() -> int:
     now = datetime.now(tz=timezone.utc)
     epoch = datetime.fromisoformat(START_DATE)
-    return max(0, int((now - epoch - NIGHT_RESET_OFFSET).total_seconds() / SECONDS_PER_DAY))
+    return max(0, int(((now - epoch).total_seconds() - NIGHT_RESET_OFFSET) / SECONDS_PER_DAY))
 
 
 def get_start_and_end(game_id: int) -> tuple[str, str]:
