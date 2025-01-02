@@ -26,8 +26,8 @@ export const useGuesses = (
     SortType,
     SortVariant,
     (type: SortType) => void,
-    string,
-    string,
+    string | null,
+    string | null,
 ] => {
   const [[sortType, sortVariant], setSort] = useStoredValue<[SortType, SortVariant]>('sort-order', ['order', 'desc']);
 
@@ -98,7 +98,7 @@ export const useGuesses = (
     sortType,
     sortVariant,
     changeSort,
-    nextWord,
     previousWord,
+    nextWord,
   ] as const;
 };

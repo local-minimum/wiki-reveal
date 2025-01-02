@@ -606,6 +606,8 @@ function WikiPage({
     sortType,
     sortVariant,
     changeSort,
+    previousFocusWord,
+    nextFocusWord,
   ] = useGuesses(activeGuesses, focusWord, lexicon, freeWords, unmasked);
 
   if (isSmall) {
@@ -693,6 +695,9 @@ function WikiPage({
             latteralPad
             userSettings={userSettings}
             allowCoopHints={coopRoomSettings?.allowHints ?? false}
+            focusWord={focusWord}
+            previousFocusWord={previousFocusWord}
+            nextFocusWord={nextFocusWord}
           />
         </Box>
       </>
@@ -827,6 +832,9 @@ function WikiPage({
             isYesterday={gameMode === 'yesterday'}
             userSettings={userSettings}
             allowCoopHints={coopRoomSettings?.allowHints ?? false}
+            focusWord={focusWord}
+            previousFocusWord={previousFocusWord}
+            nextFocusWord={nextFocusWord}
           />
         </Grid>
       </Grid>

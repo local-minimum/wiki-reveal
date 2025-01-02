@@ -32,6 +32,9 @@ interface GuessInputProps {
   compact?: boolean;
   latteralPad?: boolean;
   userSettings: UserSettings;
+  focusWord: string | null;
+  nextFocusWord: string | null;
+  previousFocusWord: string | null;
 }
 
 const INVALID = [' ', '-', '\'', '"', '_', '.', ':', ';', '\n', '\t', '\r'];
@@ -145,7 +148,7 @@ function startAdornment(isYesterday: boolean, usesSpellCheck: boolean): JSX.Elem
 function GuessInput({
   isLoading, isError, isDone, unmasked, hints, onAddGuess, onAddHint, freeWords, onSetFocusWord,
   isCoop, userSettings, compact = false, latteralPad = false, allowCoopHints, guesses, isYesterday,
-  onAddMultiGuess,
+  onAddMultiGuess, focusWord, nextFocusWord, previousFocusWord,
 }: GuessInputProps): JSX.Element {
   const theme = useTheme();
   const { enqueueSnackbar } = useSnackbar();
@@ -211,9 +214,13 @@ function GuessInput({
             } else if (key === 'Enter') {
               onSetFocusWord(null, false);
             } else if (key === 'ArrowUp') {
-              enqueueSnackbar('Focusing previous', { variant: 'info' });
+              if (previousFocusWord != null && previousFocusWord !== focusWord) {
+                onSetFocusWord(previousFocusWord, false);
+              }
             } else if (key === 'ArrowDown') {
-              enqueueSnackbar('Focusing next', { variant: 'info' });
+              if (nextFocusWord != null && nextFocusWord !== focusWord) {
+                onSetFocusWord(nextFocusWord, false);
+              }
             }
           }}
           label={inputLabel}
