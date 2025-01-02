@@ -8,7 +8,7 @@ import {
 import * as React from 'react';
 import { GameMode } from '../api/page';
 import usePrevious from '../hooks/usePrevious';
-import { SortedGuess, SortType, SortVariant, } from '../hooks/useGuesses';
+import { SortedGuess, SortType, SortVariant } from '../hooks/useGuesses';
 import { initials, stringToColor } from '../utils/avatar';
 import { Guess } from './Guess';
 import { UserSettings } from './menu/UserOptions';
