@@ -96,7 +96,7 @@ function VictoryHistory({ onClose, language }: VictoryHistoryProps): JSX.Element
                     </TableCell>
                     <TableCell sx={xsTableSx}>{`${guesses} (${hints})`}</TableCell>
                     <TableCell sx={xsTableSx}>{accuracy.toFixed(1)}</TableCell>
-                    <TableCell sx={xsTableSx}>{revealed.toFixed(1)}</TableCell>
+                    <TableCell sx={xsTableSx}>{revealed?.toFixed(1) ?? '--'}</TableCell>
                     <TableCell sx={xsTableSx}>{playDuration == null ? '--' : humanFormatDuration(playDuration)}</TableCell>
                   </TableRow>
                 ))}

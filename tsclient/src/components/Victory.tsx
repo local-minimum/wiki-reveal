@@ -145,7 +145,7 @@ function Victory({
       `I solved ${gameName} in ${emojiGuesses(total)} ${pluralize('guess', total)}!`,
       hints === 0 ? null : `I needed ${emojiGuesses(hints)} ${pluralize('hint', hints)}!`,
       gameDuration == null ? null : `It took me ${humanFormatDuration(gameDuration)}.`,
-      `My accuracy was ${accuracy.toFixed(1)}% revealing ${revealed.toFixed(1)}% of the article.`,
+      `My accuracy was ${accuracy.toFixed(1)}% revealing ${revealed?.toFixed(1) ?? '??'}% of the article.`,
       nAchieve === 0 ? null : `${nAchieve} new ${pluralize('achievement', nAchieve)}!`,
       `Try ${addSpaceIfNotEmpty(gameModeToText(gameMode, true))}${gameName} (${String(game).slice(0, 6)}): ${window.location.href}`,
     ].filter((line) => line != null);
@@ -179,7 +179,7 @@ function Victory({
             Your accuracy was
             {` ${accuracy.toFixed(1)}`}
             % revealing
-            {` ${revealed.toFixed(1)}`}
+            {` ${revealed?.toFixed(1) ?? 'unknown'}`}
             % of the article.
           </Typography>
           {gameDuration != null && (
