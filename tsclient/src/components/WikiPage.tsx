@@ -566,6 +566,7 @@ function WikiPage({
     enqueueSnackbar(`Boring hint: ${boring}`, { variant: 'info' });
   }, [
     activeGuesses, lexicon, gameMode, freeWords, title, boringHints, onCoopGuess, onSetSoloGuesses,
+    enqueueSnackbar,
   ]);
 
   const progress = useMemo(
