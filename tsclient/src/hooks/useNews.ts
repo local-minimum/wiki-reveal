@@ -21,7 +21,7 @@ const news: NewsItem[] = [
   {
     id: 'keyboardians',
     title: 'Keyboardians rejoice!',
-    content: 'While having the input field in focus, it is now possible to use up and down arrows to change focus word. Also, pressing enter while input is empty will cycle through the hits of the focus word.',
+    content: 'While having the input field in focus, it is now possible to use up and down arrows to change focus word. Also, pressing enter while input is empty will cycle through the hits of the focus word. Page up and down also scrolls the article.',
   },
   {
     id: 'time-zone-offset',
