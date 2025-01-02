@@ -14,8 +14,8 @@ def get_game_id() -> int:
 
 def get_start_and_end(game_id: int) -> tuple[str, str]:
     epoch = datetime.fromisoformat(START_DATE)
-    start = epoch + timedelta(days=game_id) - timedelta(seconds=NIGHT_RESET_OFFSET)
-    end = start + timedelta(days=1) - timedelta(seconds=NIGHT_RESET_OFFSET)
+    start = epoch + timedelta(days=game_id) + timedelta(seconds=NIGHT_RESET_OFFSET)
+    end = start + timedelta(days=1) + timedelta(seconds=NIGHT_RESET_OFFSET)
     return (
         start.isoformat().replace(' ', 'T'),
         end.isoformat().replace(' ', 'T')
@@ -25,8 +25,8 @@ def get_start_and_end(game_id: int) -> tuple[str, str]:
 def get_start_of_current() -> datetime:
     game_id = get_game_id()
     epoch = datetime.fromisoformat(START_DATE)
-    return epoch + timedelta(days=game_id) - timedelta(seconds=NIGHT_RESET_OFFSET)
+    return epoch + timedelta(days=game_id) + timedelta(seconds=NIGHT_RESET_OFFSET)
 
 
 def get_end_of_current() -> datetime:
-    return get_start_of_current() + timedelta(days=1) - timedelta(seconds=NIGHT_RESET_OFFSET)
+    return get_start_of_current() + timedelta(days=1) + timedelta(seconds=NIGHT_RESET_OFFSET)
