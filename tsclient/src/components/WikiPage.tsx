@@ -205,7 +205,13 @@ function WikiPage({
     ) {
       focusedWordCounter.current = 0;
       focusedWordRequireHeader.current = requireHeader;
-      setFocusWord([word, 0, requireHeader]);
+      const wordCount = lexicon[word] ?? 0;
+
+      if (wordCount === 1 && word === focusWord && focusWordIndex === 0) {
+        setFocusWord([word, 1, requireHeader]);
+      } else {
+        setFocusWord([word, 0, requireHeader]);
+      }
     } else {
       const newWord = word ?? focusWord;
       setFocusWord([
