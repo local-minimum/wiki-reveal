@@ -529,6 +529,7 @@ function WikiPage({
         (word) => (boringHints || !BORING_HINTS.includes(word)) && lexicon[word] >= maxCount,
       )
       .sort((a, b) => (lexicon[a] > lexicon[b] ? 1 : -1));
+
     if (worthy.length > 0) {
       const word = randomEntry(worthy.slice(0, 10));
       if (gameMode === 'coop') {
@@ -536,6 +537,7 @@ function WikiPage({
       } else {
         onSetSoloGuesses([...activeGuesses, [word, true, null]]);
       }
+      enqueueSnackbar(`Worthy hint: ${word}`, { variant: 'info' });
       return;
     }
 
@@ -550,6 +552,8 @@ function WikiPage({
       } else {
         onSetSoloGuesses([...activeGuesses, [word, true, null]]);
       }
+
+      enqueueSnackbar(`Random hint: ${word}`, { variant: 'info' });
       return;
     }
 
@@ -559,6 +563,7 @@ function WikiPage({
     } else {
       onSetSoloGuesses([...activeGuesses, [boring, true, null]]);
     }
+    enqueueSnackbar(`Boring hint: ${boring}`, { variant: 'info' });
   }, [
     activeGuesses, lexicon, gameMode, freeWords, title, boringHints, onCoopGuess, onSetSoloGuesses,
   ]);
