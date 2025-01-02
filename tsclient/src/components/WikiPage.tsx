@@ -205,19 +205,20 @@ function WikiPage({
     ) {
       focusedWordCounter.current = 0;
       focusedWordRequireHeader.current = requireHeader;
-      const wordCount = lexicon[word] ?? 0;
+
+      setFocusWord([word, 0, requireHeader]);
+    } else {
+      const newWord = word ?? focusWord;
+      const wordCount = newWord == null ? 0 : lexicon[newWord] ?? 0;
 
       if (wordCount === 1 && word === focusWord && focusWordIndex === 0) {
         setFocusWord([word, 1, requireHeader]);
       } else {
-        setFocusWord([word, 0, requireHeader]);
+        setFocusWord([
+          newWord,
+          newWord == null ? focusWordIndex : (focusWordIndex + 1) % (lexicon[newWord] ?? 1),
+          requireHeader]);
       }
-    } else {
-      const newWord = word ?? focusWord;
-      setFocusWord([
-        newWord,
-        newWord == null ? focusWordIndex : (focusWordIndex + 1) % (lexicon[newWord] ?? 1),
-        requireHeader]);
     }
   }, [focusWord, focusWordIndex, lexicon]);
 
