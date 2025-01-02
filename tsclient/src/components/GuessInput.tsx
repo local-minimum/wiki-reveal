@@ -207,6 +207,12 @@ function GuessInput({
               } else {
                 enqueueSnackbar('Word contains forbidden character', { variant: 'warning' });
               }
+            } else if (key === 'Enter') {
+              enqueueSnackbar('Focusing word', { variant: 'info' });
+            } else if (key === 'ArrowUp') {
+              enqueueSnackbar('Focusing previous', { variant: 'info' });
+            } else if (key === 'ArrowDown') {
+              enqueueSnackbar('Focusing next', { variant: 'info' });
             }
           }}
           label={inputLabel}
