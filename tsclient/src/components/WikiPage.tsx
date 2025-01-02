@@ -516,8 +516,8 @@ function WikiPage({
       .filter((word) => !activeGuesses.some(([w]) => w === word)
         && !freeWords?.includes(word)
         && !title.some(
-          ([_, isHidden, lex]) => isHidden && (lex === word || wordDistance(lex, word) < 3)),
-        );
+          ([_, isHidden, lex]) => isHidden && (lex === word || wordDistance(lex, word) < 3),
+        ));
 
     if (options.length === 0) return;
     const worthy = options
