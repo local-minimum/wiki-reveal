@@ -77,7 +77,7 @@ export const useGuesses = (
     return indexedGuesses;
   }, [indexedGuesses, lexicon, sortType, sortVariant]);
 
-  const focusIndex = sortedGuesses.findIndex(item => item[0] === focusWord);
+  const focusIndex = sortedGuesses.findIndex((item) => item[0] === focusWord);
   const nextWord = focusIndex < 0
     ? sortedGuesses[0]?.[0]
     : sortedGuesses[Math.min(sortedGuesses.length - 1, focusIndex + 1)]?.[0];
@@ -93,4 +93,4 @@ export const useGuesses = (
     nextWord,
     previousWord,
   ] as const;
-}
+};

@@ -72,7 +72,6 @@ function GuessTable({
     return null;
   };
 
-
   const theme = useTheme();
   const isCramped = useMediaQuery(theme.breakpoints.down('lg'));
 
