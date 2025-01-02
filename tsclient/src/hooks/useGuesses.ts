@@ -91,7 +91,7 @@ export const useGuesses = (
     : sortedGuesses[Math.min(sortedGuesses.length - 1, focusIndex + 1)]?.[0];
   const previousWord = focusIndex < 0
     ? sortedGuesses[0]?.[0]
-    : sortedGuesses[Math.max(0, focusIndex + 1)]?.[0];
+    : sortedGuesses[Math.max(0, focusIndex - 1)]?.[0];
 
   return [
     sortedGuesses,
