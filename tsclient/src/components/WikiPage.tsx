@@ -33,6 +33,7 @@ import PlayClock from './PlayClock';
 import { isDefined } from '../utils/typeGates';
 import { wikiPageBGColor } from '../utils/colors';
 import { useGuesses } from '../hooks/useGuesses';
+import { wordDistance } from '../utils/wordDistance';
 
 function randomEntry<T>(arr: T[]): T {
   return arr[Math.min(Math.floor(Math.random() * arr.length), arr.length - 1)];
@@ -514,7 +515,7 @@ function WikiPage({
     const options = [...Object.keys(lexicon)]
       .filter((word) => !activeGuesses.some(([w]) => w === word)
         && !freeWords?.includes(word)
-        && !title.some(([_, isHidden, lex]) => isHidden && lex === word));
+        && !title.some(([_, isHidden, lex]) => isHidden && (lex === word || wordDistance(lex, word) < 3)));
 
     if (options.length === 0) return;
     const worthy = options
