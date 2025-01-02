@@ -14,20 +14,17 @@ interface News {
 
 const news: NewsItem[] = [
   {
+    id: 'time-zone',
+    title: 'Game should now reset GMT-5',
+    content: 'Some people have complained about when the new day starts, now it starts later.',
+  },
+  {
     id: 'game-mode-feedback',
     title: 'Info about how/what you play in guess field',
     content: 'There are now some helpful icons with tooltips if you are playing yesterdays game or with spell assistance.',
   },
-  {
-    id: 'auto-guess',
-    title: 'Stop inputing filler words',
-    content: 'You now have the option to guess sets of common filler words from the pen icon in the input field.',
-  },
-  {
-    id: 'letter-count',
-    title: 'Stop counting letters',
-    content: 'You can now directly see in the guess field how long the guess is',
-  },
+  // id: 'auto-guess',
+  // id: 'letter-count',
   // id: 'guess-progression',
   // id: 'timer',
   // id: 'number-hints',

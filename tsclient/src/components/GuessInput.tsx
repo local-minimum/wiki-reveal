@@ -8,6 +8,7 @@ import {
   Menu, MenuItem, OutlinedInput, Stack,
   Tooltip, useMediaQuery, useTheme,
 } from '@mui/material';
+import { useSnackbar } from 'notistack';
 import * as React from 'react';
 import { wordAsLexicalEntry } from '../utils/wiki';
 import { Guess } from './Guess';
@@ -145,11 +146,15 @@ function GuessInput({
   isCoop, userSettings, compact = false, latteralPad = false, allowCoopHints, guesses, isYesterday,
   onAddMultiGuess,
 }: GuessInputProps): JSX.Element {
-  const { allowHints } = userSettings;
+  const theme = useTheme();
+  const { enqueueSnackbar } = useSnackbar();
+  const isExtraLarge = useMediaQuery(theme.breakpoints.up('xl'));
+
   const [currentGuess, setCurrentGuess] = React.useState('');
   const cleanCurrentGuess = currentGuess.trimEnd();
-  const theme = useTheme();
-  const isExtraLarge = useMediaQuery(theme.breakpoints.up('xl'));
+
+  const { allowHints } = userSettings;
+
   const lex = wordAsLexicalEntry(cleanCurrentGuess);
   const isFreeWord = cleanCurrentGuess !== '' && lex !== null && freeWords?.includes(lex);
   const hasIllegal = INVALID.some((sub) => lex !== null && lex.includes(sub));
@@ -192,9 +197,16 @@ function GuessInput({
           value={currentGuess}
           onChange={({ target: { value } }) => setCurrentGuess(parseInput(value))}
           onKeyDown={({ key }) => {
-            if (key === 'Enter' && cleanCurrentGuess.length > 0 && !isFreeWord && !hasIllegal) {
-              setCurrentGuess('');
-              onAddGuess(cleanCurrentGuess);
+            if (key === 'Enter' && cleanCurrentGuess.length > 0) {
+              if (!isFreeWord && !hasIllegal) {
+                setCurrentGuess('');
+                onAddGuess(cleanCurrentGuess);
+              } else if (!isFreeWord) {
+                setCurrentGuess('');
+                enqueueSnackbar('Word given for free', { variant: 'info' });
+              } else {
+                enqueueSnackbar('Word contains forbidden character', { variant: 'warning' });
+              }
             }
           }}
           label={inputLabel}
