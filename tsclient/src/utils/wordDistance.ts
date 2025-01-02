@@ -1,8 +1,8 @@
 export const wordDistance = (a: string | null, b: string): number => {
   if (a == null) return b.length;
 
-  const an = a ? a.length : 0;
-  const bn = b ? b.length : 0;
+  const an = a.length;
+  const bn = b.length;
 
   if (an === 0) {
     return bn;

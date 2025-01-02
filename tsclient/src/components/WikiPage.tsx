@@ -519,7 +519,11 @@ function WikiPage({
           ([_, isHidden, lex]) => isHidden && (lex === word || wordDistance(lex, word) < 3),
         ));
 
-    if (options.length === 0) return;
+    if (options.length === 0) {
+      enqueueSnackbar('No valid hints remain', { variant: 'info' });
+      return;
+    }
+
     const worthy = options
       .filter(
         (word) => (boringHints || !BORING_HINTS.includes(word)) && lexicon[word] >= maxCount,
