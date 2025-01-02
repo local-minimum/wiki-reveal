@@ -149,7 +149,7 @@ function startAdornment(isYesterday: boolean, usesSpellCheck: boolean): JSX.Elem
 function GuessInput({
   isLoading, isError, isDone, unmasked, hints, onAddGuess, onAddHint, freeWords, onSetFocusWord,
   isCoop, userSettings, compact = false, latteralPad = false, allowCoopHints, guesses, isYesterday,
-  onAddMultiGuess, focusWord, nextFocusWord, previousFocusWord, onScrollPage
+  onAddMultiGuess, focusWord, nextFocusWord, previousFocusWord, onScrollPage,
 }: GuessInputProps): JSX.Element {
   const theme = useTheme();
   const { enqueueSnackbar } = useSnackbar();
