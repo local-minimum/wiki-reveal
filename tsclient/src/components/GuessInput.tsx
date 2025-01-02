@@ -26,6 +26,7 @@ interface GuessInputProps {
   onAddGuess: (word: string) => void;
   onAddMultiGuess: (words: string[]) => void;
   onAddHint: () => void;
+  onSetFocusWord: (word: string | null, requireHeader: boolean) => void;
   isCoop: boolean;
   allowCoopHints: boolean;
   compact?: boolean;
@@ -142,7 +143,7 @@ function startAdornment(isYesterday: boolean, usesSpellCheck: boolean): JSX.Elem
 }
 
 function GuessInput({
-  isLoading, isError, isDone, unmasked, hints, onAddGuess, onAddHint, freeWords,
+  isLoading, isError, isDone, unmasked, hints, onAddGuess, onAddHint, freeWords, onSetFocusWord,
   isCoop, userSettings, compact = false, latteralPad = false, allowCoopHints, guesses, isYesterday,
   onAddMultiGuess,
 }: GuessInputProps): JSX.Element {
@@ -203,12 +204,12 @@ function GuessInput({
                 onAddGuess(cleanCurrentGuess);
               } else if (isFreeWord) {
                 setCurrentGuess('');
-                enqueueSnackbar('Word given for free', { variant: 'info' });
+                enqueueSnackbar(`Word "${cleanCurrentGuess}" given for free`, { variant: 'info' });
               } else {
                 enqueueSnackbar('Word contains forbidden character', { variant: 'warning' });
               }
             } else if (key === 'Enter') {
-              enqueueSnackbar('Focusing word', { variant: 'info' });
+              onSetFocusWord(null, false);
             } else if (key === 'ArrowUp') {
               enqueueSnackbar('Focusing previous', { variant: 'info' });
             } else if (key === 'ArrowDown') {

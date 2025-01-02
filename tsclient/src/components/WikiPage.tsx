@@ -195,13 +195,22 @@ function WikiPage({
   focusedWordCounter.current = focusWordIndex;
   focusedWordRequireHeader.current = headerRequired;
 
-  const handleSetFocusWord = React.useCallback((word: string, requireHeader: boolean): void => {
-    if (word !== focusWord || focusedWordRequireHeader.current !== requireHeader) {
+  const handleSetFocusWord = React.useCallback((
+    word: string | null,
+    requireHeader: boolean,
+  ): void => {
+    if (word != null
+        && (word !== focusWord || focusedWordRequireHeader.current !== requireHeader)
+    ) {
       focusedWordCounter.current = 0;
       focusedWordRequireHeader.current = requireHeader;
       setFocusWord([word, 0, requireHeader]);
     } else {
-      setFocusWord([word, (focusWordIndex + 1) % (lexicon[word] ?? 1), requireHeader]);
+      const newWord = word ?? focusWord;
+      setFocusWord([
+        newWord,
+        newWord == null ? focusWordIndex : (focusWordIndex + 1) % (lexicon[newWord] ?? 1),
+        requireHeader]);
     }
   }, [focusWord, focusWordIndex, lexicon]);
 
@@ -667,6 +676,7 @@ function WikiPage({
             onAddGuess={addGuess}
             onAddMultiGuess={addMultiGuess}
             onAddHint={addHint}
+            onSetFocusWord={handleSetFocusWord}
             compact
             isCoop={gameMode === 'coop'}
             isYesterday={gameMode === 'yesterday'}
@@ -800,6 +810,7 @@ function WikiPage({
             onAddGuess={addGuess}
             onAddMultiGuess={addMultiGuess}
             onAddHint={addHint}
+            onSetFocusWord={handleSetFocusWord}
             isCoop={gameMode === 'coop'}
             isYesterday={gameMode === 'yesterday'}
             userSettings={userSettings}

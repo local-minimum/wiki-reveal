@@ -19,7 +19,7 @@ interface GuessTableProps {
   guesses: Array<Guess>;
   lexicon: Record<string, number>;
   rankings: Record<string, number>;
-  onSetFocusWord: (word: string, requireHeader: boolean) => void;
+  onSetFocusWord: (word: string | null, requireHeader: boolean) => void;
   focusWord: string | null;
   titleLexes: string[];
   headingLexes: string[];
