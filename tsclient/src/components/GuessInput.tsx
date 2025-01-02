@@ -201,7 +201,7 @@ function GuessInput({
               if (!isFreeWord && !hasIllegal) {
                 setCurrentGuess('');
                 onAddGuess(cleanCurrentGuess);
-              } else if (!isFreeWord) {
+              } else if (isFreeWord) {
                 setCurrentGuess('');
                 enqueueSnackbar('Word given for free', { variant: 'info' });
               } else {

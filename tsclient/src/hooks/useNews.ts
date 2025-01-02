@@ -14,7 +14,7 @@ interface News {
 
 const news: NewsItem[] = [
   {
-    id: 'time-zone',
+    id: 'time-zone-offset',
     title: 'Game should now reset GMT-5',
     content: 'Some people have complained about when the new day starts, now it starts later.',
   },
