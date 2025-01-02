@@ -18,6 +18,7 @@ export const wordDistance = (a: string | null, b: string): number => {
   for (let i = 0; i <= bn; ++i) {
     const row = matrix[i] ?? new Array<number>(an + 1);
     row[0] = i;
+    matrix[i] = row;
   }
 
   const firstRow = matrix[0];
