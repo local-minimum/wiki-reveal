@@ -21,8 +21,8 @@ export const wordDistance = (a: string | null, b: string): number => {
   }
 
   const firstRow = matrix[0];
-  // eslint-disable-next-line no-plusplus
 
+  // eslint-disable-next-line no-plusplus
   for (let j = 1; j <= an; ++j) {
     firstRow[j] = j;
   }
