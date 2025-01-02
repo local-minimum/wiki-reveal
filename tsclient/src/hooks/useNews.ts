@@ -14,6 +14,11 @@ interface News {
 
 const news: NewsItem[] = [
   {
+    id: 'improvements-2025',
+    title: 'Minor improvements',
+    content: 'One hit words can be re-focued after scrolling. Hinting should not reveal word very similar to title words.',
+  },
+  {
     id: 'keyboardians',
     title: 'Keyboardians rejoice!',
     content: 'While having the input field in focus, it is now possible to use up and down arrows to change focus word. Also, pressing enter while input is empty will cycle through the hits of the focus word.',
