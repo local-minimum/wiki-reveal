@@ -8,7 +8,11 @@ def find_tags(text: str) -> Iterator[tuple[str, int]]:
         depth = 1
         start = idx
         idx += 1
+
         while depth > 0:
+            if idx >= len(text):
+                break
+                
             if text[idx] == '{':
                 depth += 1
             elif text[idx] == '}':
@@ -17,6 +21,10 @@ def find_tags(text: str) -> Iterator[tuple[str, int]]:
 
         yield text[start: idx + 1], start + offset
         offset += idx + 1
+
+        if idx + 1 >= len(text):
+            break
+            
         text = text[idx + 1:]
 
 
