@@ -647,32 +647,6 @@ function WikiPage({
           }}
           hidden={userSettings.hideTimer}
         />
-        <Box sx={{ backgroundColor: wikiPageBGColor(gameMode) }}>
-          <Tooltip title={`${progress.toFixed(1)}% of article revealed.`}>
-            <LinearProgress
-              variant={isLoading ? undefined : 'determinate'}
-              value={isLoading ? undefined : progress}
-              sx={{ position: 'sticky', top: 0, zIndex: 100 }}
-            />
-          </Tooltip>
-          <RedactedPage
-            hideWords={hideWords}
-            masked={!unmasked}
-            isSolved={victory !== null && language !== undefined && pageName !== undefined}
-            title={title}
-            summary={summary}
-            sections={sections}
-            language={language}
-            pageName={pageName}
-            focusWord={focusWord}
-            numberHints={userSettings.numberHints}
-            scrollToFocusWordCheck={focusedWordScrollToCheck}
-            scrollButtonYOffset="25vh"
-            fontSize={userSettings.wikiFontSize}
-            gameMode={gameMode}
-          />
-          <Box sx={{ height: mobileExtraBottom ? '40vh' : '28vh' }} />
-        </Box>
         <Box
           sx={{
             height: mobileExtraBottom ? '35vh' : '25vh',
@@ -682,6 +656,7 @@ function WikiPage({
             marginLeft: 0.5,
             marginRight: 0.5,
             background: 'white',
+            zIndex: 90,
           }}
         >
           <Box sx={{ height: 'calc(25vh - 50px)' }}>
@@ -724,6 +699,32 @@ function WikiPage({
             nextFocusWord={nextFocusWord}
             onScrollPage={keyboardScroll}
           />
+        </Box>
+        <Box sx={{ backgroundColor: wikiPageBGColor(gameMode), overflow: 'hidden', height: '100vh' }}>
+          <Tooltip title={`${progress.toFixed(1)}% of article revealed.`}>
+            <LinearProgress
+              variant={isLoading ? undefined : 'determinate'}
+              value={isLoading ? undefined : progress}
+              sx={{ position: 'sticky', top: 0, zIndex: 100 }}
+            />
+          </Tooltip>
+          <RedactedPage
+            hideWords={hideWords}
+            masked={!unmasked}
+            isSolved={victory !== null && language !== undefined && pageName !== undefined}
+            title={title}
+            summary={summary}
+            sections={sections}
+            language={language}
+            pageName={pageName}
+            focusWord={focusWord}
+            numberHints={userSettings.numberHints}
+            scrollToFocusWordCheck={focusedWordScrollToCheck}
+            scrollButtonYOffset="25vh"
+            fontSize={userSettings.wikiFontSize}
+            gameMode={gameMode}
+          />
+          <Box sx={{ height: mobileExtraBottom ? '40vh' : '28vh' }} />
         </Box>
       </>
     );
