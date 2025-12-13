@@ -715,20 +715,17 @@ function WikiPage({
             onScrollPage={keyboardScroll}
           />
         </Box>
+        <Tooltip title={`${progress.toFixed(1)}% of article revealed.`}>
+          <LinearProgress
+            variant={isLoading ? undefined : 'determinate'}
+            value={isLoading ? undefined : progress}
+            sx={{ position: 'sticky', top: 0, zIndex: 100 }}
+          />
+        </Tooltip>
         <Box sx={{
           backgroundColor: wikiPageBGColor(gameMode),
           overflow: 'hidden',
-          position: 'fixed',
-          top: 0,
-          height: `calc(100vh - ${mobileExtraBottom ? '35vh' : '25vh'})`,
         }}>
-          <Tooltip title={`${progress.toFixed(1)}% of article revealed.`}>
-            <LinearProgress
-              variant={isLoading ? undefined : 'determinate'}
-              value={isLoading ? undefined : progress}
-              sx={{ position: 'sticky', top: 0, zIndex: 100 }}
-            />
-          </Tooltip>
           <RedactedPage
             hideWords={hideWords}
             masked={!unmasked}
