@@ -722,10 +722,7 @@ function WikiPage({
             sx={{ position: 'sticky', top: 0, zIndex: 100 }}
           />
         </Tooltip>
-        <Box sx={{
-          backgroundColor: wikiPageBGColor(gameMode),
-          overflow: 'hidden',
-        }}>
+        <Box sx={{ backgroundColor: wikiPageBGColor(gameMode), overflow: 'hidden' }}>
           <RedactedPage
             hideWords={hideWords}
             masked={!unmasked}
