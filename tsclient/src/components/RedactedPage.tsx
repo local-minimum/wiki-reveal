@@ -27,6 +27,7 @@ interface RedactedPageProps {
   numberHints: boolean;
   fontSize: number;
   gameMode: GameMode;
+  onScroll: React.UIEventHandler<HTMLDivElement>;
 }
 
 const commonSX: SxProps<Theme> = {
@@ -38,7 +39,7 @@ const commonSX: SxProps<Theme> = {
 
 function RedactedPage({
   title, summary, sections, isSolved, language, pageName, scrollToFocusWordCheck, focusWord,
-  containerNode, hideWords, masked, scrollButtonYOffset, numberHints, fontSize, gameMode,
+  containerNode, hideWords, masked, scrollButtonYOffset, numberHints, fontSize, gameMode, onScroll,
 }: RedactedPageProps): JSX.Element {
   const titleSX: SxProps<Theme> = {
     ...commonSX,
@@ -56,7 +57,9 @@ function RedactedPage({
 
   const titleId = 'redacted-article-title';
   return (
-    <>
+    <div
+      onScroll={onScroll}
+    >
       <Typography variant="h1" sx={titleSX} id={titleId}>
         <WikiParagraph
           masked={masked}
@@ -112,7 +115,7 @@ function RedactedPage({
         ))
       }
       <ScrollToTop topId={titleId} target={containerNode} yOffset={scrollButtonYOffset} />
-    </>
+    </div>
   );
 }
 

@@ -634,9 +634,9 @@ function WikiPage({
     articleRef.current?.scrollBy(0, direction * articleRef.current.offsetHeight * 0.8);
   }, []);
 
-  const scrollHack = React.useCallback((evt: Event) => {
+  const scrollHack: React.UIEventHandler<HTMLDivElement> = React.useCallback((evt) => {
     const hack: EventTarget | null = evt.currentTarget;
-    if (hack instanceof HTMLElement) {
+    if (hack instanceof HTMLDivElement) {
         if (hack.scrollTop === 0) {
           // element is at the top of its scroll position, so scroll 1 pixel down
           hack.scrollTop = 1;
@@ -666,7 +666,7 @@ function WikiPage({
           sx={{
             height: mobileExtraBottom ? '35vh' : '25vh',
             position: 'fixed',
-            top: mobileExtraBottom ? '65vh' : '75vh',
+            bottom: 0,
             width: '100%',
             marginLeft: 0.5,
             marginRight: 0.5,
@@ -715,7 +715,13 @@ function WikiPage({
             onScrollPage={keyboardScroll}
           />
         </Box>
-        <Box sx={{ backgroundColor: wikiPageBGColor(gameMode), overflow: 'hidden', height: '100vh' }}>
+        <Box sx={{
+          backgroundColor: wikiPageBGColor(gameMode),
+          overflow: 'hidden',
+          position: 'fixed',
+          top: 0,
+          height: `calc(100vh - ${mobileExtraBottom ? '35vh' : '25vh'})`,
+        }}>
           <Tooltip title={`${progress.toFixed(1)}% of article revealed.`}>
             <LinearProgress
               variant={isLoading ? undefined : 'determinate'}
