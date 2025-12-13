@@ -801,6 +801,7 @@ function WikiPage({
               numberHints={userSettings.numberHints}
               fontSize={userSettings.wikiFontSize}
               gameMode={gameMode}
+              onScroll={scrollHack}
             />
           </TableContainer>
         </Grid>
