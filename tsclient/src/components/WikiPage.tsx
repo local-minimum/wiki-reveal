@@ -634,6 +634,21 @@ function WikiPage({
     articleRef.current?.scrollBy(0, direction * articleRef.current.offsetHeight * 0.8);
   }, []);
 
+  const scrollHack = React.useCallback((evt: Event) => {
+    const hack: EventTarget | null = evt.currentTarget;
+    if (hack instanceof HTMLElement) {
+        if (hack.scrollTop === 0) {
+          // element is at the top of its scroll position, so scroll 1 pixel down
+          hack.scrollTop = 1;
+        }
+
+        if (hack.scrollHeight - hack.scrollTop === hack.clientHeight) {
+          // element is at the bottom of its scroll position, so scroll 1 pixel up
+          hack.scrollTop -= 1;
+        }
+    }
+  }, []);
+
   if (isSmall) {
     return (
       <>
@@ -723,6 +738,7 @@ function WikiPage({
             scrollButtonYOffset="25vh"
             fontSize={userSettings.wikiFontSize}
             gameMode={gameMode}
+            onScroll={scrollHack}
           />
           <Box sx={{ height: mobileExtraBottom ? '40vh' : '28vh' }} />
         </Box>
