@@ -637,15 +637,15 @@ function WikiPage({
   const scrollHack: React.UIEventHandler<HTMLDivElement> = React.useCallback((evt) => {
     const hack: EventTarget | null = evt.currentTarget;
     if (hack instanceof HTMLDivElement) {
-        if (hack.scrollTop === 0) {
-          // element is at the top of its scroll position, so scroll 1 pixel down
-          hack.scrollTop = 1;
-        }
+      if (hack.scrollTop === 0) {
+        // element is at the top of its scroll position, so scroll 1 pixel down
+        hack.scrollTop = 1;
+      }
 
-        if (hack.scrollHeight - hack.scrollTop === hack.clientHeight) {
-          // element is at the bottom of its scroll position, so scroll 1 pixel up
-          hack.scrollTop -= 1;
-        }
+      if (hack.scrollHeight - hack.scrollTop === hack.clientHeight) {
+        // element is at the bottom of its scroll position, so scroll 1 pixel up
+        hack.scrollTop -= 1;
+      }
     }
   }, []);
 
