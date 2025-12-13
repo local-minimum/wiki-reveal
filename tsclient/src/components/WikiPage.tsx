@@ -651,7 +651,7 @@ function WikiPage({
           sx={{
             height: mobileExtraBottom ? '35vh' : '25vh',
             position: 'fixed',
-            bottom: 0,
+            top: mobileExtraBottom ? '65vh' : '75vh',
             width: '100%',
             marginLeft: 0.5,
             marginRight: 0.5,
